@@ -1,4 +1,4 @@
-import { Calendar, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 
 export function CalendarScreen() {
   const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
