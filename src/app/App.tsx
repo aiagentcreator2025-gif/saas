@@ -23,19 +23,24 @@ export default function App() {
 
   const checkAuth = async () => {
   try {
-    const { data: { user } } = await supabase.auth.getUser();
+    console.log("checkAuth started");
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    console.log("user:", user, "error:", userError);
     if (!user) { setAuthState("unauthenticated"); return; }
-    const { data: account } = await supabase
+    console.log("fetching account for user:", user.id);
+    const { data: account, error: accountError } = await supabase
       .from("accounts_leadflow")
       .select("onboarding_completed")
       .eq("user_id", user.id)
       .single();
+    console.log("account:", account, "error:", accountError);
     if (!account || !account.onboarding_completed) {
       setAuthState("onboarding");
     } else {
       setAuthState("ready");
     }
-  } catch {
+  } catch (e) {
+    console.log("checkAuth error:", e);
     setAuthState("unauthenticated");
   }
 };
