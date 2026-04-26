@@ -1,10 +1,5 @@
 import { useState } from "react";
-import { createClient } from "@supabase/supabase-js";
-
-const supabase = createClient(
-  import.meta.env.VITE_SUPABASE_URL,
-  import.meta.env.VITE_SUPABASE_ANON_KEY
-);
+import { supabase } from "../supabaseClient";
 
 const GLOBAL_STYLES = `
   @import url('https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;1,400&family=DM+Sans:wght@300;400;500&display=swap');
@@ -77,14 +72,14 @@ export function OnboardingScreen({ onComplete }: Props) {
     if (!isLast) { setStep(s => s + 1); return; }
     setLoading(true);
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-    await supabase.from("accounts_leadflow").upsert({
+    if (!user) { setLoading(false); return; }
+    const { error } = await supabase.from("accounts_leadflow").upsert({
       user_id: user.id,
       ...data,
       onboarding_completed: true,
-    });
+    }, { onConflict: "user_id" });
     setLoading(false);
-    onComplete();
+    if (!error) onComplete();
   };
 
   return (
@@ -93,14 +88,12 @@ export function OnboardingScreen({ onComplete }: Props) {
       <div style={{ minHeight: "100vh", background: "#F9F9F8", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'DM Sans', sans-serif" }}>
         <div style={{ width: 520, background: "#fff", borderRadius: 20, border: "1px solid #E8E6E0", padding: "40px 40px" }}>
 
-          {/* Progress */}
           <div style={{ display: "flex", gap: 6, marginBottom: 32 }}>
             {STEPS.map((_, i) => (
               <div key={i} style={{ flex: 1, height: 3, borderRadius: 10, background: i <= step ? "#4A46B5" : "#E8E6E0", transition: "background .3s" }} />
             ))}
           </div>
 
-          {/* Step label */}
           <div style={{ fontSize: 9, color: "#8A8680", textTransform: "uppercase", letterSpacing: "1.5px", marginBottom: 8, fontWeight: 400 }}>
             Step {step + 1} of {STEPS.length}
           </div>
@@ -112,7 +105,6 @@ export function OnboardingScreen({ onComplete }: Props) {
             {current.subtitle}
           </p>
 
-          {/* Fields */}
           {current.fields.map(f => (
             <div key={f.key} style={{ marginBottom: 16 }}>
               <label style={{ display: "block", fontSize: 9, color: "#8A8680", textTransform: "uppercase", letterSpacing: "1px", marginBottom: 6, fontWeight: 400 }}>{f.label}</label>
@@ -125,7 +117,6 @@ export function OnboardingScreen({ onComplete }: Props) {
             </div>
           ))}
 
-          {/* Buttons */}
           <div style={{ display: "flex", gap: 10, marginTop: 28 }}>
             {step > 0 && (
               <button
