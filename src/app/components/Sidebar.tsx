@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { LayoutDashboard, GitBranch, Calendar, Users, Settings, LogOut, FileText, MessageSquare } from "lucide-react";
 import { Screen } from "../App";
-import { supabase } from "./supabaseClient";
+import { supabase } from "../supabaseClient";
 
 interface Props {
   active: Screen;
