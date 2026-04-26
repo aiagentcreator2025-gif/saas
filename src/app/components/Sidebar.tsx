@@ -1,5 +1,7 @@
+import { useState, useEffect } from "react";
 import { LayoutDashboard, GitBranch, Calendar, Users, Settings, LogOut, FileText, MessageSquare } from "lucide-react";
 import { Screen } from "../App";
+import { supabase } from "./supabaseClient";
 
 interface Props {
   active: Screen;
@@ -7,6 +9,22 @@ interface Props {
 }
 
 export function Sidebar({ active, onNav }: Props) {
+  const [email, setEmail] = useState("...");
+  const [initials, setInitials] = useState("U");
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user?.email) {
+        setEmail(session.user.email);
+        setInitials(session.user.email[0].toUpperCase());
+      }
+    });
+  }, []);
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+  };
+
   return (
     <>
       <style>{`
@@ -67,16 +85,16 @@ export function Sidebar({ active, onNav }: Props) {
 
         {/* Bottom */}
         <div style={{ padding: "10px 10px 18px", borderTop: "1px solid #E8E6E0" }}>
-          <BottomItem icon={<Settings size={15} strokeWidth={1.6} />} label="Settings" onClick={() => onNav("settings")} active={active === "settings"} />
-          <BottomItem icon={<LogOut   size={15} strokeWidth={1.6} />} label="Sign out" onClick={() => {}}              active={false} />
+          <BottomItem icon={<Settings size={15} strokeWidth={1.6} />} label="Settings"  onClick={() => onNav("settings")} active={active === "settings"} />
+          <BottomItem icon={<LogOut   size={15} strokeWidth={1.6} />} label="Sign out"  onClick={handleSignOut}           active={false} />
 
           <div style={{ marginTop: 10, padding: "10px 10px", background: "#F7F6F3", borderRadius: 10, display: "flex", alignItems: "center", gap: 9, border: "1px solid #E8E6E0" }}>
             <div style={{ width: 30, height: 30, borderRadius: "50%", background: "#EEEDF8", border: "1px solid #DDD9F5", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 500, color: "#4A46B5", flexShrink: 0 }}>
-              U
+              {initials}
             </div>
-            <div>
+            <div style={{ minWidth: 0 }}>
               <div style={{ fontSize: 12, fontWeight: 500, color: "#1A1916", lineHeight: 1.3 }}>My Account</div>
-              <div style={{ fontSize: 10, color: "#8A8680", fontWeight: 300 }}>user@leadflow.io</div>
+              <div style={{ fontSize: 10, color: "#8A8680", fontWeight: 300, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{email}</div>
             </div>
           </div>
         </div>
