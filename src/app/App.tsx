@@ -15,31 +15,6 @@ export default function App() {
   const [screen, setScreen] = useState<Screen>("dashboard");
   const [authState, setAuthState] = useState<"loading" | "unauthenticated" | "onboarding" | "ready">("loading");
 
-  useEffect(() => {
-    // use getSession instead of getUser — instant, no network hang
-    const init = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.user) {
-        setAuthState("unauthenticated");
-        return;
-      }
-      await checkAccount(session.user.id);
-    };
-
-    init();
-
-    // listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (!session?.user) {
-        setAuthState("unauthenticated");
-        return;
-      }
-      await checkAccount(session.user.id);
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
-
   const checkAccount = async (userId: string) => {
     try {
       const { data: account } = await supabase
@@ -57,7 +32,39 @@ export default function App() {
     }
   };
 
-  // timeout fallback — if still loading after 5s, force unauthenticated
+  const handleAuthComplete = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session?.user) {
+      await checkAccount(session.user.id);
+    } else {
+      setAuthState("unauthenticated");
+    }
+  };
+
+  useEffect(() => {
+    const init = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) {
+        setAuthState("unauthenticated");
+        return;
+      }
+      await checkAccount(session.user.id);
+    };
+
+    init();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (!session?.user) {
+        setAuthState("unauthenticated");
+        return;
+      }
+      await checkAccount(session.user.id);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  // timeout fallback — never stuck on loading forever
   useEffect(() => {
     if (authState !== "loading") return;
     const timer = setTimeout(() => setAuthState("unauthenticated"), 5000);
@@ -70,8 +77,8 @@ export default function App() {
     </div>
   );
 
-  if (authState === "unauthenticated") return <AuthScreen onAuth={() => supabase.auth.getSession().then(({ data: { session } }) => session && checkAccount(session.user!.id))} />;
-  if (authState === "onboarding") return <OnboardingScreen onComplete={() => supabase.auth.getSession().then(({ data: { session } }) => session && checkAccount(session.user!.id))} />;
+  if (authState === "unauthenticated") return <AuthScreen onAuth={handleAuthComplete} />;
+  if (authState === "onboarding") return <OnboardingScreen onComplete={handleAuthComplete} />;
 
   return (
     <div style={{ display: "flex", height: "100vh", background: "#F5F6FA", fontFamily: "'Plus Jakarta Sans', sans-serif", overflow: "hidden" }}>
