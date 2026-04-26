@@ -102,7 +102,7 @@ export function DashboardScreen() {
         {/* Header */}
         <div style={{ marginBottom: 32 }}>
           <h1 style={{ fontFamily: "'Libre Baskerville', serif", fontSize: 26, fontWeight: 400, color: "#1A1916", letterSpacing: "-0.5px", marginBottom: 4 }}>
-            Good <em style={{ fontStyle: "italic", color: "#4A46B5" }}>{greeting}</em>
+            Good <em style={{ fontStyle: "italic", color: "#166df6" }}>{greeting}</em>
           </h1>
           <p style={{ fontSize: 13, color: "#8A8680", fontWeight: 300 }}>Here's your LeadFlow performance overview</p>
         </div>
