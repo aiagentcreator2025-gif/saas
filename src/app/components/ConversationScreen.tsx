@@ -38,9 +38,6 @@ export function ConversationScreen() {
   const bottomRef = useRef<HTMLDivElement>(null);
 
   // Load leads
-  useEffect(() => {
-    console.log("Supabase URL:", import.meta.env.VITE_SUPABASE_URL);
-    console.log("CLIENT_ID:", CLIENT_ID);
     supabase
       .from("leads")
       .select("id, name, whatsapp_number, status")
@@ -51,7 +48,6 @@ export function ConversationScreen() {
         console.log("leads error:", error);
         if (data) setLeads(data);
       });
-  }, []);
 
   // Load conversation + messages when lead selected
   useEffect(() => {
