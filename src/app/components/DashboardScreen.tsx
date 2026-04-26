@@ -96,7 +96,7 @@ export function DashboardScreen() {
 
       <div style={{
         padding: "36px 40px", width: "100%", boxSizing: "border-box",
-        fontFamily: "'DM Sans', sans-serif", background: "background: "#F9F9F8", minHeight: "100vh",
+        fontFamily: "'DM Sans', sans-serif", background: "#F9F9F8", minHeight: "100vh",
       }}>
 
         {/* Header */}
