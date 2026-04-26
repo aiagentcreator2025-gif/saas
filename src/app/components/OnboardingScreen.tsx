@@ -62,6 +62,7 @@ export function OnboardingScreen({ onComplete }: Props) {
   const [step, setStep] = useState(0);
   const [data, setData] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const current = STEPS[step];
   const isLast = step === STEPS.length - 1;
@@ -71,15 +72,33 @@ export function OnboardingScreen({ onComplete }: Props) {
   const next = async () => {
     if (!isLast) { setStep(s => s + 1); return; }
     setLoading(true);
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) { setLoading(false); return; }
-    const { error } = await supabase.from("accounts_leadflow").upsert({
-      user_id: user.id,
-      ...data,
-      onboarding_completed: true,
-    }, { onConflict: "user_id" });
+    setError("");
+
+    // use getSession instead of getUser — reads from localStorage, always works right after signup
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.user) {
+      setError("Session not found. Please refresh and try again.");
+      setLoading(false);
+      return;
+    }
+
+    const { error: upsertError } = await supabase
+      .from("accounts_leadflow")
+      .upsert({
+        user_id: session.user.id,
+        ...data,
+        onboarding_completed: true,
+      }, { onConflict: "user_id" });
+
     setLoading(false);
-    if (!error) onComplete();
+
+    if (upsertError) {
+      setError("Something went wrong saving your info. Please try again.");
+      console.error("upsert error:", upsertError);
+      return;
+    }
+
+    onComplete();
   };
 
   return (
@@ -116,6 +135,10 @@ export function OnboardingScreen({ onComplete }: Props) {
               />
             </div>
           ))}
+
+          {error && (
+            <div style={{ fontSize: 12, color: "#D85A30", marginTop: 8, textAlign: "center" }}>{error}</div>
+          )}
 
           <div style={{ display: "flex", gap: 10, marginTop: 28 }}>
             {step > 0 && (
