@@ -1,11 +1,6 @@
 import { useEffect, useState, useRef } from "react";
-import { createClient } from "@supabase/supabase-js";
+import { supabase } from "../supabaseClient";
 import { Send } from "lucide-react";
-
-const supabase = createClient(
-  import.meta.env.VITE_SUPABASE_URL,
-  import.meta.env.VITE_SUPABASE_ANON_KEY
-);
 
 const CLIENT_ID = "1fc97cde-dfd6-47ec-b3cb-932abb919142";
 
@@ -37,21 +32,15 @@ export function ConversationScreen() {
   const [input, setInput] = useState("");
   const bottomRef = useRef<HTMLDivElement>(null);
 
-  // Load leads
-useEffect(() => {
-  console.log("Supabase URL:", import.meta.env.VITE_SUPABASE_URL);
-  console.log("CLIENT_ID:", CLIENT_ID);
-  supabase
-    .from("leads")
-    .select("id, name, whatsapp_number, status")
-    .then(({ data, error }) => {
-      console.log("leads data:", data);
-      console.log("leads error:", error);
-      if (data) setLeads(data);
-    });
-}, []);
+  useEffect(() => {
+    supabase
+      .from("leads")
+      .select("id, name, whatsapp_number, status")
+      .eq("client_id", CLIENT_ID)
+      .order("created_at", { ascending: false })
+      .then(({ data }) => { if (data) setLeads(data); });
+  }, []);
 
-  // Load conversation + messages when lead selected
   useEffect(() => {
     if (!selectedLead) return;
     setMessages([]);
@@ -62,9 +51,7 @@ useEffect(() => {
       .select("id")
       .eq("lead_id", selectedLead.id)
       .single()
-      .then(({ data, error }) => {
-        console.log("conversation data:", data);
-        console.log("conversation error:", error);
+      .then(({ data }) => {
         if (!data) return;
         setConversationId(data.id);
         supabase
@@ -72,15 +59,10 @@ useEffect(() => {
           .select("*")
           .eq("conversation_id", data.id)
           .order("sent_at", { ascending: true })
-          .then(({ data: msgs, error: msgsError }) => {
-            console.log("messages data:", msgs);
-            console.log("messages error:", msgsError);
-            if (msgs) setMessages(msgs);
-          });
+          .then(({ data: msgs }) => { if (msgs) setMessages(msgs); });
       });
   }, [selectedLead]);
 
-  // Realtime subscription
   useEffect(() => {
     if (!conversationId) return;
     const channel = supabase
@@ -97,7 +79,6 @@ useEffect(() => {
     return () => { supabase.removeChannel(channel); };
   }, [conversationId]);
 
-  // Scroll to bottom
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
@@ -118,7 +99,6 @@ useEffect(() => {
       <style>{GLOBAL_STYLES}</style>
       <div style={{ display: "flex", height: "100vh", fontFamily: "'DM Sans', sans-serif", background: "#F9F9F8" }}>
 
-        {/* Left panel — lead list */}
         <div style={{ width: 280, flexShrink: 0, borderRight: "1px solid #E8E6E0", background: "#FFFFFF", display: "flex", flexDirection: "column" }}>
           <div style={{ padding: "24px 20px 14px" }}>
             <h1 style={{ fontFamily: "'Libre Baskerville', serif", fontSize: 20, fontWeight: 400, color: "#1A1916", letterSpacing: "-0.4px", marginBottom: 2 }}>Conversations</h1>
@@ -155,7 +135,6 @@ useEffect(() => {
           </div>
         </div>
 
-        {/* Right panel — chat */}
         {selectedLead ? (
           <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
             <div style={{ padding: "16px 24px", borderBottom: "1px solid #E8E6E0", background: "#FFFFFF", display: "flex", alignItems: "center", gap: 12 }}>
