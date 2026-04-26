@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { createClient } from "@supabase/supabase-js";
 import { Sidebar } from "./components/Sidebar";
 import { DashboardScreen } from "./components/DashboardScreen";
 import { LeadFlowScreen } from "./components/LeadFlowScreen";
@@ -8,11 +7,7 @@ import { LeadListScreen } from "./components/LeadListScreen";
 import { ConversationScreen } from "./components/ConversationScreen";
 import { AuthScreen } from "./components/AuthScreen";
 import { OnboardingScreen } from "./components/OnboardingScreen";
-
-const supabase = createClient(
-  import.meta.env.VITE_SUPABASE_URL,
-  import.meta.env.VITE_SUPABASE_ANON_KEY
-);
+import { supabase } from "../supabaseClient";
 
 export type Screen = "dashboard" | "leadflow" | "calendar" | "booking-form" | "settings" | "leadlist" | "conversations";
 
@@ -22,7 +17,8 @@ export default function App() {
 
   useEffect(() => {
     checkAuth();
-    supabase.auth.onAuthStateChange(() => checkAuth());
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(() => checkAuth());
+    return () => subscription.unsubscribe();
   }, []);
 
   const checkAuth = async () => {
