@@ -16,34 +16,53 @@ export default function App() {
   const [authState, setAuthState] = useState<"loading" | "unauthenticated" | "onboarding" | "ready">("loading");
 
   useEffect(() => {
-    checkAuth();
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(() => checkAuth());
+    // use getSession instead of getUser — instant, no network hang
+    const init = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) {
+        setAuthState("unauthenticated");
+        return;
+      }
+      await checkAccount(session.user.id);
+    };
+
+    init();
+
+    // listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (!session?.user) {
+        setAuthState("unauthenticated");
+        return;
+      }
+      await checkAccount(session.user.id);
+    });
+
     return () => subscription.unsubscribe();
   }, []);
 
-  const checkAuth = async () => {
-  try {
-    console.log("checkAuth started");
-    const { data: { user }, error: userError } = await supabase.auth.getUser();
-    console.log("user:", user, "error:", userError);
-    if (!user) { setAuthState("unauthenticated"); return; }
-    console.log("fetching account for user:", user.id);
-    const { data: account, error: accountError } = await supabase
-      .from("accounts_leadflow")
-      .select("onboarding_completed")
-      .eq("user_id", user.id)
-      .maybeSingle()
-    console.log("account:", account, "error:", accountError);
-    if (!account || !account.onboarding_completed) {
+  const checkAccount = async (userId: string) => {
+    try {
+      const { data: account } = await supabase
+        .from("accounts_leadflow")
+        .select("onboarding_completed")
+        .eq("user_id", userId)
+        .maybeSingle();
+      if (!account || !account.onboarding_completed) {
+        setAuthState("onboarding");
+      } else {
+        setAuthState("ready");
+      }
+    } catch {
       setAuthState("onboarding");
-    } else {
-      setAuthState("ready");
     }
-  } catch (e) {
-    console.log("checkAuth error:", e);
-    setAuthState("unauthenticated");
-  }
-};
+  };
+
+  // timeout fallback — if still loading after 5s, force unauthenticated
+  useEffect(() => {
+    if (authState !== "loading") return;
+    const timer = setTimeout(() => setAuthState("unauthenticated"), 5000);
+    return () => clearTimeout(timer);
+  }, [authState]);
 
   if (authState === "loading") return (
     <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#F9F9F8", fontFamily: "'DM Sans', sans-serif", color: "#8A8680", fontSize: 13 }}>
@@ -51,8 +70,8 @@ export default function App() {
     </div>
   );
 
-  if (authState === "unauthenticated") return <AuthScreen onAuth={checkAuth} />;
-  if (authState === "onboarding") return <OnboardingScreen onComplete={checkAuth} />;
+  if (authState === "unauthenticated") return <AuthScreen onAuth={() => supabase.auth.getSession().then(({ data: { session } }) => session && checkAccount(session.user!.id))} />;
+  if (authState === "onboarding") return <OnboardingScreen onComplete={() => supabase.auth.getSession().then(({ data: { session } }) => session && checkAccount(session.user!.id))} />;
 
   return (
     <div style={{ display: "flex", height: "100vh", background: "#F5F6FA", fontFamily: "'Plus Jakarta Sans', sans-serif", overflow: "hidden" }}>
