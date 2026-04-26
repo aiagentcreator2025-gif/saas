@@ -1,10 +1,5 @@
 import { useState } from "react";
-import { createClient } from "@supabase/supabase-js";
-
-const supabase = createClient(
-  import.meta.env.VITE_SUPABASE_URL,
-  import.meta.env.VITE_SUPABASE_ANON_KEY
-);
+import { supabase } from "../supabaseClient";
 
 const GLOBAL_STYLES = `
   @import url('https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;1,400&family=DM+Sans:wght@300;400;500&display=swap');
@@ -40,7 +35,6 @@ export function AuthScreen({ onAuth }: Props) {
       <div style={{ minHeight: "100vh", background: "#F9F9F8", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'DM Sans', sans-serif" }}>
         <div style={{ width: 420, background: "#fff", borderRadius: 20, border: "1px solid #E8E6E0", padding: "40px 40px" }}>
           
-          {/* Logo */}
           <div style={{ marginBottom: 32, textAlign: "center" }}>
             <img
               src="https://raw.githubusercontent.com/aiagentcreator2025-gif/app/main/LeadFlow_transparent%20(4).png"
@@ -56,7 +50,6 @@ export function AuthScreen({ onAuth }: Props) {
             {mode === "login" ? "Sign in to your LeadFlow account" : "Start automating your lead flow"}
           </p>
 
-          {/* Fields */}
           <div style={{ marginBottom: 14 }}>
             <label style={{ display: "block", fontSize: 9, color: "#8A8680", textTransform: "uppercase", letterSpacing: "1px", marginBottom: 6, fontWeight: 400 }}>Email</label>
             <input
