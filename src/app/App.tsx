@@ -22,6 +22,7 @@ export default function App() {
   }, []);
 
   const checkAuth = async () => {
+  try {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) { setAuthState("unauthenticated"); return; }
     const { data: account } = await supabase
@@ -34,7 +35,10 @@ export default function App() {
     } else {
       setAuthState("ready");
     }
-  };
+  } catch {
+    setAuthState("unauthenticated");
+  }
+};
 
   if (authState === "loading") return (
     <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#F9F9F8", fontFamily: "'DM Sans', sans-serif", color: "#8A8680", fontSize: 13 }}>
