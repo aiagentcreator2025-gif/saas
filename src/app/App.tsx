@@ -7,7 +7,7 @@ import { LeadListScreen } from "./components/LeadListScreen";
 import { ConversationScreen } from "./components/ConversationScreen";
 import { AuthScreen } from "./components/AuthScreen";
 import { OnboardingScreen } from "./components/OnboardingScreen";
-import { supabase } from "../supabaseClient";
+import { supabase } from "./supabaseClient";
 
 export type Screen = "dashboard" | "leadflow" | "calendar" | "booking-form" | "settings" | "leadlist" | "conversations";
 
