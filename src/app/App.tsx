@@ -42,6 +42,7 @@ export default function App() {
   };
 
   useEffect(() => {
+    // initial session check — reads from localStorage, no network hang
     const init = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session?.user) {
@@ -50,15 +51,16 @@ export default function App() {
       }
       await checkAccount(session.user.id);
     };
-
     init();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+    // listen for auth changes — NO async, NO supabase calls inside callback
+    // use setTimeout(0) to defer supabase calls outside the callback — prevents deadlock
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (!session?.user) {
         setAuthState("unauthenticated");
         return;
       }
-      await checkAccount(session.user.id);
+      setTimeout(() => checkAccount(session.user!.id), 0);
     });
 
     return () => subscription.unsubscribe();
