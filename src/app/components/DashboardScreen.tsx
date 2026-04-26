@@ -1,15 +1,7 @@
 import { useState } from "react";
 import {
-  TrendingUp,
-  ArrowUpRight,
-  Clock,
-  CheckSquare,
-  Users,
-  Mail,
-  CalendarCheck,
-  Zap,
-  Phone,
-  FileText,
+  TrendingUp, ArrowUpRight, Clock, CheckSquare,
+  Users, Mail, CalendarCheck, Zap, Phone, FileText,
 } from "lucide-react";
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
@@ -18,48 +10,49 @@ const DAYS   = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
 const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 const YEARS  = ["2019","2020","2021","2022","2023","2024"];
 
-// Each entry: [leadsHandled, magnetSent, bookedCalls, showUpRate_leads, remaining]
-// Stacked segments per bar representing the 4 stat card metrics proportionally
-const WEEKLY_STACKED = [
-  { leadsHandled:28, magnetSent:18, bookedCalls:6,  showUp:4  },
-  { leadsHandled:42, magnetSent:30, bookedCalls:10, showUp:7  },
-  { leadsHandled:32, magnetSent:22, bookedCalls:7,  showUp:5  },
-  { leadsHandled:58, magnetSent:40, bookedCalls:14, showUp:10 },
-  { leadsHandled:48, magnetSent:33, bookedCalls:11, showUp:8  },
-  { leadsHandled:72, magnetSent:50, bookedCalls:18, showUp:13 },
-  { leadsHandled:55, magnetSent:38, bookedCalls:13, showUp:9  },
+// Each bar: values go from biggest → smallest (layered behind → in front)
+// leadsHandled > magnetSent > bookedCalls > showUp
+const WEEKLY_DATA = [
+  { leadsHandled:28, magnetSent:18, bookedCalls:8,  showUp:4  },
+  { leadsHandled:42, magnetSent:28, bookedCalls:12, showUp:6  },
+  { leadsHandled:32, magnetSent:20, bookedCalls:9,  showUp:5  },
+  { leadsHandled:58, magnetSent:38, bookedCalls:16, showUp:9  },
+  { leadsHandled:46, magnetSent:30, bookedCalls:13, showUp:7  },
+  { leadsHandled:72, magnetSent:48, bookedCalls:21, showUp:12 },
+  { leadsHandled:54, magnetSent:36, bookedCalls:15, showUp:8  },
 ];
 
-const MONTHLY_STACKED = [
-  { leadsHandled:120, magnetSent:82,  bookedCalls:28, showUp:20 },
-  { leadsHandled:98,  magnetSent:67,  bookedCalls:22, showUp:16 },
-  { leadsHandled:135, magnetSent:93,  bookedCalls:32, showUp:23 },
+const MONTHLY_DATA = [
+  { leadsHandled:120, magnetSent:80,  bookedCalls:34, showUp:20 },
+  { leadsHandled:98,  magnetSent:65,  bookedCalls:27, showUp:16 },
+  { leadsHandled:135, magnetSent:90,  bookedCalls:38, showUp:22 },
   { leadsHandled:142, magnetSent:98,  bookedCalls:34, showUp:24 },
-  { leadsHandled:108, magnetSent:74,  bookedCalls:25, showUp:18 },
-  { leadsHandled:160, magnetSent:110, bookedCalls:38, showUp:27 },
-  { leadsHandled:128, magnetSent:88,  bookedCalls:30, showUp:21 },
-  { leadsHandled:175, magnetSent:120, bookedCalls:42, showUp:30 },
-  { leadsHandled:148, magnetSent:102, bookedCalls:35, showUp:25 },
-  { leadsHandled:165, magnetSent:114, bookedCalls:39, showUp:28 },
-  { leadsHandled:190, magnetSent:131, bookedCalls:45, showUp:32 },
-  { leadsHandled:172, magnetSent:118, bookedCalls:41, showUp:29 },
+  { leadsHandled:108, magnetSent:72,  bookedCalls:29, showUp:17 },
+  { leadsHandled:160, magnetSent:107, bookedCalls:43, showUp:26 },
+  { leadsHandled:128, magnetSent:85,  bookedCalls:32, showUp:19 },
+  { leadsHandled:175, magnetSent:117, bookedCalls:47, showUp:28 },
+  { leadsHandled:148, magnetSent:99,  bookedCalls:38, showUp:23 },
+  { leadsHandled:165, magnetSent:110, bookedCalls:42, showUp:25 },
+  { leadsHandled:190, magnetSent:127, bookedCalls:51, showUp:30 },
+  { leadsHandled:172, magnetSent:115, bookedCalls:46, showUp:27 },
 ];
 
-const YEARLY_STACKED = [
-  { leadsHandled:820,  magnetSent:564, bookedCalls:195, showUp:139 },
-  { leadsHandled:940,  magnetSent:647, bookedCalls:224, showUp:160 },
-  { leadsHandled:1100, magnetSent:757, bookedCalls:262, showUp:187 },
-  { leadsHandled:1280, magnetSent:881, bookedCalls:305, showUp:218 },
-  { leadsHandled:1050, magnetSent:722, bookedCalls:250, showUp:178 },
-  { leadsHandled:1400, magnetSent:963, bookedCalls:333, showUp:238 },
+const YEARLY_DATA = [
+  { leadsHandled:820,  magnetSent:548,  bookedCalls:197, showUp:118 },
+  { leadsHandled:940,  magnetSent:628,  bookedCalls:226, showUp:135 },
+  { leadsHandled:1100, magnetSent:735,  bookedCalls:264, showUp:158 },
+  { leadsHandled:1280, magnetSent:855,  bookedCalls:307, showUp:184 },
+  { leadsHandled:1050, magnetSent:701,  bookedCalls:252, showUp:151 },
+  { leadsHandled:1400, magnetSent:935,  bookedCalls:336, showUp:201 },
 ];
 
-const SEGMENTS = [
-  { key: "leadsHandled", label: "Leads Handled",    color: "#4A46B5" },
-  { key: "magnetSent",   label: "Lead Magnet Sent", color: "#1D9E75" },
-  { key: "bookedCalls",  label: "Booked Calls",     color: "#D85A30" },
-  { key: "showUp",       label: "Show Up Rate",     color: "#639922" },
-] as const;
+// Layers ordered biggest → smallest (drawn back to front)
+const LAYERS = [
+  { key: "leadsHandled" as const, label: "Leads Handled",    color: "#B8B5F0" },
+  { key: "magnetSent"   as const, label: "Lead Magnet Sent", color: "#6ECFB0" },
+  { key: "bookedCalls"  as const, label: "Booked Calls",     color: "#F0A882" },
+  { key: "showUp"       as const, label: "Show Up Rate",     color: "#A8CC6A" },
+];
 
 const ACTIVITIES = [
   { init:"AK", name:"Ahmed Karimi",  action:"booked a call",        time:"2 min ago",   bg:"#EEEDF8", color:"#4A46B5" },
@@ -85,6 +78,8 @@ const FLOW_STEPS = [
   { label:"Booking",     sub:"Schedule",  color:"#D85A30", count:"34",  Icon: CalendarCheck },
 ];
 
+type Entry = { leadsHandled:number; magnetSent:number; bookedCalls:number; showUp:number };
+
 // ─── Avatar ───────────────────────────────────────────────────────────────────
 
 function Avatar({ init, bg="#EEEDF8", color="#4A46B5", size=32 }: {
@@ -97,58 +92,53 @@ function Avatar({ init, bg="#EEEDF8", color="#4A46B5", size=32 }: {
   );
 }
 
-// ─── Stacked Bar Chart ────────────────────────────────────────────────────────
+// ─── Layered Bar Chart ────────────────────────────────────────────────────────
 
-type StackedEntry = { leadsHandled:number; magnetSent:number; bookedCalls:number; showUp:number };
-
-function StackedBarChart({ data, labels }: { data: StackedEntry[]; labels: string[] }) {
-  const [tooltip, setTooltip] = useState<{ x:number; y:number; entry:StackedEntry; label:string } | null>(null);
-
-  const maxTotal = Math.max(...data.map(d => d.leadsHandled));
+function LayeredBarChart({ data, labels }: { data: Entry[]; labels: string[] }) {
+  const [tooltip, setTooltip] = useState<{ idx:number; x:number; y:number } | null>(null);
   const BAR_H = 180;
+  const maxVal = Math.max(...data.map(d => d.leadsHandled));
 
   return (
     <div style={{ position:"relative" }}>
-      <div style={{ display:"flex", alignItems:"flex-end", gap:8, height:BAR_H + 28 }}>
+      {/* Bars */}
+      <div style={{ display:"flex", alignItems:"flex-end", gap:10, height:BAR_H + 28 }}>
         {data.map((entry, i) => {
-          const total = entry.leadsHandled;
-          const scale = Math.max(8, Math.round((total / maxTotal) * BAR_H));
-          const segments = [
-            { key:"leadsHandled", val:entry.leadsHandled, color:"#4A46B5" },
-            { key:"magnetSent",   val:entry.magnetSent,   color:"#1D9E75" },
-            { key:"bookedCalls",  val:entry.bookedCalls,  color:"#D85A30" },
-            { key:"showUp",       val:entry.showUp,       color:"#639922" },
-          ];
-          // proportional heights within scaled bar
-          const segs = segments.map(s => ({
-            ...s,
-            h: Math.round((s.val / total) * scale),
-          }));
-          // fix rounding so total always = scale
-          const diff = scale - segs.reduce((a,s) => a+s.h, 0);
-          segs[0].h += diff;
+          // scale all values relative to max leadsHandled
+          const scale = (v: number) => Math.max(4, Math.round((v / maxVal) * BAR_H));
+          const barWidth = "100%";
 
           return (
-            <div key={i} style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", gap:6, position:"relative" }}>
-              <div
-                style={{ width:"100%", height:scale, display:"flex", flexDirection:"column-reverse", borderRadius:"6px 6px 0 0", overflow:"hidden", cursor:"pointer", transition:"filter .15s" }}
-                onMouseEnter={e => {
-                  (e.currentTarget as HTMLDivElement).style.filter = "brightness(1.08)";
-                  const rect = (e.currentTarget as HTMLDivElement).getBoundingClientRect();
-                  const parent = (e.currentTarget as HTMLDivElement).closest(".chart-wrap")?.getBoundingClientRect();
-                  setTooltip({
-                    x: rect.left - (parent?.left ?? 0) + rect.width / 2,
-                    y: rect.top  - (parent?.top  ?? 0) - 8,
-                    entry, label: labels[i],
-                  });
-                }}
-                onMouseLeave={e => {
-                  (e.currentTarget as HTMLDivElement).style.filter = "none";
-                  setTooltip(null);
-                }}
-              >
-                {segs.map((s, si) => (
-                  <div key={si} style={{ width:"100%", height:s.h, background:s.color, flexShrink:0 }} />
+            <div
+              key={i}
+              style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", gap:6, position:"relative" }}
+              onMouseEnter={e => {
+                const rect = e.currentTarget.getBoundingClientRect();
+                const parent = e.currentTarget.closest(".chart-wrap")?.getBoundingClientRect();
+                setTooltip({
+                  idx: i,
+                  x: rect.left - (parent?.left ?? 0) + rect.width / 2,
+                  y: rect.top  - (parent?.top  ?? 0),
+                });
+              }}
+              onMouseLeave={() => setTooltip(null)}
+            >
+              {/* Layered bars: all positioned from bottom, each on top of the last */}
+              <div style={{ width:barWidth, height:scale(entry.leadsHandled), position:"relative", cursor:"pointer" }}>
+                {LAYERS.map((layer) => (
+                  <div
+                    key={layer.key}
+                    style={{
+                      position:"absolute",
+                      bottom:0,
+                      left:0,
+                      right:0,
+                      height: scale(entry[layer.key]),
+                      background: layer.color,
+                      borderRadius: "6px 6px 0 0",
+                      transition: "height .3s",
+                    }}
+                  />
                 ))}
               </div>
               <span style={{ fontSize:10, color:"#8A8680", fontWeight:300 }}>{labels[i]}</span>
@@ -158,43 +148,42 @@ function StackedBarChart({ data, labels }: { data: StackedEntry[]; labels: strin
       </div>
 
       {/* Tooltip */}
-      {tooltip && (
+      {tooltip !== null && (
         <div style={{
           position:"absolute",
           left: tooltip.x,
-          top: tooltip.y,
+          top: tooltip.y - 8,
           transform:"translate(-50%,-100%)",
           background:"#1A1916",
           borderRadius:10,
           padding:"10px 14px",
           pointerEvents:"none",
           zIndex:99,
-          minWidth:170,
-          boxShadow:"0 8px 24px rgba(0,0,0,.18)",
+          minWidth:180,
+          boxShadow:"0 8px 24px rgba(0,0,0,.2)",
         }}>
-          <div style={{ fontSize:10, fontWeight:500, color:"rgba(255,255,255,.5)", marginBottom:7, letterSpacing:"0.5px", textTransform:"uppercase" }}>
-            {tooltip.label}
+          <div style={{ fontSize:10, fontWeight:500, color:"rgba(255,255,255,.45)", marginBottom:8, letterSpacing:"0.5px", textTransform:"uppercase", fontFamily:"'DM Sans',sans-serif" }}>
+            {labels[tooltip.idx]}
           </div>
-          {SEGMENTS.map(seg => (
-            <div key={seg.key} style={{ display:"flex", alignItems:"center", gap:7, marginBottom:5 }}>
-              <div style={{ width:8, height:8, borderRadius:2, background:seg.color, flexShrink:0 }} />
-              <span style={{ fontSize:11, color:"rgba(255,255,255,.7)", flex:1, fontFamily:"'DM Sans',sans-serif" }}>{seg.label}</span>
-              <span style={{ fontSize:12, color:"#fff", fontFamily:"'Libre Baskerville',serif", fontWeight:400 }}>
-                {tooltip.entry[seg.key]}
+          {LAYERS.map(layer => (
+            <div key={layer.key} style={{ display:"flex", alignItems:"center", gap:8, marginBottom:6 }}>
+              <div style={{ width:8, height:8, borderRadius:2, background:layer.color, flexShrink:0 }} />
+              <span style={{ fontSize:11, color:"rgba(255,255,255,.65)", flex:1, fontFamily:"'DM Sans',sans-serif" }}>{layer.label}</span>
+              <span style={{ fontSize:13, color:"#fff", fontFamily:"'Libre Baskerville',serif", fontWeight:400 }}>
+                {data[tooltip.idx][layer.key]}
               </span>
             </div>
           ))}
-          {/* arrow */}
           <div style={{ position:"absolute", bottom:-6, left:"50%", transform:"translateX(-50%)", width:0, height:0, borderLeft:"6px solid transparent", borderRight:"6px solid transparent", borderTop:"6px solid #1A1916" }} />
         </div>
       )}
 
       {/* Legend */}
-      <div style={{ display:"flex", gap:14, marginTop:14, flexWrap:"wrap" }}>
-        {SEGMENTS.map(s => (
-          <div key={s.key} style={{ display:"flex", alignItems:"center", gap:5 }}>
-            <div style={{ width:9, height:9, borderRadius:2, background:s.color }} />
-            <span style={{ fontSize:10, color:"#8A8680", fontWeight:300 }}>{s.label}</span>
+      <div style={{ display:"flex", gap:16, marginTop:14, flexWrap:"wrap" }}>
+        {LAYERS.map(l => (
+          <div key={l.key} style={{ display:"flex", alignItems:"center", gap:5 }}>
+            <div style={{ width:9, height:9, borderRadius:2, background:l.color }} />
+            <span style={{ fontSize:10, color:"#8A8680", fontWeight:300, fontFamily:"'DM Sans',sans-serif" }}>{l.label}</span>
           </div>
         ))}
       </div>
@@ -207,8 +196,8 @@ function StackedBarChart({ data, labels }: { data: StackedEntry[]; labels: strin
 export function DashboardScreen() {
   const [period, setPeriod] = useState<"weekly"|"monthly"|"yearly">("weekly");
 
-  const stackedData = period === "weekly" ? WEEKLY_STACKED : period === "monthly" ? MONTHLY_STACKED : YEARLY_STACKED;
-  const labels      = period === "weekly" ? DAYS           : period === "monthly" ? MONTHS           : YEARS;
+  const chartData = period === "weekly" ? WEEKLY_DATA : period === "monthly" ? MONTHLY_DATA : YEARLY_DATA;
+  const labels    = period === "weekly" ? DAYS        : period === "monthly" ? MONTHS        : YEARS;
 
   const hr = new Date().getHours();
   const greeting = hr < 12 ? "morning" : hr < 18 ? "afternoon" : "evening";
@@ -224,12 +213,12 @@ export function DashboardScreen() {
     <>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;1,400&family=DM+Sans:wght@300;400;500&display=swap');
-        .lf-stat:hover  { transform:translateY(-2px); box-shadow:0 8px 28px rgba(0,0,0,.08) !important; }
-        .lf-flow:hover  { transform:translateY(-2px); box-shadow:0 6px 20px rgba(0,0,0,.07) !important; }
-        .lf-row:hover   { background:#F7F6F3 !important; }
-        .lf-per:hover   { background:#E8E6E0 !important; }
-        .lf-all:hover   { background:#EEEDF8 !important; }
-        .lf-btn:hover   { opacity:.8; }
+        .lf-stat:hover { transform:translateY(-2px); box-shadow:0 8px 28px rgba(0,0,0,.08) !important; }
+        .lf-flow:hover { transform:translateY(-2px); box-shadow:0 6px 20px rgba(0,0,0,.07) !important; }
+        .lf-row:hover  { background:#F7F6F3 !important; }
+        .lf-per:hover  { background:#E8E6E0 !important; }
+        .lf-all:hover  { background:#EEEDF8 !important; }
+        .lf-btn:hover  { opacity:.8; }
       `}</style>
 
       <div style={{ padding:"36px 40px", width:"100%", boxSizing:"border-box", fontFamily:"'DM Sans',sans-serif", background:"#F9F9F8", minHeight:"100vh" }}>
@@ -269,7 +258,7 @@ export function DashboardScreen() {
         {/* Chart + Activities */}
         <div style={{ display:"grid", gridTemplateColumns:"2fr 1fr", gap:16, marginBottom:20 }}>
 
-          {/* Stacked Bar Chart */}
+          {/* Chart */}
           <div style={{ background:"#FFFFFF", border:"1px solid #E8E6E0", borderRadius:16, padding:24 }}>
             <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:20 }}>
               <div>
@@ -285,7 +274,7 @@ export function DashboardScreen() {
               </div>
             </div>
             <div className="chart-wrap" style={{ position:"relative" }}>
-              <StackedBarChart data={stackedData} labels={labels} />
+              <LayeredBarChart data={chartData} labels={labels} />
             </div>
           </div>
 
