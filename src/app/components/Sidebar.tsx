@@ -32,7 +32,7 @@ export function Sidebar({ active, onNav }: Props) {
           <img
             src="https://raw.githubusercontent.com/aiagentcreator2025-gif/app/main/LeadFlow_transparent%20(4).png"
             alt="LeadFlow"
-            style={{ height: 28, objectFit: "contain", display: "block" }}
+            style={{ height: 60, objectFit: "contain", display: "block" }}
             onError={(e) => {
               const el = e.currentTarget as HTMLImageElement;
               el.style.display = "none";
