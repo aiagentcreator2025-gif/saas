@@ -19,15 +19,18 @@ export function AuthScreen({ onAuth }: Props) {
   const [loading, setLoading] = useState(false);
 
   const handle = async () => {
-    setLoading(true);
-    setError("");
-    const { error } = mode === "login"
-      ? await supabase.auth.signInWithPassword({ email, password })
-      : await supabase.auth.signUp({ email, password });
-    setLoading(false);
-    if (error) setError(error.message);
-    else onAuth();
-  };
+  setLoading(true);
+  setError("");
+  const { error } = mode === "login"
+    ? await supabase.auth.signInWithPassword({ email, password })
+    : await supabase.auth.signUp({ email, password });
+  setLoading(false);
+  if (error) {
+    setError(error.message);
+  } else {
+    onAuth();
+  }
+};
 
   return (
     <>
