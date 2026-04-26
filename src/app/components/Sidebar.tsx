@@ -1,4 +1,4 @@
-import { LayoutDashboard, GitBranch, Calendar, Users, Settings, LogOut, FileText } from "lucide-react";
+import { LayoutDashboard, GitBranch, Calendar, Users, Settings, LogOut, FileText, MessageSquare } from "lucide-react";
 import { Screen } from "../App";
 
 interface Props {
@@ -40,7 +40,6 @@ export function Sidebar({ active, onNav }: Props) {
               if (fallback) fallback.style.display = "flex";
             }}
           />
-          {/* Fallback if image fails */}
           <div style={{ display: "none", alignItems: "center", gap: 9 }}>
             <div style={{ width: 28, height: 28, borderRadius: 8, background: "#EEEDF8", display: "flex", alignItems: "center", justifyContent: "center" }}>
               <svg width="14" height="14" viewBox="0 0 20 20" fill="#4A46B5">
@@ -58,11 +57,12 @@ export function Sidebar({ active, onNav }: Props) {
           <div style={{ fontSize: 9, letterSpacing: "1.5px", textTransform: "uppercase", color: "#C4C2BC", padding: "0 10px", marginBottom: 8, fontWeight: 400 }}>
             Menu
           </div>
-          <NavItem icon={<LayoutDashboard size={15} strokeWidth={1.6} />} label="Dashboard"    active={active === "dashboard"}    onClick={() => onNav("dashboard")} />
-          <NavItem icon={<GitBranch      size={15} strokeWidth={1.6} />} label="Lead Flow"    active={active === "leadflow"}     onClick={() => onNav("leadflow")} />
-          <NavItem icon={<Calendar       size={15} strokeWidth={1.6} />} label="Calendar"     active={active === "calendar"}     onClick={() => onNav("calendar")} />
-          <NavItem icon={<FileText       size={15} strokeWidth={1.6} />} label="Booking Form" active={active === "booking-form"} onClick={() => onNav("booking-form")} />
-          <NavItem icon={<Users          size={15} strokeWidth={1.6} />} label="Lead List"    active={active === "leadlist"}     onClick={() => onNav("leadlist")} />
+          <NavItem icon={<LayoutDashboard size={15} strokeWidth={1.6} />} label="Dashboard"     active={active === "dashboard"}     onClick={() => onNav("dashboard")} />
+          <NavItem icon={<GitBranch       size={15} strokeWidth={1.6} />} label="Lead Flow"     active={active === "leadflow"}      onClick={() => onNav("leadflow")} />
+          <NavItem icon={<Calendar        size={15} strokeWidth={1.6} />} label="Calendar"      active={active === "calendar"}      onClick={() => onNav("calendar")} />
+          <NavItem icon={<FileText        size={15} strokeWidth={1.6} />} label="Booking Form"  active={active === "booking-form"}  onClick={() => onNav("booking-form")} />
+          <NavItem icon={<Users           size={15} strokeWidth={1.6} />} label="Lead List"     active={active === "leadlist"}      onClick={() => onNav("leadlist")} />
+          <NavItem icon={<MessageSquare   size={15} strokeWidth={1.6} />} label="Conversations" active={active === "conversations"} onClick={() => onNav("conversations")} />
         </nav>
 
         {/* Bottom */}
@@ -70,7 +70,6 @@ export function Sidebar({ active, onNav }: Props) {
           <BottomItem icon={<Settings size={15} strokeWidth={1.6} />} label="Settings" onClick={() => onNav("settings")} active={active === "settings"} />
           <BottomItem icon={<LogOut   size={15} strokeWidth={1.6} />} label="Sign out" onClick={() => {}}              active={false} />
 
-          {/* User row */}
           <div style={{ marginTop: 10, padding: "10px 10px", background: "#F7F6F3", borderRadius: 10, display: "flex", alignItems: "center", gap: 9, border: "1px solid #E8E6E0" }}>
             <div style={{ width: 30, height: 30, borderRadius: "50%", background: "#EEEDF8", border: "1px solid #DDD9F5", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 500, color: "#4A46B5", flexShrink: 0 }}>
               U
