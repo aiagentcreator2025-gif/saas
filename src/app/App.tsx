@@ -32,7 +32,7 @@ export default function App() {
       .from("accounts_leadflow")
       .select("onboarding_completed")
       .eq("user_id", user.id)
-      .single();
+      .maybeSingle()
     console.log("account:", account, "error:", accountError);
     if (!account || !account.onboarding_completed) {
       setAuthState("onboarding");
