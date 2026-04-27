@@ -681,37 +681,45 @@ export function LeadFlowScreen() {
     setSaved(false);
   }, []);
 
-  // ─── UPDATED onSave — also links client_id ────────────────────────────────
-  const onSave = async () => {
-    if (!userId) return;
-    setSaving(true);
-    setSaved(false);
+ const onSave = async () => {
+  if (!userId) return;
+  setSaving(true);
+  setSaved(false);
 
-    // 1. Save config as usual
-    await supabase
-      .from("account_leadflow_automations")
-      .upsert({ user_id: userId, ...config }, { onConflict: "user_id" });
+  // 1. Save config as usual
+  await supabase
+    .from("account_leadflow_automations")
+    .upsert({ user_id: userId, ...config }, { onConflict: "user_id" });
 
-    // 2. If wa_client_id is filled — find matching client and link client_id
-    if (config.wa_client_id) {
-      const { data: client } = await supabase
-        .from("clients")
-        .select("id")
-        .eq("wa_phone_number_id", config.wa_client_id)
-        .maybeSingle();
+  // 2. If wa credentials filled — upsert into clients table
+  if (config.wa_client_id && config.wa_access_token) {
+    const { data: { user } } = await supabase.auth.getUser();
 
-      if (client) {
-        await supabase
-          .from("account_leadflow_automations")
-          .update({ client_id: client.id })
-          .eq("user_id", userId);
-      }
+    const { data: client } = await supabase
+      .from("clients")
+      .upsert({
+        wa_phone_number_id: config.wa_client_id,
+        wa_access_token: config.wa_access_token,
+        email: user?.email || "",
+        full_name: user?.user_metadata?.full_name || "",
+        plan: "free",
+      }, { onConflict: "wa_phone_number_id" })
+      .select("id")
+      .single();
+
+    // 3. Link client_id back to account_leadflow_automations
+    if (client) {
+      await supabase
+        .from("account_leadflow_automations")
+        .update({ client_id: client.id })
+        .eq("user_id", userId);
     }
+  }
 
-    setSaving(false);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2500);
-  };
+  setSaving(false);
+  setSaved(true);
+  setTimeout(() => setSaved(false), 2500);
+};
 
   const onPublish = async () => {
     if (!userId) return;
