@@ -692,29 +692,28 @@ export function LeadFlowScreen() {
     .upsert({ user_id: userId, ...config }, { onConflict: "user_id" });
 
   // 2. If wa credentials filled — upsert into clients table
-  if (config.wa_client_id && config.wa_access_token) {
-    const { data: { user } } = await supabase.auth.getUser();
+  if (config.wa_client_id) {
+  const { data: { user } } = await supabase.auth.getUser();
 
-    const { data: client } = await supabase
-      .from("clients")
-      .upsert({
-        wa_phone_number_id: config.wa_client_id,
-        wa_access_token: config.wa_access_token,
-        email: user?.email || "",
-        full_name: user?.user_metadata?.full_name || "",
-        plan: "free",
-      }, { onConflict: "wa_phone_number_id" })
-      .select("id")
-      .single();
+  const { data: client } = await supabase
+    .from("clients")
+    .upsert({
+      wa_phone_number_id: config.wa_client_id,
+      wa_access_token: config.wa_access_token || "",
+      email: user?.email || "",
+      full_name: user?.user_metadata?.full_name || "",
+      plan: "free",
+    }, { onConflict: "wa_phone_number_id" })
+    .select("id")
+    .single();
 
-    // 3. Link client_id back to account_leadflow_automations
-    if (client) {
-      await supabase
-        .from("account_leadflow_automations")
-        .update({ client_id: client.id })
-        .eq("user_id", userId);
-    }
+  if (client) {
+    await supabase
+      .from("account_leadflow_automations")
+      .update({ client_id: client.id })
+      .eq("user_id", userId);
   }
+}
 
   setSaving(false);
   setSaved(true);
