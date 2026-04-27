@@ -15,38 +15,29 @@ type View =
   | "followup-automation"
   | "followup-agent";
 
-// ─── Shared config state shape ────────────────────────────────────────────────
 export interface AutomationConfig {
-  // Trigger
   wa_client_id: string;
   wa_client_secret: string;
-  // Typing
   wa_access_token: string;
   typing_duration: string;
-  // Agent
   agent_name: string;
   writing_style: string;
-  // Script 1
   script1_text: string;
   script1_service: string;
   script1_end_result: string;
   script1_category: string;
   script1_deliverable: string;
   script1_outcome: string;
-  // Lead Magnet
   lead_magnet_link: string;
-  // Script 2
   script2_text: string;
   script2_call_duration: string;
   script2_booking_link: string;
-  // Booking
   booking_event_name: string;
   booking_host: string;
   booking_duration: string;
   booking_days: string[];
   booking_hours_from: string;
   booking_hours_to: string;
-  // Reply Node
   wa_business_account_id: string;
 }
 
@@ -147,8 +138,6 @@ const GLOBAL_STYLES = `
   .style-opt:hover { border-color: #4A46B5 !important; }
 `;
 
-// ─── Shared mini components ───────────────────────────────────────────────────
-
 const labelStyle: React.CSSProperties = {
   display:"block", fontSize:9, color:"#8A8680",
   textTransform:"uppercase", letterSpacing:"1px", marginBottom:7, fontWeight:400,
@@ -207,8 +196,6 @@ function BackBtn({ label, onClick }: { label: string; onClick: () => void }) {
     </button>
   );
 }
-
-// ─── Panel components (all controlled) ───────────────────────────────────────
 
 function TriggerPanel({ config, onChange, onSave, saving, saved }: PanelProps) {
   return (
@@ -441,8 +428,6 @@ interface PanelProps {
   saved: boolean;
 }
 
-// ─── Right Panel Router ───────────────────────────────────────────────────────
-
 function RightPanel({ step, config, onChange, onSave, saving, saved }: {
   step: FlowStep;
   config: AutomationConfig;
@@ -496,8 +481,6 @@ function RightPanel({ step, config, onChange, onSave, saving, saved }: {
   );
 }
 
-// ─── Flow Editor ──────────────────────────────────────────────────────────────
-
 function FlowEditor({ title, subtitle, steps, onBack, backLabel = "Back", config, onChange, onSave, onPublish, saving, saved, publishing, publishDone }: {
   title: string; subtitle: string; steps: FlowStep[]; onBack: () => void; backLabel?: string;
   config: AutomationConfig;
@@ -512,7 +495,6 @@ function FlowEditor({ title, subtitle, steps, onBack, backLabel = "Back", config
 
   return (
     <div style={{ display:"flex", height:"100%", background:"#F9F9F8", fontFamily:"'DM Sans',sans-serif" }}>
-      {/* Left — flow steps */}
       <div style={{ flex:1, padding:"32px 40px", overflowY:"auto" }}>
         <BackBtn label={backLabel} onClick={onBack} />
         <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between", marginBottom:32 }}>
@@ -592,7 +574,6 @@ function FlowEditor({ title, subtitle, steps, onBack, backLabel = "Back", config
         </div>
       </div>
 
-      {/* Right panel */}
       <RightPanel
         step={selectedStep}
         config={config}
@@ -604,8 +585,6 @@ function FlowEditor({ title, subtitle, steps, onBack, backLabel = "Back", config
     </div>
   );
 }
-
-// ─── Choice Card ──────────────────────────────────────────────────────────────
 
 function ChoiceCard({ icon, color, iconBg, title, description, bullets, onClick }: {
   icon: React.ReactNode; color: string; iconBg: string;
@@ -675,7 +654,6 @@ export function LeadFlowScreen() {
   const [publishing, setPublishing] = useState(false);
   const [publishDone, setPublishDone] = useState(false);
 
-  // Load config from Supabase on mount
   useEffect(() => {
     const load = async () => {
       const { data: { session } } = await supabase.auth.getSession();
@@ -703,41 +681,52 @@ export function LeadFlowScreen() {
     setSaved(false);
   }, []);
 
-  // Save current config to Supabase
+  // ─── UPDATED onSave — also links client_id ────────────────────────────────
   const onSave = async () => {
     if (!userId) return;
     setSaving(true);
     setSaved(false);
-    const { error } = await supabase
-      .from("account_leadflow_automations")
-      .upsert({ user_id: userId, ...config }, { onConflict: "user_id" });
-    setSaving(false);
-    if (!error) {
-      setSaved(true);
-      setTimeout(() => setSaved(false), 2500);
-    } else {
-      console.error("Save error:", error);
-    }
-  };
 
-  // Publish — save config + fetch onboarding data + fire n8n webhook
-  const onPublish = async () => {
-    if (!userId) return;
-    setPublishing(true);
-
-    // 1. Save latest config first
+    // 1. Save config as usual
     await supabase
       .from("account_leadflow_automations")
       .upsert({ user_id: userId, ...config }, { onConflict: "user_id" });
 
-    // 2. Fetch onboarding data
+    // 2. If wa_client_id is filled — find matching client and link client_id
+    if (config.wa_client_id) {
+      const { data: client } = await supabase
+        .from("clients")
+        .select("id")
+        .eq("wa_phone_number_id", config.wa_client_id)
+        .maybeSingle();
+
+      if (client) {
+        await supabase
+          .from("account_leadflow_automations")
+          .update({ client_id: client.id })
+          .eq("user_id", userId);
+      }
+    }
+
+    setSaving(false);
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2500);
+  };
+
+  const onPublish = async () => {
+    if (!userId) return;
+    setPublishing(true);
+
+    await supabase
+      .from("account_leadflow_automations")
+      .upsert({ user_id: userId, ...config }, { onConflict: "user_id" });
+
     const { data: onboarding } = await supabase
       .from("accounts_leadflow")
       .select("*")
       .eq("user_id", userId)
       .maybeSingle();
 
-    // 3. Fire n8n webhook with merged payload
     try {
       await fetch(N8N_WEBHOOK, {
         method: "POST",
