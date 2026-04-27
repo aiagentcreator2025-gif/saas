@@ -2,8 +2,6 @@ import { useEffect, useState, useRef } from "react";
 import { supabase } from "../supabaseClient";
 import { Send } from "lucide-react";
 
-const CLIENT_ID = "1fc97cde-dfd6-47ec-b3cb-932abb919142";
-
 interface Lead {
   id: string;
   name: string | null;
@@ -29,17 +27,35 @@ export function ConversationScreen() {
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [conversationId, setConversationId] = useState<string | null>(null);
+  const [clientId, setClientId] = useState<string | null>(null);
   const [input, setInput] = useState("");
   const bottomRef = useRef<HTMLDivElement>(null);
 
+  // Get client_id dynamically from logged-in user
   useEffect(() => {
+    const load = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) return;
+      const { data } = await supabase
+        .from("account_leadflow_automations")
+        .select("client_id")
+        .eq("user_id", session.user.id)
+        .maybeSingle();
+      if (data?.client_id) setClientId(data.client_id);
+    };
+    load();
+  }, []);
+
+  // Fetch leads only when clientId is ready
+  useEffect(() => {
+    if (!clientId) return;
     supabase
       .from("leads")
       .select("id, name, whatsapp_number, status")
-      .eq("client_id", CLIENT_ID)
+      .eq("client_id", clientId)
       .order("created_at", { ascending: false })
       .then(({ data }) => { if (data) setLeads(data); });
-  }, []);
+  }, [clientId]);
 
   useEffect(() => {
     if (!selectedLead) return;
@@ -130,7 +146,9 @@ export function ConversationScreen() {
               );
             })}
             {leads.length === 0 && (
-              <div style={{ padding: 32, textAlign: "center", color: "#8A8680", fontSize: 12, fontStyle: "italic" }}>No leads yet</div>
+              <div style={{ padding: 32, textAlign: "center", color: "#8A8680", fontSize: 12, fontStyle: "italic" }}>
+                {clientId ? "No leads yet" : "Connecting..."}
+              </div>
             )}
           </div>
         </div>
