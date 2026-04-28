@@ -7,6 +7,7 @@ import { LeadListScreen } from "./components/LeadListScreen";
 import { ConversationScreen } from "./components/ConversationScreen";
 import { AuthScreen } from "./components/AuthScreen";
 import { OnboardingScreen } from "./components/OnboardingScreen";
+import { NotificationPopup } from "./components/NotificationPopup";
 import { supabase } from "./supabaseClient";
 
 export type Screen = "dashboard" | "leadflow" | "calendar" | "booking-form" | "settings" | "leadlist" | "conversations";
@@ -14,6 +15,7 @@ export type Screen = "dashboard" | "leadflow" | "calendar" | "booking-form" | "s
 export default function App() {
   const [screen, setScreen] = useState<Screen>("dashboard");
   const [authState, setAuthState] = useState<"loading" | "unauthenticated" | "onboarding" | "ready">("loading");
+  const [userId, setUserId] = useState<string>("");
 
   const checkAccount = async (userId: string) => {
     try {
@@ -35,6 +37,7 @@ export default function App() {
   const handleAuthComplete = async () => {
     const { data: { session } } = await supabase.auth.getSession();
     if (session?.user) {
+      setUserId(session.user.id);
       await checkAccount(session.user.id);
     } else {
       setAuthState("unauthenticated");
@@ -42,31 +45,31 @@ export default function App() {
   };
 
   useEffect(() => {
-    // initial session check — reads from localStorage, no network hang
     const init = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session?.user) {
         setAuthState("unauthenticated");
         return;
       }
+      setUserId(session.user.id);
       await checkAccount(session.user.id);
     };
     init();
 
-    // listen for auth changes — NO async, NO supabase calls inside callback
-    // use setTimeout(0) to defer supabase calls outside the callback — prevents deadlock
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (!session?.user) {
         setAuthState("unauthenticated");
         return;
       }
-      setTimeout(() => checkAccount(session.user!.id), 0);
+      setTimeout(() => {
+        setUserId(session.user!.id);
+        checkAccount(session.user!.id);
+      }, 0);
     });
 
     return () => subscription.unsubscribe();
   }, []);
 
-  // timeout fallback — never stuck on loading forever
   useEffect(() => {
     if (authState !== "loading") return;
     const timer = setTimeout(() => setAuthState("unauthenticated"), 5000);
@@ -74,7 +77,11 @@ export default function App() {
   }, [authState]);
 
   if (authState === "loading") return (
-    <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#F9F9F8", fontFamily: "'DM Sans', sans-serif", color: "#8A8680", fontSize: 13 }}>
+    <div style={{
+      minHeight: "100vh", display: "flex", alignItems: "center",
+      justifyContent: "center", background: "#F9F9F8",
+      fontFamily: "'DM Sans', sans-serif", color: "#8A8680", fontSize: 13
+    }}>
       Loading...
     </div>
   );
@@ -83,7 +90,10 @@ export default function App() {
   if (authState === "onboarding") return <OnboardingScreen onComplete={handleAuthComplete} />;
 
   return (
-    <div style={{ display: "flex", height: "100vh", background: "#F5F6FA", fontFamily: "'Plus Jakarta Sans', sans-serif", overflow: "hidden" }}>
+    <div style={{
+      display: "flex", height: "100vh", background: "#F5F6FA",
+      fontFamily: "'Plus Jakarta Sans', sans-serif", overflow: "hidden"
+    }}>
       <Sidebar active={screen} onNav={setScreen} />
       <div style={{ flex: 1, overflowY: "auto" }}>
         {screen === "dashboard" && <DashboardScreen />}
@@ -94,6 +104,7 @@ export default function App() {
         {screen === "leadlist" && <LeadListScreen />}
         {screen === "conversations" && <ConversationScreen />}
       </div>
+      <NotificationPopup userId={userId} />
     </div>
   );
 }
