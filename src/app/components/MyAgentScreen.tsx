@@ -186,8 +186,12 @@ function Bubble({ msg }: { msg: Message }) {
   );
 }
 
-function TestAgent({ prompt, userId }: { prompt: AgentPrompt; userId: string }) {
-  const [messages, setMessages] = useState<Message[]>([]);
+function TestAgent({ prompt, userId, messages, setMessages }: {
+  prompt: AgentPrompt;
+  userId: string;
+  messages: Message[];
+  setMessages: React.Dispatch<React.SetStateAction<Message[]>>;
+}) {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -288,6 +292,7 @@ export function MyAgentScreen({ userId }: { userId: string }) {
   const [tab, setTab] = useState<"test" | "report">("test");
   const [prompt, setPrompt] = useState<AgentPrompt | null>(null);
   const [loading, setLoading] = useState(true);
+  const [messages, setMessages] = useState<Message[]>([]);
 
   useEffect(() => {
     fetchPrompt(userId).then(p => { setPrompt(p); setLoading(false); });
@@ -330,7 +335,7 @@ export function MyAgentScreen({ userId }: { userId: string }) {
             <LockedState />
           </div>
         ) : tab === "test" ? (
-          <TestAgent prompt={prompt} userId={userId} />
+          <TestAgent prompt={prompt} userId={userId} messages={messages} setMessages={setMessages} />
         ) : (
           <FullReport prompt={prompt} />
         )}
