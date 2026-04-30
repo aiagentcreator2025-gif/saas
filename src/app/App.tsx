@@ -8,9 +8,10 @@ import { ConversationScreen } from "./components/ConversationScreen";
 import { AuthScreen } from "./components/AuthScreen";
 import { OnboardingScreen } from "./components/OnboardingScreen";
 import { NotificationPopup } from "./components/NotificationPopup";
+import { MyAgentScreen } from "./components/MyAgentScreen";
 import { supabase } from "./supabaseClient";
 
-export type Screen = "dashboard" | "leadflow" | "calendar" | "booking-form" | "settings" | "leadlist" | "conversations";
+export type Screen = "dashboard" | "leadflow" | "calendar" | "booking-form" | "settings" | "leadlist" | "conversations" | "my-agent";
 
 export default function App() {
   const [screen, setScreen] = useState<Screen>("dashboard");
@@ -55,7 +56,6 @@ export default function App() {
       await checkAccount(session.user.id);
     };
     init();
-
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (!session?.user) {
         setAuthState("unauthenticated");
@@ -66,7 +66,6 @@ export default function App() {
         checkAccount(session.user!.id);
       }, 0);
     });
-
     return () => subscription.unsubscribe();
   }, []);
 
@@ -96,13 +95,14 @@ export default function App() {
     }}>
       <Sidebar active={screen} onNav={setScreen} />
       <div style={{ flex: 1, overflowY: "auto" }}>
-        {screen === "dashboard" && <DashboardScreen />}
-        {screen === "leadflow" && <LeadFlowScreen />}
-        {screen === "calendar" && <CalendarScreen />}
-        {screen === "booking-form" && <BookingFormScreen />}
-        {screen === "settings" && <SettingsScreen />}
-        {screen === "leadlist" && <LeadListScreen />}
+        {screen === "dashboard"     && <DashboardScreen />}
+        {screen === "leadflow"      && <LeadFlowScreen />}
+        {screen === "calendar"      && <CalendarScreen />}
+        {screen === "booking-form"  && <BookingFormScreen />}
+        {screen === "settings"      && <SettingsScreen />}
+        {screen === "leadlist"      && <LeadListScreen />}
         {screen === "conversations" && <ConversationScreen />}
+        {screen === "my-agent"      && <MyAgentScreen userId={userId} />}
       </div>
       <NotificationPopup userId={userId} />
     </div>
