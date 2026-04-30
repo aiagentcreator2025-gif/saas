@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { LayoutDashboard, GitBranch, Calendar, Users, Settings, LogOut, FileText, MessageSquare } from "lucide-react";
+import { LayoutDashboard, GitBranch, Calendar, Users, Settings, LogOut, FileText, MessageSquare, Bot } from "lucide-react";
 import { Screen } from "../App";
 import { supabase } from "../supabaseClient";
 
@@ -35,17 +35,8 @@ export function Sidebar({ active, onNav }: Props) {
         .sb-bottom-item:hover span { opacity: 1 !important; }
       `}</style>
 
-      <div style={{
-        width: 220, flexShrink: 0,
-        background: "#FFFFFF",
-        borderRight: "1px solid #E8E6E0",
-        display: "flex", flexDirection: "column",
-        height: "100vh",
-        position: "sticky", top: 0,
-        fontFamily: "'DM Sans', sans-serif",
-      }}>
+      <div style={{ width: 220, flexShrink: 0, background: "#FFFFFF", borderRight: "1px solid #E8E6E0", display: "flex", flexDirection: "column", height: "100vh", position: "sticky", top: 0, fontFamily: "'DM Sans', sans-serif" }}>
 
-        {/* Logo */}
         <div style={{ padding: "22px 20px 18px", borderBottom: "1px solid #E8E6E0" }}>
           <img
             src="https://raw.githubusercontent.com/aiagentcreator2025-gif/app/main/LeadFlow_transparent%20(4).png"
@@ -64,13 +55,10 @@ export function Sidebar({ active, onNav }: Props) {
                 <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z" />
               </svg>
             </div>
-            <span style={{ fontFamily: "'Libre Baskerville', serif", fontSize: 16, fontWeight: 400, color: "#1A1916", letterSpacing: "-0.3px" }}>
-              LeadFlow
-            </span>
+            <span style={{ fontFamily: "'Libre Baskerville', serif", fontSize: 16, fontWeight: 400, color: "#1A1916", letterSpacing: "-0.3px" }}>LeadFlow</span>
           </div>
         </div>
 
-        {/* Nav */}
         <nav style={{ flex: 1, padding: "14px 10px" }}>
           <div style={{ fontSize: 9, letterSpacing: "1.5px", textTransform: "uppercase", color: "#C4C2BC", padding: "0 10px", marginBottom: 8, fontWeight: 400 }}>
             Menu
@@ -81,13 +69,12 @@ export function Sidebar({ active, onNav }: Props) {
           <NavItem icon={<FileText        size={15} strokeWidth={1.6} />} label="Booking Form"  active={active === "booking-form"}  onClick={() => onNav("booking-form")} />
           <NavItem icon={<Users           size={15} strokeWidth={1.6} />} label="Lead List"     active={active === "leadlist"}      onClick={() => onNav("leadlist")} />
           <NavItem icon={<MessageSquare   size={15} strokeWidth={1.6} />} label="Conversations" active={active === "conversations"} onClick={() => onNav("conversations")} />
+          <NavItem icon={<Bot             size={15} strokeWidth={1.6} />} label="My Agent"      active={active === "my-agent"}     onClick={() => onNav("my-agent")} />
         </nav>
 
-        {/* Bottom */}
         <div style={{ padding: "10px 10px 18px", borderTop: "1px solid #E8E6E0" }}>
-          <BottomItem icon={<Settings size={15} strokeWidth={1.6} />} label="Settings"  onClick={() => onNav("settings")} active={active === "settings"} />
-          <BottomItem icon={<LogOut   size={15} strokeWidth={1.6} />} label="Sign out"  onClick={handleSignOut}           active={false} />
-
+          <BottomItem icon={<Settings size={15} strokeWidth={1.6} />} label="Settings" onClick={() => onNav("settings")} active={active === "settings"} />
+          <BottomItem icon={<LogOut   size={15} strokeWidth={1.6} />} label="Sign out" onClick={handleSignOut}          active={false} />
           <div style={{ marginTop: 10, padding: "10px 10px", background: "#F7F6F3", borderRadius: 10, display: "flex", alignItems: "center", gap: 9, border: "1px solid #E8E6E0" }}>
             <div style={{ width: 30, height: 30, borderRadius: "50%", background: "#EEEDF8", border: "1px solid #DDD9F5", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 500, color: "#4A46B5", flexShrink: 0 }}>
               {initials}
@@ -98,50 +85,23 @@ export function Sidebar({ active, onNav }: Props) {
             </div>
           </div>
         </div>
-
       </div>
     </>
   );
 }
 
-function NavItem({ icon, label, active, onClick }: {
-  icon: React.ReactNode; label: string; active: boolean; onClick: () => void;
-}) {
+function NavItem({ icon, label, active, onClick }: { icon: React.ReactNode; label: string; active: boolean; onClick: () => void }) {
   return (
-    <div
-      className={active ? "" : "sb-item"}
-      onClick={onClick}
-      style={{
-        display: "flex", alignItems: "center", gap: 9,
-        padding: "8px 10px", borderRadius: 8,
-        fontSize: 13, fontWeight: 400,
-        color:      active ? "#4A46B5" : "#8A8680",
-        background: active ? "#EEEDF8" : "transparent",
-        cursor: "pointer", marginBottom: 2, transition: "all 0.14s",
-      }}
-    >
+    <div className={active ? "" : "sb-item"} onClick={onClick} style={{ display: "flex", alignItems: "center", gap: 9, padding: "8px 10px", borderRadius: 8, fontSize: 13, fontWeight: 400, color: active ? "#4A46B5" : "#8A8680", background: active ? "#EEEDF8" : "transparent", cursor: "pointer", marginBottom: 2, transition: "all 0.14s" }}>
       <span style={{ opacity: active ? 1 : 0.7, display: "flex" }}>{icon}</span>
       {label}
     </div>
   );
 }
 
-function BottomItem({ icon, label, active, onClick }: {
-  icon: React.ReactNode; label: string; active: boolean; onClick: () => void;
-}) {
+function BottomItem({ icon, label, active, onClick }: { icon: React.ReactNode; label: string; active: boolean; onClick: () => void }) {
   return (
-    <div
-      className={active ? "" : "sb-bottom-item"}
-      onClick={onClick}
-      style={{
-        display: "flex", alignItems: "center", gap: 9,
-        padding: "8px 10px", borderRadius: 8,
-        fontSize: 13, fontWeight: 400,
-        color:      active ? "#4A46B5" : "#8A8680",
-        background: active ? "#EEEDF8" : "transparent",
-        cursor: "pointer", marginBottom: 2, transition: "all 0.14s",
-      }}
-    >
+    <div className={active ? "" : "sb-bottom-item"} onClick={onClick} style={{ display: "flex", alignItems: "center", gap: 9, padding: "8px 10px", borderRadius: 8, fontSize: 13, fontWeight: 400, color: active ? "#4A46B5" : "#8A8680", background: active ? "#EEEDF8" : "transparent", cursor: "pointer", marginBottom: 2, transition: "all 0.14s" }}>
       <span style={{ opacity: active ? 1 : 0.7, display: "flex" }}>{icon}</span>
       {label}
     </div>
