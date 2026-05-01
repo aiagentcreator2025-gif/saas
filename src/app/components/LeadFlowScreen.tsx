@@ -620,17 +620,17 @@ function ChoiceCard({ color, accentBg, title, description, bullets, agent, tag, 
   bullets: string[]; agent: React.ReactNode; tag: string; onClick: () => void;
 }) {
   return (
-    <div className="lf-card" onClick={onClick} style={{ background:"#FFFFFF", border:"1px solid #E8E6E0", borderRadius:16, cursor:"pointer", transition:"box-shadow .2s", flex:1, display:"flex", overflow:"hidden", minHeight:"340px" }}>
+    <div className="lf-card" onClick={onClick} style={{ background:"#FFFFFF", border:"1px solid #E8E6E0", borderRadius:16, cursor:"pointer", transition:"box-shadow .2s", flex:1, display:"flex", flexDirection:"column", overflow:"hidden" }}>
       
-      {/* Left: Image area — completely free, no borders */}
-      <div style={{ background:accentBg, flex:0.45, display:"flex", alignItems:"center", justifyContent:"center", position:"relative", overflow:"visible" }}>
+      {/* Top: Image area — completely free, no borders, full width */}
+      <div style={{ background:accentBg, height:280, display:"flex", alignItems:"center", justifyContent:"center", position:"relative", overflow:"visible" }}>
         <div style={{ transform:"scale(2.5)" }}>
           {agent}
         </div>
       </div>
 
-      {/* Right: Content — text takes its space */}
-      <div style={{ padding:"28px 24px", display:"flex", flexDirection:"column", flex:0.55, justifyContent:"space-between" }}>
+      {/* Bottom: Content — text takes its space */}
+      <div style={{ padding:"28px 24px", display:"flex", flexDirection:"column", flex:1, justifyContent:"space-between" }}>
         <div>
           <div style={{ fontFamily:"'Libre Baskerville',serif", fontSize:18, fontWeight:400, color:"#1A1916", marginBottom:8 }}>{title}</div>
           <div style={{ fontSize:11, color:"#8A8680", fontWeight:300, lineHeight:1.6, marginBottom:18 }}>{description}</div>
