@@ -172,37 +172,124 @@ const inputStyle: React.CSSProperties = {
 // ─── Pixel Art Agents ────────────────────────────────────────────────────────
 
 export const BookingAgent = ({ size = 160 }: { size?: number }) => (
-  <svg width={size} height={size} viewBox="0 0 16 16" shapeRendering="crispEdges" style={{ imageRendering: "pixelated", display: "block" }}>
-    <rect x="3" y="0" width="10" height="4" fill="#000" />
-    <rect x="2" y="1" width="2" height="5" fill="#000" />
-    <rect x="4" y="4" width="8" height="5" fill="#F2A38A" />
-    <rect x="8" y="6" width="1" height="1" fill="#000" />
-    <rect x="9" y="7" width="2" height="1" fill="#000" />
-    <rect x="3" y="9" width="10" height="4" fill="#5A3A00" />
-    <rect x="2" y="10" width="2" height="2" fill="#F2A38A" />
-    <rect x="12" y="10" width="2" height="2" fill="#F2A38A" />
-    <rect x="12" y="9" width="3" height="4" fill="#DDD" />
-    <rect x="13" y="8" width="1" height="1" fill="#BFA200" />
-    <rect x="4" y="13" width="8" height="2" fill="#BFA200" />
-    <rect x="3" y="15" width="10" height="1" fill="#000" />
+  <svg
+    width={size} height={size}
+    viewBox="0 0 32 36"
+    shapeRendering="crispEdges"
+    style={{ imageRendering: "pixelated" }}
+  >
+    {/* Hair */}
+    <rect x="9" y="0" width="14" height="2" fill="#111111" />
+    <rect x="7" y="1" width="18" height="4" fill="#111111" />
+    <rect x="6" y="2" width="2" height="6" fill="#111111" />
+    <rect x="24" y="2" width="2" height="5" fill="#111111" />
+    {/* Face */}
+    <rect x="9" y="5" width="14" height="9" fill="#F2A07A" />
+    {/* Eyes */}
+    <rect x="11" y="8" width="2" height="2" fill="#111111" />
+    <rect x="19" y="8" width="2" height="2" fill="#111111" />
+    {/* Nose */}
+    <rect x="15" y="10" width="2" height="1" fill="#C87850" />
+    {/* Mouth */}
+    <rect x="13" y="12" width="6" height="1" fill="#111111" />
+    {/* Stubble */}
+    <rect x="11" y="13" width="2" height="1" fill="#C07050" />
+    <rect x="19" y="13" width="2" height="1" fill="#C07050" />
+    {/* Neck */}
+    <rect x="14" y="14" width="4" height="2" fill="#F2A07A" />
+    {/* Body — purple shirt */}
+    <rect x="8" y="16" width="16" height="10" fill="#5A3FA0" />
+    {/* Shirt shading */}
+    <rect x="8" y="16" width="3" height="10" fill="#4A2F90" />
+    <rect x="21" y="16" width="3" height="10" fill="#4A2F90" />
+    {/* Left arm */}
+    <rect x="5" y="16" width="3" height="8" fill="#5A3FA0" />
+    <rect x="5" y="24" width="3" height="2" fill="#F2A07A" />
+    {/* Right arm reaching forward */}
+    <rect x="24" y="16" width="3" height="6" fill="#5A3FA0" />
+    <rect x="24" y="22" width="3" height="2" fill="#F2A07A" />
+    {/* Pants */}
+    <rect x="9" y="26" width="6" height="7" fill="#2A2A4A" />
+    <rect x="17" y="26" width="6" height="7" fill="#2A2A4A" />
+    {/* Shoes */}
+    <rect x="8" y="33" width="8" height="2" fill="#111111" />
+    <rect x="16" y="33" width="8" height="2" fill="#111111" />
+    {/* Platform */}
+    <rect x="5" y="35" width="22" height="1" fill="#8A7AB5" />
+    {/* Calendar prop */}
+    <rect x="27" y="18" width="5" height="7" fill="#F0ECD8" />
+    <rect x="27" y="18" width="5" height="2" fill="#2A2A2A" />
+    <rect x="28" y="21" width="1" height="1" fill="#888888" />
+    <rect x="30" y="21" width="1" height="1" fill="#888888" />
+    <rect x="28" y="23" width="1" height="1" fill="#5A3FA0" />
+    <rect x="30" y="23" width="1" height="1" fill="#888888" />
   </svg>
 );
 
 export const FollowUpAgent = ({ size = 160 }: { size?: number }) => (
-  <svg width={size} height={size} viewBox="0 0 16 16" shapeRendering="crispEdges" style={{ imageRendering: "pixelated", display: "block" }}>
-    <rect x="3" y="0" width="10" height="4" fill="#000" />
-    <rect x="2" y="1" width="2" height="5" fill="#000" />
-    <rect x="4" y="4" width="8" height="5" fill="#F2A38A" />
-    <rect x="8" y="6" width="1" height="1" fill="#000" />
-    <rect x="9" y="7" width="2" height="1" fill="#000" />
-    <rect x="2" y="5" width="2" height="3" fill="#444" />
-    <rect x="10" y="6" width="2" height="1" fill="#444" />
-    <rect x="3" y="9" width="10" height="4" fill="#2E5A2E" />
-    <rect x="2" y="10" width="2" height="2" fill="#F2A38A" />
-    <rect x="12" y="10" width="2" height="2" fill="#F2A38A" />
-    <rect x="13" y="8" width="2" height="3" fill="#000" />
-    <rect x="4" y="13" width="8" height="2" fill="#1E2A3A" />
-    <rect x="3" y="15" width="10" height="1" fill="#000" />
+  <svg
+    width={size} height={size}
+    viewBox="0 0 32 36"
+    shapeRendering="crispEdges"
+    style={{ imageRendering: "pixelated" }}
+  >
+    {/* Hair */}
+    <rect x="9" y="0" width="14" height="2" fill="#111111" />
+    <rect x="7" y="1" width="18" height="5" fill="#111111" />
+    <rect x="6" y="2" width="2" height="7" fill="#111111" />
+    <rect x="24" y="2" width="2" height="6" fill="#111111" />
+    {/* Face */}
+    <rect x="9" y="6" width="14" height="8" fill="#F2A07A" />
+    {/* Eyes */}
+    <rect x="11" y="8" width="2" height="2" fill="#111111" />
+    <rect x="19" y="8" width="2" height="2" fill="#111111" />
+    {/* Nose */}
+    <rect x="15" y="10" width="2" height="1" fill="#C87850" />
+    {/* Mouth */}
+    <rect x="13" y="12" width="6" height="1" fill="#111111" />
+    {/* Stubble */}
+    <rect x="11" y="13" width="2" height="1" fill="#C07050" />
+    <rect x="19" y="13" width="2" height="1" fill="#C07050" />
+    {/* Headset band */}
+    <rect x="7" y="3" width="2" height="8" fill="#555555" />
+    <rect x="7" y="10" width="3" height="3" fill="#444444" />
+    {/* Headset mic */}
+    <rect x="10" y="13" width="3" height="1" fill="#333333" />
+    <rect x="13" y="14" width="1" height="1" fill="#333333" />
+    {/* Neck */}
+    <rect x="14" y="14" width="4" height="2" fill="#F2A07A" />
+    {/* Body — dark green shirt */}
+    <rect x="8" y="16" width="16" height="10" fill="#2E5A2E" />
+    {/* Shirt shading */}
+    <rect x="8" y="16" width="3" height="10" fill="#1E4A1E" />
+    <rect x="21" y="16" width="3" height="10" fill="#1E4A1E" />
+    {/* Left arm */}
+    <rect x="5" y="16" width="3" height="8" fill="#2E5A2E" />
+    <rect x="5" y="24" width="3" height="2" fill="#F2A07A" />
+    {/* Right arm */}
+    <rect x="24" y="16" width="3" height="8" fill="#2E5A2E" />
+    <rect x="24" y="24" width="3" height="2" fill="#F2A07A" />
+    {/* Pants */}
+    <rect x="9" y="26" width="6" height="7" fill="#1E2A3A" />
+    <rect x="17" y="26" width="6" height="7" fill="#1E2A3A" />
+    {/* Shoes */}
+    <rect x="8" y="33" width="8" height="2" fill="#111111" />
+    <rect x="16" y="33" width="8" height="2" fill="#111111" />
+    {/* Platform */}
+    <rect x="5" y="35" width="22" height="1" fill="#8A7AB5" />
+    {/* Speech bubble */}
+    <rect x="22" y="6" width="9" height="7" fill="#F5F0DC" />
+    <rect x="21" y="7" width="1" height="5" fill="#F5F0DC" />
+    <rect x="22" y="5" width="9" height="1" fill="#111111" />
+    <rect x="31" y="6" width="1" height="7" fill="#111111" />
+    <rect x="22" y="13" width="9" height="1" fill="#111111" />
+    <rect x="21" y="6" width="1" height="1" fill="#111111" />
+    <rect x="21" y="12" width="1" height="1" fill="#111111" />
+    <rect x="20" y="13" width="1" height="1" fill="#111111" />
+    {/* Bubble dots */}
+    <rect x="24" y="9" width="1" height="1" fill="#888888" />
+    <rect x="26" y="9" width="1" height="1" fill="#888888" />
+    <rect x="28" y="9" width="1" height="1" fill="#888888" />
   </svg>
 );
 
