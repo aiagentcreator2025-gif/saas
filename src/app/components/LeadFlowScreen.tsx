@@ -254,8 +254,8 @@ function PreviewScreen({ title, subtitle, description, accentColor, accentBg, st
           </button>
         </div>
         <div style={{ padding:"0 28px 24px", display:"flex", flexDirection:"column", alignItems:"center", borderBottom:"1px solid #F2F1EE" }}>
-          <div style={{ width:200, height:200, borderRadius:20, background:accentBg, border:`1px solid ${accentColor}22`, display:"flex", alignItems:"center", justifyContent:"center", marginBottom:20, padding:"20px" }}>
-            <div style={{ transform:"scale(1.6)" }}>
+          <div style={{ width:240, height:240, borderRadius:20, background:accentBg, border:`1px solid ${accentColor}22`, display:"flex", alignItems:"center", justifyContent:"center", marginBottom:20 }}>
+            <div style={{ transform:"scale(2.4)" }}>
               {agent}
             </div>
           </div>
@@ -623,8 +623,8 @@ function ChoiceCard({ color, accentBg, title, description, bullets, agent, tag, 
     <div className="lf-card" onClick={onClick} style={{ background:"#FFFFFF", border:"1px solid #E8E6E0", borderRadius:16, cursor:"pointer", transition:"box-shadow .2s", flex:1, display:"flex", flexDirection:"column", overflow:"hidden" }}>
       
       {/* Full bleed image area — large colored background with centered agent */}
-      <div style={{ background:accentBg, height:220, display:"flex", alignItems:"center", justifyContent:"center", position:"relative", overflow:"visible", padding:"20px" }}>
-        <div style={{ transform:"scale(1.3)" }}>
+      <div style={{ background:accentBg, height:280, display:"flex", alignItems:"center", justifyContent:"center", position:"relative", overflow:"visible" }}>
+        <div style={{ transform:"scale(2.2)" }}>
           {agent}
         </div>
       </div>
@@ -675,7 +675,7 @@ function HomeScreen({ onSelect }: { onSelect: (v: View) => void }) {
             "Sends your lead magnet automatically",
             "Books calls while you sleep",
           ]}
-          agent={<BookingAgent size={120} />}
+          agent={<BookingAgent size={160} />}
           tag="8 steps"
           onClick={() => onSelect("lead-flow-preview")}
         />
@@ -689,7 +689,7 @@ function HomeScreen({ onSelect }: { onSelect: (v: View) => void }) {
             "Confirms bookings to maximise show-ups",
             "AI handles replies intelligently",
           ]}
-          agent={<FollowUpAgent size={120} />}
+          agent={<FollowUpAgent size={160} />}
           tag="2 flows"
           onClick={() => onSelect("followup-home")}
         />
@@ -719,7 +719,7 @@ function FollowUpHome({ onSelect, onBack }: { onSelect: (v: View) => void; onBac
             "Re-engages leads with personalised messages",
             "Zero manual work required",
           ]}
-          agent={<FollowUpAgent size={120} />}
+          agent={<FollowUpAgent size={160} />}
           tag="Scheduled"
           onClick={() => onSelect("followup-automation-preview")}
         />
@@ -733,7 +733,7 @@ function FollowUpHome({ onSelect, onBack }: { onSelect: (v: View) => void; onBac
             "Responds intelligently every time",
             "Guides leads toward booking automatically",
           ]}
-          agent={<FollowUpAgent size={120} />}
+          agent={<FollowUpAgent size={160} />}
           tag="AI"
           onClick={() => onSelect("followup-agent-preview")}
         />
