@@ -254,7 +254,11 @@ function PreviewScreen({ title, subtitle, description, accentColor, accentBg, st
           </button>
         </div>
         <div style={{ padding:"0 28px 24px", display:"flex", flexDirection:"column", alignItems:"center", borderBottom:"1px solid #F2F1EE" }}>
-          <div style={{ width:120, height:120, borderRadius:20, background:accentBg, border:`1px solid ${accentColor}22`, display:"flex", alignItems:"center", justifyContent:"center", marginBottom:16 }}>{agent}</div>
+          <div style={{ width:200, height:200, borderRadius:20, background:accentBg, border:`1px solid ${accentColor}22`, display:"flex", alignItems:"center", justifyContent:"center", marginBottom:20, padding:"20px" }}>
+            <div style={{ transform:"scale(1.6)" }}>
+              {agent}
+            </div>
+          </div>
           <div style={{ fontFamily:"'Libre Baskerville',serif", fontSize:20, fontWeight:400, color:"#1A1916", marginBottom:4, textAlign:"center" }}>{title}</div>
           <div style={{ fontSize:11, color:"#8A8680", fontWeight:300, fontStyle:"italic", marginBottom:20, textAlign:"center" }}>{subtitle}</div>
           <div style={{ display:"flex", gap:8, width:"100%" }}>
@@ -618,31 +622,33 @@ function ChoiceCard({ color, accentBg, title, description, bullets, agent, tag, 
   return (
     <div className="lf-card" onClick={onClick} style={{ background:"#FFFFFF", border:"1px solid #E8E6E0", borderRadius:16, cursor:"pointer", transition:"box-shadow .2s", flex:1, display:"flex", flexDirection:"column", overflow:"hidden" }}>
       
-      {/* Full bleed image area — no container, agent takes full space */}
-      <div style={{ background:accentBg, height:280, display:"flex", alignItems:"center", justifyContent:"center", position:"relative", overflow:"visible" }}>
-        {agent}
+      {/* Full bleed image area — large colored background with centered agent */}
+      <div style={{ background:accentBg, height:220, display:"flex", alignItems:"center", justifyContent:"center", position:"relative", overflow:"visible", padding:"20px" }}>
+        <div style={{ transform:"scale(1.3)" }}>
+          {agent}
+        </div>
       </div>
 
       {/* Content */}
-      <div style={{ padding:"28px 28px 28px", display:"flex", flexDirection:"column", flex:1 }}>
-        <div style={{ fontFamily:"'Libre Baskerville',serif", fontSize:22, fontWeight:400, color:"#1A1916", marginBottom:10 }}>{title}</div>
-        <div style={{ fontSize:12, color:"#8A8680", fontWeight:300, lineHeight:1.7, marginBottom:20 }}>{description}</div>
+      <div style={{ padding:"24px 24px", display:"flex", flexDirection:"column", flex:1 }}>
+        <div style={{ fontFamily:"'Libre Baskerville',serif", fontSize:18, fontWeight:400, color:"#1A1916", marginBottom:8 }}>{title}</div>
+        <div style={{ fontSize:11, color:"#8A8680", fontWeight:300, lineHeight:1.6, marginBottom:18 }}>{description}</div>
 
         {/* Benefit bullets with checkmarks */}
-        <div style={{ display:"flex", flexDirection:"column", gap:11, marginBottom:28 }}>
+        <div style={{ display:"flex", flexDirection:"column", gap:9, marginBottom:20 }}>
           {bullets.map(b => (
-            <div key={b} style={{ display:"flex", alignItems:"flex-start", gap:10 }}>
-              <div style={{ width:16, height:16, borderRadius:4, background:`${color}15`, border:`1px solid ${color}30`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, marginTop:2 }}>
-                <Check size={9} strokeWidth={2.5} color={color} />
+            <div key={b} style={{ display:"flex", alignItems:"flex-start", gap:9 }}>
+              <div style={{ width:14, height:14, borderRadius:3, background:`${color}15`, border:`1px solid ${color}30`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, marginTop:1.5 }}>
+                <Check size={8} strokeWidth={2.5} color={color} />
               </div>
-              <span style={{ fontSize:12, color:"#4A4845", fontWeight:300, fontFamily:"'DM Sans',sans-serif", lineHeight:1.5 }}>{b}</span>
+              <span style={{ fontSize:11, color:"#4A4845", fontWeight:300, fontFamily:"'DM Sans',sans-serif", lineHeight:1.5 }}>{b}</span>
             </div>
           ))}
         </div>
 
         {/* CTA link */}
-        <div style={{ marginTop:"auto", display:"flex", alignItems:"center", gap:4, fontSize:13, color, fontWeight:500, fontFamily:"'DM Sans',sans-serif", cursor:"pointer" }}>
-          Open Flow <ChevronRight size={14} strokeWidth={2} />
+        <div style={{ marginTop:"auto", display:"flex", alignItems:"center", gap:4, fontSize:12, color, fontWeight:500, fontFamily:"'DM Sans',sans-serif", cursor:"pointer" }}>
+          Open Flow <ChevronRight size={13} strokeWidth={2} />
         </div>
       </div>
     </div>
@@ -669,7 +675,7 @@ function HomeScreen({ onSelect }: { onSelect: (v: View) => void }) {
             "Sends your lead magnet automatically",
             "Books calls while you sleep",
           ]}
-          agent={<BookingAgent size={200} />}
+          agent={<BookingAgent size={120} />}
           tag="8 steps"
           onClick={() => onSelect("lead-flow-preview")}
         />
@@ -683,7 +689,7 @@ function HomeScreen({ onSelect }: { onSelect: (v: View) => void }) {
             "Confirms bookings to maximise show-ups",
             "AI handles replies intelligently",
           ]}
-          agent={<FollowUpAgent size={200} />}
+          agent={<FollowUpAgent size={120} />}
           tag="2 flows"
           onClick={() => onSelect("followup-home")}
         />
@@ -713,7 +719,7 @@ function FollowUpHome({ onSelect, onBack }: { onSelect: (v: View) => void; onBac
             "Re-engages leads with personalised messages",
             "Zero manual work required",
           ]}
-          agent={<FollowUpAgent size={200} />}
+          agent={<FollowUpAgent size={120} />}
           tag="Scheduled"
           onClick={() => onSelect("followup-automation-preview")}
         />
@@ -727,7 +733,7 @@ function FollowUpHome({ onSelect, onBack }: { onSelect: (v: View) => void; onBac
             "Responds intelligently every time",
             "Guides leads toward booking automatically",
           ]}
-          agent={<FollowUpAgent size={200} />}
+          agent={<FollowUpAgent size={120} />}
           tag="AI"
           onClick={() => onSelect("followup-agent-preview")}
         />
