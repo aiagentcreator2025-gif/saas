@@ -139,8 +139,13 @@ const GLOBAL_STYLES = `
   .lf-ghost:hover  { background: #F2F1EE !important; }
   .lf-back:hover   { background: #F2F1EE !important; }
   .style-opt:hover { border-color: #4A46B5 !important; }
-  .preview-flow-node:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(0,0,0,.1) !important; }
+  .preview-flow-node:hover { box-shadow: 0 4px 16px rgba(0,0,0,.1) !important; }
   .start-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 24px rgba(26,25,22,.18) !important; }
+  .pixel-agent svg, svg.pixel-agent {
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+    shape-rendering: crispEdges;
+  }
 `;
 
 const labelStyle: React.CSSProperties = {
@@ -167,7 +172,7 @@ const inputStyle: React.CSSProperties = {
 // ─── Pixel Art Agents ────────────────────────────────────────────────────────
 
 export const BookingAgent = ({ size = 160 }: { size?: number }) => (
-  <svg width={size} height={size} viewBox="0 0 16 16" shapeRendering="crispEdges">
+  <svg width={size} height={size} viewBox="0 0 16 16" shapeRendering="crispEdges" style={{ imageRendering: "pixelated", display: "block" }}>
     <rect x="3" y="0" width="10" height="4" fill="#000" />
     <rect x="2" y="1" width="2" height="5" fill="#000" />
     <rect x="4" y="4" width="8" height="5" fill="#F2A38A" />
@@ -184,7 +189,7 @@ export const BookingAgent = ({ size = 160 }: { size?: number }) => (
 );
 
 export const FollowUpAgent = ({ size = 160 }: { size?: number }) => (
-  <svg width={size} height={size} viewBox="0 0 16 16" shapeRendering="crispEdges">
+  <svg width={size} height={size} viewBox="0 0 16 16" shapeRendering="crispEdges" style={{ imageRendering: "pixelated", display: "block" }}>
     <rect x="3" y="0" width="10" height="4" fill="#000" />
     <rect x="2" y="1" width="2" height="5" fill="#000" />
     <rect x="4" y="4" width="8" height="5" fill="#F2A38A" />
@@ -205,15 +210,10 @@ export const FollowUpAgent = ({ size = 160 }: { size?: number }) => (
 
 function InteractiveFlowDiagram({ steps }: { steps: FlowStep[] }) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [scale, setScale] = useState(0.85);
+  const [zoom, setZoom] = useState(1); // integer steps: 1, 2, 3
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const [dragging, setDragging] = useState(false);
   const dragStart = useRef({ x: 0, y: 0, ox: 0, oy: 0 });
-
-  const onWheel = (e: React.WheelEvent) => {
-    e.preventDefault();
-    setScale(s => Math.min(2, Math.max(0.3, s - e.deltaY * 0.001)));
-  };
 
   const onMouseDown = (e: React.MouseEvent) => {
     setDragging(true);
@@ -232,37 +232,36 @@ function InteractiveFlowDiagram({ steps }: { steps: FlowStep[] }) {
     <div style={{ position:"relative", flex:1, background:"#F9F9F8", borderRadius:14, border:"1px solid #E8E6E0", overflow:"hidden" }}>
       {/* Controls */}
       <div style={{ position:"absolute", top:12, right:12, zIndex:10, display:"flex", flexDirection:"column", gap:6 }}>
-        <button onClick={() => setScale(s => Math.min(2, s + 0.1))} style={{ width:30, height:30, borderRadius:8, border:"1px solid #E8E6E0", background:"#fff", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", color:"#8A8680" }}><ZoomIn size={13} /></button>
-        <button onClick={() => setScale(s => Math.max(0.3, s - 0.1))} style={{ width:30, height:30, borderRadius:8, border:"1px solid #E8E6E0", background:"#fff", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", color:"#8A8680" }}><ZoomOut size={13} /></button>
-        <button onClick={() => { setScale(0.85); setOffset({ x:0, y:0 }); }} style={{ width:30, height:30, borderRadius:8, border:"1px solid #E8E6E0", background:"#fff", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", color:"#8A8680" }}><Move size={13} /></button>
+        <button onClick={() => setZoom(z => Math.min(3, z + 1))} style={{ width:30, height:30, borderRadius:8, border:"1px solid #E8E6E0", background:"#fff", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", color:"#8A8680" }}><ZoomIn size={13} /></button>
+        <button onClick={() => setZoom(z => Math.max(1, z - 1))} style={{ width:30, height:30, borderRadius:8, border:"1px solid #E8E6E0", background:"#fff", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", color:"#8A8680" }}><ZoomOut size={13} /></button>
+        <button onClick={() => { setZoom(1); setOffset({ x:0, y:0 }); }} style={{ width:30, height:30, borderRadius:8, border:"1px solid #E8E6E0", background:"#fff", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", color:"#8A8680" }}><Move size={13} /></button>
       </div>
 
       {/* Hint */}
       <div style={{ position:"absolute", bottom:10, left:12, fontSize:9, color:"#C4C2BC", fontFamily:"'DM Sans',sans-serif", letterSpacing:"0.5px" }}>
-        Drag to pan · Scroll to zoom
+        Drag to pan · +/- to zoom
       </div>
 
-      {/* Canvas */}
+      {/* Canvas — pan only, no fractional scale */}
       <div
         ref={containerRef}
-        onWheel={onWheel}
         onMouseDown={onMouseDown}
         onMouseMove={onMouseMove}
         onMouseUp={onMouseUp}
         onMouseLeave={onMouseUp}
-        style={{ width:"100%", height:"100%", cursor: dragging ? "grabbing" : "grab", userSelect:"none" }}
+        style={{ width:"100%", height:"100%", cursor: dragging ? "grabbing" : "grab", userSelect:"none", overflow:"hidden" }}
       >
-        <div style={{ transform:`translate(${offset.x}px, ${offset.y}px) scale(${scale})`, transformOrigin:"center top", paddingTop:24, display:"flex", flexDirection:"column", alignItems:"center", gap:0, width:"100%" }}>
+        <div style={{ transform:`translate(${offset.x}px, ${offset.y}px)`, paddingTop:24, display:"flex", flexDirection:"column", alignItems:"center", gap:0, width:"100%" }}>
           {steps.map((step, i) => (
             <div key={step.id} style={{ display:"flex", flexDirection:"column", alignItems:"center" }}>
               <div
                 className="preview-flow-node"
                 style={{
-                  width:220, padding:"12px 16px", borderRadius:12,
+                  width: zoom === 1 ? 220 : zoom === 2 ? 280 : 340,
+                  padding:"12px 16px", borderRadius:12,
                   border:`1.5px solid ${step.border}`,
                   background: step.bg,
                   transition:"all .15s",
-                  boxShadow:"0 2px 8px rgba(0,0,0,.06)",
                   display:"flex", alignItems:"center", gap:10,
                 }}
               >
@@ -270,8 +269,8 @@ function InteractiveFlowDiagram({ steps }: { steps: FlowStep[] }) {
                   {step.icon}
                 </div>
                 <div>
-                  <div style={{ fontFamily:"'Libre Baskerville',serif", fontSize:12, color:"#1A1916" }}>{step.label}</div>
-                  <div style={{ fontSize:9, color:"#8A8680", fontWeight:300, fontStyle:"italic" }}>{step.sublabel}</div>
+                  <div style={{ fontFamily:"'Libre Baskerville',serif", fontSize: zoom === 1 ? 12 : 14, color:"#1A1916" }}>{step.label}</div>
+                  <div style={{ fontSize: zoom === 1 ? 9 : 11, color:"#8A8680", fontWeight:300, fontStyle:"italic" }}>{step.sublabel}</div>
                 </div>
                 {step.live && (
                   <div style={{ marginLeft:"auto", display:"flex", alignItems:"center", gap:3, fontSize:8, color:"#1D9E75", background:"#E1F5EE", padding:"2px 7px", borderRadius:20, flexShrink:0 }}>
