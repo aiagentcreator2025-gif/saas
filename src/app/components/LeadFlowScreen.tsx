@@ -133,7 +133,7 @@ const FOLLOWUP_AGENT_STEPS: FlowStep[] = [
 
 const GLOBAL_STYLES = `
   @import url('https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;1,400&family=DM+Sans:wght@300;400;500&display=swap');
-  .lf-card:hover   { box-shadow: 0 8px 32px rgba(0,0,0,.10) !important; transform: translateY(-2px); }
+  .lf-card:hover   { box-shadow: 0 12px 40px rgba(0,0,0,.10) !important; transform: translateY(-3px); }
   .lf-step:hover   { box-shadow: 0 4px 16px rgba(0,0,0,.08) !important; }
   .lf-btn:hover    { opacity: .8; }
   .lf-ghost:hover  { background: #F2F1EE !important; }
@@ -141,11 +141,7 @@ const GLOBAL_STYLES = `
   .style-opt:hover { border-color: #4A46B5 !important; }
   .preview-flow-node:hover { box-shadow: 0 4px 16px rgba(0,0,0,.1) !important; }
   .start-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 24px rgba(26,25,22,.18) !important; }
-  .pixel-agent svg, svg.pixel-agent {
-    image-rendering: pixelated;
-    image-rendering: crisp-edges;
-    shape-rendering: crispEdges;
-  }
+  .open-btn:hover  { background: #1A1916 !important; color: #fff !important; }
 `;
 
 const labelStyle: React.CSSProperties = {
@@ -169,18 +165,14 @@ const inputStyle: React.CSSProperties = {
   outline:"none", fontFamily:"'DM Sans',sans-serif", boxSizing:"border-box",
 };
 
-// ─── Pixel Art Agents ────────────────────────────────────────────────────────
-
+// ─── Pixel Art Agents ─────────────────────────────────────────────────────────
 
 export const BookingAgent = ({ size = 160 }: { size?: number }) => (
   <img
     src="/booking_agent.png"
     width={size}
     height={size}
-    style={{
-      imageRendering: "pixelated",
-      objectFit: "contain",
-    }}
+    style={{ imageRendering: "pixelated", objectFit: "contain" }}
   />
 );
 
@@ -189,19 +181,15 @@ export const FollowUpAgent = ({ size = 160 }: { size?: number }) => (
     src="/followup_agent.png"
     width={size}
     height={size}
-    style={{
-      imageRendering: "pixelated",
-      objectFit: "contain",
-    }}
+    style={{ imageRendering: "pixelated", objectFit: "contain" }}
   />
 );
-
 
 // ─── Interactive Flow Diagram ─────────────────────────────────────────────────
 
 function InteractiveFlowDiagram({ steps }: { steps: FlowStep[] }) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [zoom, setZoom] = useState(1); // integer steps: 1, 2, 3
+  const [zoom, setZoom] = useState(1);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const [dragging, setDragging] = useState(false);
   const dragStart = useRef({ x: 0, y: 0, ox: 0, oy: 0 });
@@ -221,19 +209,14 @@ function InteractiveFlowDiagram({ steps }: { steps: FlowStep[] }) {
 
   return (
     <div style={{ position:"relative", flex:1, background:"#F9F9F8", borderRadius:14, border:"1px solid #E8E6E0", overflow:"hidden" }}>
-      {/* Controls */}
       <div style={{ position:"absolute", top:12, right:12, zIndex:10, display:"flex", flexDirection:"column", gap:6 }}>
         <button onClick={() => setZoom(z => Math.min(3, z + 1))} style={{ width:30, height:30, borderRadius:8, border:"1px solid #E8E6E0", background:"#fff", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", color:"#8A8680" }}><ZoomIn size={13} /></button>
         <button onClick={() => setZoom(z => Math.max(1, z - 1))} style={{ width:30, height:30, borderRadius:8, border:"1px solid #E8E6E0", background:"#fff", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", color:"#8A8680" }}><ZoomOut size={13} /></button>
         <button onClick={() => { setZoom(1); setOffset({ x:0, y:0 }); }} style={{ width:30, height:30, borderRadius:8, border:"1px solid #E8E6E0", background:"#fff", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", color:"#8A8680" }}><Move size={13} /></button>
       </div>
-
-      {/* Hint */}
       <div style={{ position:"absolute", bottom:10, left:12, fontSize:9, color:"#C4C2BC", fontFamily:"'DM Sans',sans-serif", letterSpacing:"0.5px" }}>
         Drag to pan · +/- to zoom
       </div>
-
-      {/* Canvas — pan only, no fractional scale */}
       <div
         ref={containerRef}
         onMouseDown={onMouseDown}
@@ -283,7 +266,7 @@ function InteractiveFlowDiagram({ steps }: { steps: FlowStep[] }) {
   );
 }
 
-// ─── Preview Screen ──────────────────────────────────────────────────────────
+// ─── Preview Screen ───────────────────────────────────────────────────────────
 
 interface PreviewConfig {
   title: string;
@@ -306,10 +289,7 @@ function PreviewScreen({
 }: PreviewConfig) {
   return (
     <div style={{ display:"flex", height:"100%", background:"#F9F9F8", fontFamily:"'DM Sans',sans-serif", overflow:"hidden" }}>
-
-      {/* LEFT PANEL */}
       <div style={{ width:360, flexShrink:0, background:"#FFFFFF", borderRight:"1px solid #E8E6E0", display:"flex", flexDirection:"column", overflowY:"auto" }}>
-        {/* Back */}
         <div style={{ padding:"24px 28px 0" }}>
           <button className="lf-back" onClick={onBack} style={{
             display:"flex", alignItems:"center", gap:6, padding:"7px 14px",
@@ -320,16 +300,12 @@ function PreviewScreen({
             <ArrowLeft size={13} strokeWidth={1.5} /> {backLabel}
           </button>
         </div>
-
-        {/* Agent + stats */}
         <div style={{ padding:"0 28px 24px", display:"flex", flexDirection:"column", alignItems:"center", borderBottom:"1px solid #F2F1EE" }}>
           <div style={{ width:120, height:120, borderRadius:20, background:accentBg, border:`1px solid ${accentColor}22`, display:"flex", alignItems:"center", justifyContent:"center", marginBottom:16 }}>
             {agent}
           </div>
           <div style={{ fontFamily:"'Libre Baskerville',serif", fontSize:20, fontWeight:400, color:"#1A1916", marginBottom:4, textAlign:"center" }}>{title}</div>
           <div style={{ fontSize:11, color:"#8A8680", fontWeight:300, fontStyle:"italic", marginBottom:20, textAlign:"center" }}>{subtitle}</div>
-
-          {/* Stats row */}
           <div style={{ display:"flex", gap:8, width:"100%" }}>
             {stats.map(s => (
               <div key={s.label} style={{ flex:1, padding:"10px 12px", borderRadius:10, background:"#F9F9F8", border:"1px solid #E8E6E0", textAlign:"center" }}>
@@ -339,14 +315,10 @@ function PreviewScreen({
             ))}
           </div>
         </div>
-
-        {/* Description */}
         <div style={{ padding:"24px 28px", borderBottom:"1px solid #F2F1EE" }}>
           <div style={{ fontSize:9, color:"#8A8680", textTransform:"uppercase", letterSpacing:"1px", fontWeight:400, marginBottom:10 }}>About this flow</div>
           <p style={{ fontSize:12, color:"#4A4845", lineHeight:1.8, fontWeight:300, margin:0 }}>{description}</p>
         </div>
-
-        {/* How it works */}
         <div style={{ padding:"24px 28px", flex:1 }}>
           <div style={{ fontSize:9, color:"#8A8680", textTransform:"uppercase", letterSpacing:"1px", fontWeight:400, marginBottom:14 }}>How it works</div>
           <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
@@ -363,8 +335,6 @@ function PreviewScreen({
             ))}
           </div>
         </div>
-
-        {/* CTA */}
         <div style={{ padding:"20px 28px 28px" }}>
           <button
             className="start-btn"
@@ -380,8 +350,6 @@ function PreviewScreen({
           </button>
         </div>
       </div>
-
-      {/* RIGHT PANEL — Interactive flow diagram */}
       <div style={{ flex:1, padding:"32px 36px", display:"flex", flexDirection:"column", gap:16, overflow:"hidden" }}>
         <div>
           <div style={{ fontFamily:"'Libre Baskerville',serif", fontSize:17, fontWeight:400, color:"#1A1916", marginBottom:4 }}>Flow Preview</div>
@@ -393,7 +361,7 @@ function PreviewScreen({
   );
 }
 
-// ─── Panels (unchanged) ───────────────────────────────────────────────────────
+// ─── Panels ───────────────────────────────────────────────────────────────────
 
 function InfoBanner({ text }: { text: string }) {
   return (
@@ -695,7 +663,7 @@ function RightPanel({ step, config, onChange, onSave, saving, saved }: {
   );
 }
 
-// ─── Flow Editor (unchanged) ──────────────────────────────────────────────────
+// ─── Flow Editor ──────────────────────────────────────────────────────────────
 
 function FlowEditor({ title, subtitle, steps, onBack, backLabel = "Back", config, onChange, onSave, onPublish, saving, saved, publishing, publishDone }: {
   title: string; subtitle: string; steps: FlowStep[]; onBack: () => void; backLabel?: string;
@@ -777,40 +745,133 @@ function FlowEditor({ title, subtitle, steps, onBack, backLabel = "Back", config
   );
 }
 
-// ─── Home Screen ──────────────────────────────────────────────────────────────
+// ─── Choice Card — new design ─────────────────────────────────────────────────
 
-function ChoiceCard({ icon, color, iconBg, title, description, bullets, agent, onClick }: {
-  icon: React.ReactNode; color: string; iconBg: string;
-  title: string; description: string; bullets: string[];
-  agent?: React.ReactNode;
+function ChoiceCard({ color, accentBg, title, description, bullets, agent, tag, onClick }: {
+  color: string;
+  accentBg: string;
+  title: string;
+  description: string;
+  bullets: string[];
+  agent: React.ReactNode;
+  tag: string;
   onClick: () => void;
 }) {
   return (
-    <div className="lf-card" onClick={onClick} style={{ background:"#FFFFFF", border:"1px solid #E8E6E0", borderRadius:18, padding:"32px 28px", cursor:"pointer", transition:"box-shadow .2s,transform .2s", flex:1, display:"flex", flexDirection:"column", gap:16 }}>
-      <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between" }}>
-        <div style={{ width:56, height:56, borderRadius:14, background:iconBg, display:"flex", alignItems:"center", justifyContent:"center", color }}>{icon}</div>
-        {agent && (
-          <div style={{ opacity:0.9 }}>{agent}</div>
-        )}
+    <div
+      className="lf-card"
+      onClick={onClick}
+      style={{
+        background: "#FFFFFF",
+        border: "1px solid #E8E6E0",
+        borderRadius: 20,
+        cursor: "pointer",
+        transition: "box-shadow .2s, transform .2s",
+        flex: 1,
+        display: "flex",
+        flexDirection: "column",
+        overflow: "hidden",
+      }}
+    >
+      {/* Top image area */}
+      <div
+        style={{
+          background: accentBg,
+          height: 220,
+          display: "flex",
+          alignItems: "flex-end",
+          justifyContent: "center",
+          position: "relative",
+          overflow: "hidden",
+          paddingBottom: 0,
+        }}
+      >
+        {/* Tag badge top-right */}
+        <div style={{
+          position: "absolute",
+          top: 16,
+          right: 16,
+          background: "#FFFFFF",
+          border: "1px solid #E8E6E0",
+          borderRadius: 20,
+          padding: "4px 10px",
+          fontSize: 9,
+          color: "#8A8680",
+          fontFamily: "'DM Sans',sans-serif",
+          fontWeight: 400,
+          letterSpacing: "0.8px",
+          textTransform: "uppercase",
+        }}>
+          {tag}
+        </div>
+
+        {/* Agent image — sits at bottom of the panel, slightly oversized for drama */}
+        <div style={{ marginBottom: -4 }}>
+          {agent}
+        </div>
       </div>
-      <div>
-        <div style={{ fontFamily:"'Libre Baskerville',serif", fontSize:18, fontWeight:400, color:"#1A1916", marginBottom:8 }}>{title}</div>
-        <div style={{ fontSize:12, color:"#8A8680", fontWeight:300, lineHeight:1.7 }}>{description}</div>
-      </div>
-      <div style={{ display:"flex", flexDirection:"column", gap:7, marginTop:4 }}>
-        {bullets.map(b => (
-          <div key={b} style={{ display:"flex", alignItems:"center", gap:8 }}>
-            <div style={{ width:6, height:6, borderRadius:"50%", background:color, flexShrink:0 }} />
-            <span style={{ fontSize:12, color:"#8A8680", fontWeight:300 }}>{b}</span>
-          </div>
-        ))}
-      </div>
-      <div style={{ display:"flex", alignItems:"center", gap:4, marginTop:"auto", paddingTop:8, fontSize:12, color, fontWeight:500 }}>
-        Open <ChevronRight size={13} strokeWidth={2} />
+
+      {/* Bottom content area */}
+      <div style={{ padding: "22px 24px 24px", display: "flex", flexDirection: "column", gap: 10, flex: 1 }}>
+        <div style={{ fontFamily: "'Libre Baskerville',serif", fontSize: 19, fontWeight: 400, color: "#1A1916" }}>
+          {title}
+        </div>
+        <div style={{ fontSize: 12, color: "#8A8680", fontWeight: 300, lineHeight: 1.7 }}>
+          {description}
+        </div>
+
+        {/* Bullets */}
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "6px 8px", marginTop: 4 }}>
+          {bullets.map(b => (
+            <div
+              key={b}
+              style={{
+                fontSize: 11,
+                color,
+                background: `${color}10`,
+                border: `1px solid ${color}22`,
+                borderRadius: 20,
+                padding: "3px 10px",
+                fontWeight: 400,
+                fontFamily: "'DM Sans',sans-serif",
+              }}
+            >
+              {b}
+            </div>
+          ))}
+        </div>
+
+        {/* Open button */}
+        <button
+          className="open-btn"
+          style={{
+            marginTop: "auto",
+            paddingTop: 16,
+            width: "100%",
+            padding: "11px",
+            borderRadius: 11,
+            border: `1.5px solid #1A1916`,
+            background: "transparent",
+            color: "#1A1916",
+            fontSize: 13,
+            cursor: "pointer",
+            fontFamily: "'DM Sans',sans-serif",
+            fontWeight: 500,
+            transition: "all .2s",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 6,
+          }}
+        >
+          Open Flow <ChevronRight size={14} strokeWidth={2} />
+        </button>
       </div>
     </div>
   );
 }
+
+// ─── Home Screen ──────────────────────────────────────────────────────────────
 
 function HomeScreen({ onSelect }: { onSelect: (v: View) => void }) {
   return (
@@ -821,27 +882,31 @@ function HomeScreen({ onSelect }: { onSelect: (v: View) => void }) {
       </div>
       <div style={{ display:"flex", gap:20, maxWidth:860 }}>
         <ChoiceCard
-          icon={<Zap size={24} strokeWidth={1.5} />}
-          color="#4A46B5" iconBg="#EEEDF8"
+          color="#4A46B5"
+          accentBg="#EEEDF8"
           title="Lead Flow"
           description="Set up the full sequence that greets every lead, delivers your lead magnet, and books the call — on autopilot."
           bullets={["Trigger","Typing Animation","AI Agent","Script 1","Lead Magnet","Script 2","Booking","Reply Node"]}
-          agent={<BookingAgent size={160} />}
+          agent={<BookingAgent size={180} />}
+          tag="8 steps"
           onClick={() => onSelect("lead-flow-preview")}
         />
         <ChoiceCard
-          icon={<Bot size={24} strokeWidth={1.5} />}
-          color="#1D9E75" iconBg="#E1F5EE"
+          color="#1D9E75"
+          accentBg="#E1F5EE"
           title="Follow-Up Flow"
           description="Configure agents that re-engage cold leads and confirm bookings to maximise show-up rates."
           bullets={["Follow-Up Automation","Follow-Up Agent"]}
-          agent={<FollowUpAgent size={160} />}
+          agent={<FollowUpAgent size={180} />}
+          tag="2 flows"
           onClick={() => onSelect("followup-home")}
         />
       </div>
     </div>
   );
 }
+
+// ─── Follow-Up Home ───────────────────────────────────────────────────────────
 
 function FollowUpHome({ onSelect, onBack }: { onSelect: (v: View) => void; onBack: () => void }) {
   return (
@@ -853,21 +918,23 @@ function FollowUpHome({ onSelect, onBack }: { onSelect: (v: View) => void; onBac
       </div>
       <div style={{ display:"flex", gap:20, maxWidth:860 }}>
         <ChoiceCard
-          icon={<Clock size={24} strokeWidth={1.5} />}
-          color="#BA7517" iconBg="#FDF3E1"
+          color="#BA7517"
+          accentBg="#FDF3E1"
           title="Follow-Up Automation"
           description="Send scheduled follow-up messages at the perfect time. Choose your delay and let it run automatically."
           bullets={["Scheduled Trigger","Time-based delays","Re-engage message"]}
-          agent={<FollowUpAgent size={160} />}
+          agent={<FollowUpAgent size={180} />}
+          tag="Scheduled"
           onClick={() => onSelect("followup-automation-preview")}
         />
         <ChoiceCard
-          icon={<Bot size={24} strokeWidth={1.5} />}
-          color="#378ADD" iconBg="#E6F1FB"
+          color="#378ADD"
+          accentBg="#E6F1FB"
           title="Follow-Up Agent"
           description="AI agent takes over when a lead replies — responding intelligently to guide them toward booking."
           bullets={["Trigger Agent Reply","AI-powered responses","WhatsApp integration"]}
-          agent={<FollowUpAgent size={160} />}
+          agent={<FollowUpAgent size={180} />}
+          tag="AI"
           onClick={() => onSelect("followup-agent-preview")}
         />
       </div>
@@ -972,7 +1039,6 @@ export function LeadFlowScreen() {
 
   const editorProps = { config, onChange, onSave, onPublish, saving, saved, publishing, publishDone };
 
-  // Shared preview how-it-works icons
   const leadHowItWorks = [
     { icon:<Wifi size={13} strokeWidth={1.5}/>,          label:"Connect WhatsApp",    desc:"Link your WhatsApp Business account as the trigger for all incoming leads." },
     { icon:<Bot size={13} strokeWidth={1.5}/>,            label:"AI Agent greets",     desc:"Your agent sends a human-like welcome, qualifies the lead with Script 1." },
