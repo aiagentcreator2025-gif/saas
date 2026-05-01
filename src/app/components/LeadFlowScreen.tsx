@@ -623,7 +623,7 @@ function ChoiceCard({ color, accentBg, title, description, bullets, agent, tag, 
     <div className="lf-card" onClick={onClick} style={{ background:"#FFFFFF", border:"1px solid #E8E6E0", borderRadius:16, cursor:"pointer", transition:"box-shadow .2s", flex:1, display:"flex", flexDirection:"column", overflow:"hidden" }}>
       
       {/* Top: Image area — completely free, no borders, full width, contained inside */}
-      <div style={{ background:accentBg, height:280, display:"flex", alignItems:"center", justifyContent:"center", position:"relative", overflow:"hidden" }}>
+      <div style={{ background:accentBg, height:340, display:"flex", alignItems:"center", justifyContent:"center", position:"relative", overflow:"hidden" }}>
         <div style={{ transform:"scale(2.0)" }}>
           {agent}
         </div>
