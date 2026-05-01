@@ -174,7 +174,7 @@ const inputStyle: React.CSSProperties = {
 
 export const BookingAgent = ({ size = 160 }: { size?: number }) => (
   <img
-    src="/booking_agent_final.png"
+    src="/booking_agent.png"
     width={size}
     height={size}
     style={{
@@ -187,7 +187,7 @@ export const BookingAgent = ({ size = 160 }: { size?: number }) => (
 
 export const FollowUpAgent = ({ size = 160 }: { size?: number }) => (
   <img
-    src="/followup_agent_final.png"
+    src="/followup_agent.png"
     width={size}
     height={size}
     style={{
