@@ -826,7 +826,7 @@ function HomeScreen({ onSelect }: { onSelect: (v: View) => void }) {
           title="Lead Flow"
           description="Set up the full sequence that greets every lead, delivers your lead magnet, and books the call — on autopilot."
           bullets={["Trigger","Typing Animation","AI Agent","Script 1","Lead Magnet","Script 2","Booking","Reply Node"]}
-          agent={<BookingAgent size={80} />}
+          agent={<BookingAgent size={160} />}
           onClick={() => onSelect("lead-flow-preview")}
         />
         <ChoiceCard
@@ -835,7 +835,7 @@ function HomeScreen({ onSelect }: { onSelect: (v: View) => void }) {
           title="Follow-Up Flow"
           description="Configure agents that re-engage cold leads and confirm bookings to maximise show-up rates."
           bullets={["Follow-Up Automation","Follow-Up Agent"]}
-          agent={<FollowUpAgent size={80} />}
+          agent={<FollowUpAgent size={160} />}
           onClick={() => onSelect("followup-home")}
         />
       </div>
@@ -858,7 +858,7 @@ function FollowUpHome({ onSelect, onBack }: { onSelect: (v: View) => void; onBac
           title="Follow-Up Automation"
           description="Send scheduled follow-up messages at the perfect time. Choose your delay and let it run automatically."
           bullets={["Scheduled Trigger","Time-based delays","Re-engage message"]}
-          agent={<FollowUpAgent size={80} />}
+          agent={<FollowUpAgent size={160} />}
           onClick={() => onSelect("followup-automation-preview")}
         />
         <ChoiceCard
@@ -867,7 +867,7 @@ function FollowUpHome({ onSelect, onBack }: { onSelect: (v: View) => void; onBac
           title="Follow-Up Agent"
           description="AI agent takes over when a lead replies — responding intelligently to guide them toward booking."
           bullets={["Trigger Agent Reply","AI-powered responses","WhatsApp integration"]}
-          agent={<FollowUpAgent size={80} />}
+          agent={<FollowUpAgent size={160} />}
           onClick={() => onSelect("followup-agent-preview")}
         />
       </div>
