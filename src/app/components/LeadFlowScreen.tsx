@@ -620,34 +620,36 @@ function ChoiceCard({ color, accentBg, title, description, bullets, agent, tag, 
   bullets: string[]; agent: React.ReactNode; tag: string; onClick: () => void;
 }) {
   return (
-    <div className="lf-card" onClick={onClick} style={{ background:"#FFFFFF", border:"1px solid #E8E6E0", borderRadius:16, cursor:"pointer", transition:"box-shadow .2s", flex:1, display:"flex", flexDirection:"column", overflow:"hidden" }}>
+    <div className="lf-card" onClick={onClick} style={{ background:"#FFFFFF", border:"1px solid #E8E6E0", borderRadius:16, cursor:"pointer", transition:"box-shadow .2s", flex:1, display:"flex", overflow:"hidden", minHeight:"340px" }}>
       
-      {/* Full bleed image area — large colored background with centered agent */}
-      <div style={{ background:accentBg, height:280, display:"flex", alignItems:"center", justifyContent:"center", position:"relative", overflow:"visible" }}>
-        <div style={{ transform:"scale(2.2)" }}>
+      {/* Left: Image area — completely free, no borders */}
+      <div style={{ background:accentBg, flex:0.45, display:"flex", alignItems:"center", justifyContent:"center", position:"relative", overflow:"visible" }}>
+        <div style={{ transform:"scale(2.5)" }}>
           {agent}
         </div>
       </div>
 
-      {/* Content */}
-      <div style={{ padding:"24px 24px", display:"flex", flexDirection:"column", flex:1 }}>
-        <div style={{ fontFamily:"'Libre Baskerville',serif", fontSize:18, fontWeight:400, color:"#1A1916", marginBottom:8 }}>{title}</div>
-        <div style={{ fontSize:11, color:"#8A8680", fontWeight:300, lineHeight:1.6, marginBottom:18 }}>{description}</div>
+      {/* Right: Content — text takes its space */}
+      <div style={{ padding:"28px 24px", display:"flex", flexDirection:"column", flex:0.55, justifyContent:"space-between" }}>
+        <div>
+          <div style={{ fontFamily:"'Libre Baskerville',serif", fontSize:18, fontWeight:400, color:"#1A1916", marginBottom:8 }}>{title}</div>
+          <div style={{ fontSize:11, color:"#8A8680", fontWeight:300, lineHeight:1.6, marginBottom:18 }}>{description}</div>
 
-        {/* Benefit bullets with checkmarks */}
-        <div style={{ display:"flex", flexDirection:"column", gap:9, marginBottom:20 }}>
-          {bullets.map(b => (
-            <div key={b} style={{ display:"flex", alignItems:"flex-start", gap:9 }}>
-              <div style={{ width:14, height:14, borderRadius:3, background:`${color}15`, border:`1px solid ${color}30`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, marginTop:1.5 }}>
-                <Check size={8} strokeWidth={2.5} color={color} />
+          {/* Benefit bullets with checkmarks */}
+          <div style={{ display:"flex", flexDirection:"column", gap:9 }}>
+            {bullets.map(b => (
+              <div key={b} style={{ display:"flex", alignItems:"flex-start", gap:9 }}>
+                <div style={{ width:14, height:14, borderRadius:3, background:`${color}15`, border:`1px solid ${color}30`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, marginTop:1.5 }}>
+                  <Check size={8} strokeWidth={2.5} color={color} />
+                </div>
+                <span style={{ fontSize:11, color:"#4A4845", fontWeight:300, fontFamily:"'DM Sans',sans-serif", lineHeight:1.5 }}>{b}</span>
               </div>
-              <span style={{ fontSize:11, color:"#4A4845", fontWeight:300, fontFamily:"'DM Sans',sans-serif", lineHeight:1.5 }}>{b}</span>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
 
-        {/* CTA link */}
-        <div style={{ marginTop:"auto", display:"flex", alignItems:"center", gap:4, fontSize:12, color, fontWeight:500, fontFamily:"'DM Sans',sans-serif", cursor:"pointer" }}>
+        {/* CTA link at bottom */}
+        <div style={{ display:"flex", alignItems:"center", gap:4, fontSize:12, color, fontWeight:500, fontFamily:"'DM Sans',sans-serif", cursor:"pointer", marginTop:16 }}>
           Open Flow <ChevronRight size={13} strokeWidth={2} />
         </div>
       </div>
