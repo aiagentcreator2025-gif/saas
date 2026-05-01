@@ -167,12 +167,58 @@ const inputStyle: React.CSSProperties = {
 
 // ─── Pixel Art Agents ─────────────────────────────────────────────────────────
 
+// ─── Animated Bobbing Agents ─────────────────────────────────────────────────
+
 export const BookingAgent = ({ size = 160 }: { size?: number }) => (
-  <img src="/booking.png" width={size} height={size} style={{ imageRendering:"pixelated", objectFit:"contain" }} />
+  <>
+    <style>{`
+      @keyframes bookingBob {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-10px); }
+      }
+      .booking-agent {
+        animation: bookingBob 2.5s ease-in-out infinite;
+      }
+    `}</style>
+    <div
+      className="booking-agent"
+      style={{
+        width: size,
+        height: size,
+        backgroundImage: "url(/booking.png)",
+        backgroundSize: "contain",
+        backgroundRepeat: "no-repeat",
+        backgroundPosition: "center",
+        imageRendering: "pixelated",
+      }}
+    />
+  </>
 );
 
 export const FollowUpAgent = ({ size = 160 }: { size?: number }) => (
-  <img src="/followup.png" width={size} height={size} style={{ imageRendering:"pixelated", objectFit:"contain" }} />
+  <>
+    <style>{`
+      @keyframes followupBob {
+        0%, 100% { transform: translateY(0px) scale(1); }
+        50% { transform: translateY(-10px) scale(1.03); }
+      }
+      .followup-agent {
+        animation: followupBob 2.5s ease-in-out infinite;
+      }
+    `}</style>
+    <div
+      className="followup-agent"
+      style={{
+        width: size,
+        height: size,
+        backgroundImage: "url(/followup.png)",
+        backgroundSize: "contain",
+        backgroundRepeat: "no-repeat",
+        backgroundPosition: "center",
+        imageRendering: "pixelated",
+      }}
+    />
+  </>
 );
 
 // ─── Interactive Flow Diagram ─────────────────────────────────────────────────
