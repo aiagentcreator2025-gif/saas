@@ -133,7 +133,7 @@ const FOLLOWUP_AGENT_STEPS: FlowStep[] = [
 
 const GLOBAL_STYLES = `
   @import url('https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;1,400&family=DM+Sans:wght@300;400;500&display=swap');
-  .lf-card:hover   { box-shadow: 0 12px 40px rgba(0,0,0,.10) !important; transform: translateY(-3px); }
+  .lf-card:hover   { box-shadow: 0 8px 32px rgba(0,0,0,.08) !important; }
   .lf-step:hover   { box-shadow: 0 4px 16px rgba(0,0,0,.08) !important; }
   .lf-btn:hover    { opacity: .8; }
   .lf-ghost:hover  { background: #F2F1EE !important; }
@@ -168,21 +168,11 @@ const inputStyle: React.CSSProperties = {
 // ─── Pixel Art Agents ─────────────────────────────────────────────────────────
 
 export const BookingAgent = ({ size = 160 }: { size?: number }) => (
-  <img
-    src="/booking_agent.png"
-    width={size}
-    height={size}
-    style={{ imageRendering: "pixelated", objectFit: "contain" }}
-  />
+  <img src="/booking.png" width={size} height={size} style={{ imageRendering:"pixelated", objectFit:"contain" }} />
 );
 
 export const FollowUpAgent = ({ size = 160 }: { size?: number }) => (
-  <img
-    src="/followup_agent.png"
-    width={size}
-    height={size}
-    style={{ imageRendering: "pixelated", objectFit: "contain" }}
-  />
+  <img src="/followup.png" width={size} height={size} style={{ imageRendering:"pixelated", objectFit:"contain" }} />
 );
 
 // ─── Interactive Flow Diagram ─────────────────────────────────────────────────
@@ -200,10 +190,7 @@ function InteractiveFlowDiagram({ steps }: { steps: FlowStep[] }) {
   };
   const onMouseMove = (e: React.MouseEvent) => {
     if (!dragging) return;
-    setOffset({
-      x: dragStart.current.ox + (e.clientX - dragStart.current.x),
-      y: dragStart.current.oy + (e.clientY - dragStart.current.y),
-    });
+    setOffset({ x: dragStart.current.ox + (e.clientX - dragStart.current.x), y: dragStart.current.oy + (e.clientY - dragStart.current.y) });
   };
   const onMouseUp = () => setDragging(false);
 
@@ -214,34 +201,14 @@ function InteractiveFlowDiagram({ steps }: { steps: FlowStep[] }) {
         <button onClick={() => setZoom(z => Math.max(1, z - 1))} style={{ width:30, height:30, borderRadius:8, border:"1px solid #E8E6E0", background:"#fff", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", color:"#8A8680" }}><ZoomOut size={13} /></button>
         <button onClick={() => { setZoom(1); setOffset({ x:0, y:0 }); }} style={{ width:30, height:30, borderRadius:8, border:"1px solid #E8E6E0", background:"#fff", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", color:"#8A8680" }}><Move size={13} /></button>
       </div>
-      <div style={{ position:"absolute", bottom:10, left:12, fontSize:9, color:"#C4C2BC", fontFamily:"'DM Sans',sans-serif", letterSpacing:"0.5px" }}>
-        Drag to pan · +/- to zoom
-      </div>
-      <div
-        ref={containerRef}
-        onMouseDown={onMouseDown}
-        onMouseMove={onMouseMove}
-        onMouseUp={onMouseUp}
-        onMouseLeave={onMouseUp}
-        style={{ width:"100%", height:"100%", cursor: dragging ? "grabbing" : "grab", userSelect:"none", overflow:"hidden" }}
-      >
+      <div style={{ position:"absolute", bottom:10, left:12, fontSize:9, color:"#C4C2BC", fontFamily:"'DM Sans',sans-serif", letterSpacing:"0.5px" }}>Drag to pan · +/- to zoom</div>
+      <div ref={containerRef} onMouseDown={onMouseDown} onMouseMove={onMouseMove} onMouseUp={onMouseUp} onMouseLeave={onMouseUp}
+        style={{ width:"100%", height:"100%", cursor: dragging ? "grabbing" : "grab", userSelect:"none", overflow:"hidden" }}>
         <div style={{ transform:`translate(${offset.x}px, ${offset.y}px)`, paddingTop:24, display:"flex", flexDirection:"column", alignItems:"center", gap:0, width:"100%" }}>
           {steps.map((step, i) => (
             <div key={step.id} style={{ display:"flex", flexDirection:"column", alignItems:"center" }}>
-              <div
-                className="preview-flow-node"
-                style={{
-                  width: zoom === 1 ? 220 : zoom === 2 ? 280 : 340,
-                  padding:"12px 16px", borderRadius:12,
-                  border:`1.5px solid ${step.border}`,
-                  background: step.bg,
-                  transition:"all .15s",
-                  display:"flex", alignItems:"center", gap:10,
-                }}
-              >
-                <div style={{ width:30, height:30, borderRadius:8, background:"rgba(255,255,255,.8)", border:`1px solid ${step.border}`, display:"flex", alignItems:"center", justifyContent:"center", color:step.color, flexShrink:0 }}>
-                  {step.icon}
-                </div>
+              <div className="preview-flow-node" style={{ width: zoom === 1 ? 220 : zoom === 2 ? 280 : 340, padding:"12px 16px", borderRadius:12, border:`1.5px solid ${step.border}`, background: step.bg, transition:"all .15s", display:"flex", alignItems:"center", gap:10 }}>
+                <div style={{ width:30, height:30, borderRadius:8, background:"rgba(255,255,255,.8)", border:`1px solid ${step.border}`, display:"flex", alignItems:"center", justifyContent:"center", color:step.color, flexShrink:0 }}>{step.icon}</div>
                 <div>
                   <div style={{ fontFamily:"'Libre Baskerville',serif", fontSize: zoom === 1 ? 12 : 14, color:"#1A1916" }}>{step.label}</div>
                   <div style={{ fontSize: zoom === 1 ? 9 : 11, color:"#8A8680", fontWeight:300, fontStyle:"italic" }}>{step.sublabel}</div>
@@ -269,41 +236,25 @@ function InteractiveFlowDiagram({ steps }: { steps: FlowStep[] }) {
 // ─── Preview Screen ───────────────────────────────────────────────────────────
 
 interface PreviewConfig {
-  title: string;
-  subtitle: string;
-  description: string;
-  accentColor: string;
-  accentBg: string;
+  title: string; subtitle: string; description: string;
+  accentColor: string; accentBg: string;
   stats: { label: string; value: string }[];
   howItWorks: { icon: React.ReactNode; label: string; desc: string }[];
-  agent: React.ReactNode;
-  steps: FlowStep[];
-  onStart: () => void;
-  onBack: () => void;
-  backLabel: string;
+  agent: React.ReactNode; steps: FlowStep[];
+  onStart: () => void; onBack: () => void; backLabel: string;
 }
 
-function PreviewScreen({
-  title, subtitle, description, accentColor, accentBg,
-  stats, howItWorks, agent, steps, onStart, onBack, backLabel,
-}: PreviewConfig) {
+function PreviewScreen({ title, subtitle, description, accentColor, accentBg, stats, howItWorks, agent, steps, onStart, onBack, backLabel }: PreviewConfig) {
   return (
     <div style={{ display:"flex", height:"100%", background:"#F9F9F8", fontFamily:"'DM Sans',sans-serif", overflow:"hidden" }}>
       <div style={{ width:360, flexShrink:0, background:"#FFFFFF", borderRight:"1px solid #E8E6E0", display:"flex", flexDirection:"column", overflowY:"auto" }}>
         <div style={{ padding:"24px 28px 0" }}>
-          <button className="lf-back" onClick={onBack} style={{
-            display:"flex", alignItems:"center", gap:6, padding:"7px 14px",
-            borderRadius:9, border:"1px solid #E8E6E0", background:"#FFFFFF",
-            fontSize:12, color:"#8A8680", cursor:"pointer", fontFamily:"'DM Sans',sans-serif",
-            marginBottom:24, transition:"background .15s",
-          }}>
+          <button className="lf-back" onClick={onBack} style={{ display:"flex", alignItems:"center", gap:6, padding:"7px 14px", borderRadius:9, border:"1px solid #E8E6E0", background:"#FFFFFF", fontSize:12, color:"#8A8680", cursor:"pointer", fontFamily:"'DM Sans',sans-serif", marginBottom:24, transition:"background .15s" }}>
             <ArrowLeft size={13} strokeWidth={1.5} /> {backLabel}
           </button>
         </div>
         <div style={{ padding:"0 28px 24px", display:"flex", flexDirection:"column", alignItems:"center", borderBottom:"1px solid #F2F1EE" }}>
-          <div style={{ width:120, height:120, borderRadius:20, background:accentBg, border:`1px solid ${accentColor}22`, display:"flex", alignItems:"center", justifyContent:"center", marginBottom:16 }}>
-            {agent}
-          </div>
+          <div style={{ width:120, height:120, borderRadius:20, background:accentBg, border:`1px solid ${accentColor}22`, display:"flex", alignItems:"center", justifyContent:"center", marginBottom:16 }}>{agent}</div>
           <div style={{ fontFamily:"'Libre Baskerville',serif", fontSize:20, fontWeight:400, color:"#1A1916", marginBottom:4, textAlign:"center" }}>{title}</div>
           <div style={{ fontSize:11, color:"#8A8680", fontWeight:300, fontStyle:"italic", marginBottom:20, textAlign:"center" }}>{subtitle}</div>
           <div style={{ display:"flex", gap:8, width:"100%" }}>
@@ -324,9 +275,7 @@ function PreviewScreen({
           <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
             {howItWorks.map((step, i) => (
               <div key={i} style={{ display:"flex", gap:12, alignItems:"flex-start" }}>
-                <div style={{ width:28, height:28, borderRadius:8, background:accentBg, border:`1px solid ${accentColor}33`, display:"flex", alignItems:"center", justifyContent:"center", color:accentColor, flexShrink:0 }}>
-                  {step.icon}
-                </div>
+                <div style={{ width:28, height:28, borderRadius:8, background:accentBg, border:`1px solid ${accentColor}33`, display:"flex", alignItems:"center", justifyContent:"center", color:accentColor, flexShrink:0 }}>{step.icon}</div>
                 <div>
                   <div style={{ fontSize:12, fontWeight:500, color:"#1A1916", marginBottom:2 }}>{step.label}</div>
                   <div style={{ fontSize:11, color:"#8A8680", fontWeight:300, lineHeight:1.6 }}>{step.desc}</div>
@@ -336,16 +285,7 @@ function PreviewScreen({
           </div>
         </div>
         <div style={{ padding:"20px 28px 28px" }}>
-          <button
-            className="start-btn"
-            onClick={onStart}
-            style={{
-              width:"100%", padding:"13px", borderRadius:11, border:"none",
-              background:"#1A1916", color:"#fff", fontSize:13, cursor:"pointer",
-              fontFamily:"'DM Sans',sans-serif", fontWeight:500,
-              transition:"all .2s", display:"flex", alignItems:"center", justifyContent:"center", gap:8,
-            }}
-          >
+          <button className="start-btn" onClick={onStart} style={{ width:"100%", padding:"13px", borderRadius:11, border:"none", background:"#1A1916", color:"#fff", fontSize:13, cursor:"pointer", fontFamily:"'DM Sans',sans-serif", fontWeight:500, transition:"all .2s", display:"flex", alignItems:"center", justifyContent:"center", gap:8 }}>
             Start Configuration <ChevronRight size={14} strokeWidth={2} />
           </button>
         </div>
@@ -365,19 +305,13 @@ function PreviewScreen({
 
 function InfoBanner({ text }: { text: string }) {
   return (
-    <div style={{ padding:"10px 12px", borderRadius:9, background:"#F7F6F3", border:"1px solid #E8E6E0", fontSize:11, color:"#8A8680", lineHeight:1.6, fontWeight:300, marginBottom:18, fontStyle:"italic" }}>
-      {text}
-    </div>
+    <div style={{ padding:"10px 12px", borderRadius:9, background:"#F7F6F3", border:"1px solid #E8E6E0", fontSize:11, color:"#8A8680", lineHeight:1.6, fontWeight:300, marginBottom:18, fontStyle:"italic" }}>{text}</div>
   );
 }
 
-function SaveBtn({ label, icon, onClick, saving, saved }: {
-  label: string; icon?: React.ReactNode;
-  onClick: () => void; saving: boolean; saved: boolean;
-}) {
+function SaveBtn({ label, icon, onClick, saving, saved }: { label: string; icon?: React.ReactNode; onClick: () => void; saving: boolean; saved: boolean }) {
   return (
-    <button className="lf-btn" onClick={onClick} disabled={saving}
-      style={{ width:"100%", padding:"11px", borderRadius:9, border:"none", background: saved ? "#1D9E75" : "#1A1916", color:"#fff", fontSize:12, cursor:"pointer", fontFamily:"'DM Sans',sans-serif", transition:"all .2s", display:"flex", alignItems:"center", justifyContent:"center", gap:7 }}>
+    <button className="lf-btn" onClick={onClick} disabled={saving} style={{ width:"100%", padding:"11px", borderRadius:9, border:"none", background: saved ? "#1D9E75" : "#1A1916", color:"#fff", fontSize:12, cursor:"pointer", fontFamily:"'DM Sans',sans-serif", transition:"all .2s", display:"flex", alignItems:"center", justifyContent:"center", gap:7 }}>
       {saving ? <Loader2 size={13} strokeWidth={2} style={{ animation:"spin 1s linear infinite" }} /> : saved ? <Check size={13} strokeWidth={2.5} /> : icon}
       {saving ? "Saving..." : saved ? "Saved!" : label}
     </button>
@@ -386,12 +320,7 @@ function SaveBtn({ label, icon, onClick, saving, saved }: {
 
 function BackBtn({ label, onClick }: { label: string; onClick: () => void }) {
   return (
-    <button className="lf-back" onClick={onClick} style={{
-      display:"flex", alignItems:"center", gap:6, padding:"7px 14px",
-      borderRadius:9, border:"1px solid #E8E6E0", background:"#FFFFFF",
-      fontSize:12, color:"#8A8680", cursor:"pointer", fontFamily:"'DM Sans',sans-serif",
-      marginBottom:28, transition:"background .15s",
-    }}>
+    <button className="lf-back" onClick={onClick} style={{ display:"flex", alignItems:"center", gap:6, padding:"7px 14px", borderRadius:9, border:"1px solid #E8E6E0", background:"#FFFFFF", fontSize:12, color:"#8A8680", cursor:"pointer", fontFamily:"'DM Sans',sans-serif", marginBottom:28, transition:"background .15s" }}>
       <ArrowLeft size={13} strokeWidth={1.5} /> {label}
     </button>
   );
@@ -400,23 +329,15 @@ function BackBtn({ label, onClick }: { label: string; onClick: () => void }) {
 interface PanelProps {
   config: AutomationConfig;
   onChange: (key: keyof AutomationConfig, value: string | string[]) => void;
-  onSave: () => void;
-  saving: boolean;
-  saved: boolean;
+  onSave: () => void; saving: boolean; saved: boolean;
 }
 
 function TriggerPanel({ config, onChange, onSave, saving, saved }: PanelProps) {
   return (
     <>
       <InfoBanner text="Connect your WhatsApp Business account so LeadFlow can receive messages from your leads." />
-      <div style={{ marginBottom:14 }}>
-        <label style={labelStyle}>Client ID</label>
-        <input value={config.wa_client_id} onChange={e => onChange("wa_client_id", e.target.value)} placeholder="e.g. 1234567890" style={inputStyle} />
-      </div>
-      <div style={{ marginBottom:14 }}>
-        <label style={labelStyle}>Client Secret</label>
-        <input type="password" value={config.wa_client_secret} onChange={e => onChange("wa_client_secret", e.target.value)} placeholder="e.g. EAAxxxxxxxx..." style={inputStyle} />
-      </div>
+      <div style={{ marginBottom:14 }}><label style={labelStyle}>Client ID</label><input value={config.wa_client_id} onChange={e => onChange("wa_client_id", e.target.value)} placeholder="e.g. 1234567890" style={inputStyle} /></div>
+      <div style={{ marginBottom:14 }}><label style={labelStyle}>Client Secret</label><input type="password" value={config.wa_client_secret} onChange={e => onChange("wa_client_secret", e.target.value)} placeholder="e.g. EAAxxxxxxxx..." style={inputStyle} /></div>
       <SaveBtn label="Connect" icon={<Wifi size={13} strokeWidth={1.5} />} onClick={onSave} saving={saving} saved={saved} />
     </>
   );
@@ -426,10 +347,7 @@ function TypingPanel({ config, onChange, onSave, saving, saved }: PanelProps) {
   return (
     <>
       <InfoBanner text="Makes your AI agent show a typing indicator before replying — so leads feel like they're talking to a real person." />
-      <div style={{ marginBottom:14 }}>
-        <label style={labelStyle}>WhatsApp Access Token</label>
-        <input type="password" value={config.wa_access_token} onChange={e => onChange("wa_access_token", e.target.value)} placeholder="EAAxxxxxxxx..." style={inputStyle} />
-      </div>
+      <div style={{ marginBottom:14 }}><label style={labelStyle}>WhatsApp Access Token</label><input type="password" value={config.wa_access_token} onChange={e => onChange("wa_access_token", e.target.value)} placeholder="EAAxxxxxxxx..." style={inputStyle} /></div>
       <div style={{ marginBottom:16 }}>
         <label style={labelStyle}>Typing Duration</label>
         <select value={config.typing_duration} onChange={e => onChange("typing_duration", e.target.value)} style={selectStyle}>
@@ -451,17 +369,13 @@ function AgentPanel({ config, onChange, onSave, saving, saved }: PanelProps) {
   return (
     <>
       <InfoBanner text="Set your agent's name and choose the writing style that best represents how you communicate with leads." />
-      <div style={{ marginBottom:14 }}>
-        <label style={labelStyle}>Agent Name</label>
-        <input value={config.agent_name} onChange={e => onChange("agent_name", e.target.value)} placeholder="e.g. Sarah, Alex, Max..." style={inputStyle} />
-      </div>
+      <div style={{ marginBottom:14 }}><label style={labelStyle}>Agent Name</label><input value={config.agent_name} onChange={e => onChange("agent_name", e.target.value)} placeholder="e.g. Sarah, Alex, Max..." style={inputStyle} /></div>
       <div style={{ marginBottom:20 }}>
         <label style={labelStyle}>Writing Style</label>
         <p style={{ fontSize:10, color:"#8A8680", fontWeight:300, marginBottom:10, fontStyle:"italic" }}>Pick the style that best matches how you talk to your leads:</p>
         <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
           {styles.map((s) => (
-            <div key={s.key} className="style-opt" onClick={() => onChange("writing_style", s.key)}
-              style={{ padding:"11px 13px", borderRadius:10, cursor:"pointer", transition:"all .15s", border:`1.5px solid ${config.writing_style === s.key ? "#4A46B5" : "#E8E6E0"}`, background: config.writing_style === s.key ? "#EEEDF8" : "#FAFAF9" }}>
+            <div key={s.key} className="style-opt" onClick={() => onChange("writing_style", s.key)} style={{ padding:"11px 13px", borderRadius:10, cursor:"pointer", transition:"all .15s", border:`1.5px solid ${config.writing_style === s.key ? "#4A46B5" : "#E8E6E0"}`, background: config.writing_style === s.key ? "#EEEDF8" : "#FAFAF9" }}>
               <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:5 }}>
                 <span style={{ fontSize:10, fontWeight:500, color: config.writing_style === s.key ? "#4A46B5" : "#8A8680", textTransform:"uppercase", letterSpacing:"0.8px" }}>{s.key}</span>
                 {config.writing_style === s.key && <Check size={11} strokeWidth={2.5} color="#4A46B5" />}
@@ -480,10 +394,7 @@ function Script1Panel({ config, onChange, onSave, saving, saved }: PanelProps) {
   return (
     <>
       <InfoBanner text="This script was auto-filled from your onboarding info. Review it and adjust anything that doesn't feel right." />
-      <div style={{ marginBottom:16 }}>
-        <label style={labelStyle}>Script Preview</label>
-        <textarea value={config.script1_text} onChange={e => onChange("script1_text", e.target.value)} style={{ ...textareaStyle, height:220 }} />
-      </div>
+      <div style={{ marginBottom:16 }}><label style={labelStyle}>Script Preview</label><textarea value={config.script1_text} onChange={e => onChange("script1_text", e.target.value)} style={{ ...textareaStyle, height:220 }} /></div>
       <div style={{ marginBottom:16 }}>
         <label style={labelStyle}>Variables — confirm or correct</label>
         <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
@@ -510,13 +421,8 @@ function LeadMagnetPanel({ config, onChange, onSave, saving, saved }: PanelProps
   return (
     <>
       <InfoBanner text="Paste the link to your lead magnet — this is what gets sent to the lead automatically after Script 1." />
-      <div style={{ marginBottom:14 }}>
-        <label style={labelStyle}>Lead Magnet Link</label>
-        <input value={config.lead_magnet_link} onChange={e => onChange("lead_magnet_link", e.target.value)} placeholder="https://..." style={inputStyle} />
-      </div>
-      <p style={{ fontSize:10, color:"#8A8680", fontWeight:300, marginBottom:20, lineHeight:1.6 }}>
-        Can be a PDF, video, Google Doc, Notion page, or any link. Make sure it's publicly accessible.
-      </p>
+      <div style={{ marginBottom:14 }}><label style={labelStyle}>Lead Magnet Link</label><input value={config.lead_magnet_link} onChange={e => onChange("lead_magnet_link", e.target.value)} placeholder="https://..." style={inputStyle} /></div>
+      <p style={{ fontSize:10, color:"#8A8680", fontWeight:300, marginBottom:20, lineHeight:1.6 }}>Can be a PDF, video, Google Doc, Notion page, or any link. Make sure it's publicly accessible.</p>
       <SaveBtn label="Save Changes" icon={<Link size={13} strokeWidth={1.5} />} onClick={onSave} saving={saving} saved={saved} />
     </>
   );
@@ -526,10 +432,7 @@ function Script2Panel({ config, onChange, onSave, saving, saved }: PanelProps) {
   return (
     <>
       <InfoBanner text="This script was auto-filled from your onboarding info. Review it and adjust anything that doesn't feel right." />
-      <div style={{ marginBottom:16 }}>
-        <label style={labelStyle}>Script Preview</label>
-        <textarea value={config.script2_text} onChange={e => onChange("script2_text", e.target.value)} style={{ ...textareaStyle, height:220 }} />
-      </div>
+      <div style={{ marginBottom:16 }}><label style={labelStyle}>Script Preview</label><textarea value={config.script2_text} onChange={e => onChange("script2_text", e.target.value)} style={{ ...textareaStyle, height:220 }} /></div>
       <div style={{ marginBottom:16 }}>
         <label style={labelStyle}>Variables — confirm or correct</label>
         <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
@@ -559,14 +462,8 @@ function BookingPanel({ config, onChange, onSave, saving, saved }: PanelProps) {
   return (
     <>
       <InfoBanner text="Customise your booking form — this is what leads see when they click your booking link." />
-      <div style={{ marginBottom:14 }}>
-        <label style={labelStyle}>Event Name</label>
-        <input value={config.booking_event_name} onChange={e => onChange("booking_event_name", e.target.value)} placeholder="e.g. Free Strategy Call, Discovery Call..." style={inputStyle} />
-      </div>
-      <div style={{ marginBottom:14 }}>
-        <label style={labelStyle}>Host Name</label>
-        <input value={config.booking_host} onChange={e => onChange("booking_host", e.target.value)} placeholder="e.g. John from CleanCo" style={inputStyle} />
-      </div>
+      <div style={{ marginBottom:14 }}><label style={labelStyle}>Event Name</label><input value={config.booking_event_name} onChange={e => onChange("booking_event_name", e.target.value)} placeholder="e.g. Free Strategy Call, Discovery Call..." style={inputStyle} /></div>
+      <div style={{ marginBottom:14 }}><label style={labelStyle}>Host Name</label><input value={config.booking_host} onChange={e => onChange("booking_host", e.target.value)} placeholder="e.g. John from CleanCo" style={inputStyle} /></div>
       <div style={{ marginBottom:16 }}>
         <label style={labelStyle}>Call Duration</label>
         <select value={config.booking_duration} onChange={e => onChange("booking_duration", e.target.value)} style={selectStyle}>
@@ -577,10 +474,7 @@ function BookingPanel({ config, onChange, onSave, saving, saved }: PanelProps) {
         <label style={labelStyle}>Available Days</label>
         <div style={{ display:"flex", gap:6, flexWrap:"wrap" }}>
           {allDays.map(day => (
-            <div key={day} onClick={() => toggleDay(day)}
-              style={{ padding:"6px 12px", borderRadius:8, border:`1.5px solid ${(config.booking_days||[]).includes(day) ? "#4A46B5" : "#E8E6E0"}`, background: (config.booking_days||[]).includes(day) ? "#EEEDF8" : "#FAFAF9", fontSize:11, color: (config.booking_days||[]).includes(day) ? "#4A46B5" : "#8A8680", cursor:"pointer", fontWeight: (config.booking_days||[]).includes(day) ? 500 : 300, transition:"all .15s" }}>
-              {day}
-            </div>
+            <div key={day} onClick={() => toggleDay(day)} style={{ padding:"6px 12px", borderRadius:8, border:`1.5px solid ${(config.booking_days||[]).includes(day) ? "#4A46B5" : "#E8E6E0"}`, background: (config.booking_days||[]).includes(day) ? "#EEEDF8" : "#FAFAF9", fontSize:11, color: (config.booking_days||[]).includes(day) ? "#4A46B5" : "#8A8680", cursor:"pointer", fontWeight: (config.booking_days||[]).includes(day) ? 500 : 300, transition:"all .15s" }}>{day}</div>
           ))}
         </div>
       </div>
@@ -605,24 +499,14 @@ function ReplyNodePanel({ config, onChange, onSave, saving, saved }: PanelProps)
   return (
     <>
       <InfoBanner text="Connect your WhatsApp to allow LeadFlow to send messages to your leads automatically." />
-      <div style={{ marginBottom:14 }}>
-        <label style={labelStyle}>WhatsApp Access Token</label>
-        <input type="password" value={config.wa_access_token} onChange={e => onChange("wa_access_token", e.target.value)} placeholder="EAAxxxxxxxx..." style={inputStyle} />
-      </div>
-      <div style={{ marginBottom:14 }}>
-        <label style={labelStyle}>Business Account ID</label>
-        <input value={config.wa_business_account_id} onChange={e => onChange("wa_business_account_id", e.target.value)} placeholder="e.g. 1408732614201335" style={inputStyle} />
-      </div>
+      <div style={{ marginBottom:14 }}><label style={labelStyle}>WhatsApp Access Token</label><input type="password" value={config.wa_access_token} onChange={e => onChange("wa_access_token", e.target.value)} placeholder="EAAxxxxxxxx..." style={inputStyle} /></div>
+      <div style={{ marginBottom:14 }}><label style={labelStyle}>Business Account ID</label><input value={config.wa_business_account_id} onChange={e => onChange("wa_business_account_id", e.target.value)} placeholder="e.g. 1408732614201335" style={inputStyle} /></div>
       <SaveBtn label="Connect" icon={<Wifi size={13} strokeWidth={1.5} />} onClick={onSave} saving={saving} saved={saved} />
     </>
   );
 }
 
-function RightPanel({ step, config, onChange, onSave, saving, saved }: {
-  step: FlowStep; config: AutomationConfig;
-  onChange: (key: keyof AutomationConfig, value: string | string[]) => void;
-  onSave: () => void; saving: boolean; saved: boolean;
-}) {
+function RightPanel({ step, config, onChange, onSave, saving, saved }: { step: FlowStep; config: AutomationConfig; onChange: (key: keyof AutomationConfig, value: string | string[]) => void; onSave: () => void; saving: boolean; saved: boolean }) {
   return (
     <div style={{ width:440, flexShrink:0, background:"#FFFFFF", borderLeft:"1px solid #E8E6E0", padding:"28px 26px", overflowY:"auto", fontFamily:"'DM Sans',sans-serif" }}>
       <div style={{ marginBottom:20 }}>
@@ -632,8 +516,7 @@ function RightPanel({ step, config, onChange, onSave, saving, saved }: {
       <div style={{ marginBottom:16 }}>
         <label style={labelStyle}>Step Type</label>
         <div style={{ padding:"9px 12px", borderRadius:9, border:`1px solid ${step.border}`, background:step.bg, fontSize:12, color:step.color, display:"flex", alignItems:"center", gap:8 }}>
-          <span>{step.icon}</span>
-          <span style={{ fontFamily:"'DM Sans',sans-serif", fontWeight:400 }}>{step.sublabel}</span>
+          <span>{step.icon}</span><span style={{ fontFamily:"'DM Sans',sans-serif", fontWeight:400 }}>{step.sublabel}</span>
         </div>
       </div>
       {step.type === "trigger"    && <TriggerPanel    config={config} onChange={onChange} onSave={onSave} saving={saving} saved={saved} />}
@@ -646,16 +529,8 @@ function RightPanel({ step, config, onChange, onSave, saving, saved }: {
       {step.type === "replynode"  && <ReplyNodePanel  config={config} onChange={onChange} onSave={onSave} saving={saving} saved={saved} />}
       {!step.type && (
         <>
-          <div style={{ marginBottom:16 }}>
-            <label style={labelStyle}>Message / Content</label>
-            <textarea defaultValue={step.content} style={{ ...textareaStyle, height:100 }} />
-          </div>
-          <div style={{ marginBottom:20 }}>
-            <label style={labelStyle}>Send Delay</label>
-            <select style={selectStyle}>
-              <option>Immediately</option><option>After 5 minutes</option><option>After 1 hour</option><option>After 24 hours</option>
-            </select>
-          </div>
+          <div style={{ marginBottom:16 }}><label style={labelStyle}>Message / Content</label><textarea defaultValue={step.content} style={{ ...textareaStyle, height:100 }} /></div>
+          <div style={{ marginBottom:20 }}><label style={labelStyle}>Send Delay</label><select style={selectStyle}><option>Immediately</option><option>After 5 minutes</option><option>After 1 hour</option><option>After 24 hours</option></select></div>
           <SaveBtn label="Save Changes" onClick={onSave} saving={saving} saved={saved} />
         </>
       )}
@@ -667,14 +542,11 @@ function RightPanel({ step, config, onChange, onSave, saving, saved }: {
 
 function FlowEditor({ title, subtitle, steps, onBack, backLabel = "Back", config, onChange, onSave, onPublish, saving, saved, publishing, publishDone }: {
   title: string; subtitle: string; steps: FlowStep[]; onBack: () => void; backLabel?: string;
-  config: AutomationConfig;
-  onChange: (key: keyof AutomationConfig, value: string | string[]) => void;
-  onSave: () => void; onPublish: () => void;
-  saving: boolean; saved: boolean; publishing: boolean; publishDone: boolean;
+  config: AutomationConfig; onChange: (key: keyof AutomationConfig, value: string | string[]) => void;
+  onSave: () => void; onPublish: () => void; saving: boolean; saved: boolean; publishing: boolean; publishDone: boolean;
 }) {
   const [selected, setSelected] = useState<string>(steps[0].id);
   const selectedStep = steps.find(s => s.id === selected)!;
-
   return (
     <div style={{ display:"flex", height:"100%", background:"#F9F9F8", fontFamily:"'DM Sans',sans-serif" }}>
       <div style={{ flex:1, padding:"32px 40px", overflowY:"auto" }}>
@@ -685,11 +557,8 @@ function FlowEditor({ title, subtitle, steps, onBack, backLabel = "Back", config
             <p style={{ fontSize:12, color:"#8A8680", fontWeight:300, fontStyle:"italic" }}>{subtitle}</p>
           </div>
           <div style={{ display:"flex", gap:8 }}>
-            <button className="lf-ghost" style={{ padding:"8px 16px", borderRadius:9, border:"1px solid #E8E6E0", background:"#FFFFFF", fontSize:12, color:"#8A8680", cursor:"pointer", fontFamily:"'DM Sans',sans-serif", transition:"background .15s" }}>
-              Test Flow
-            </button>
-            <button className="lf-btn" onClick={onPublish} disabled={publishing}
-              style={{ padding:"8px 18px", borderRadius:9, border:"none", background: publishDone ? "#1D9E75" : "#1A1916", fontSize:12, color:"#fff", cursor:"pointer", fontFamily:"'DM Sans',sans-serif", transition:"all .2s", display:"flex", alignItems:"center", gap:6 }}>
+            <button className="lf-ghost" style={{ padding:"8px 16px", borderRadius:9, border:"1px solid #E8E6E0", background:"#FFFFFF", fontSize:12, color:"#8A8680", cursor:"pointer", fontFamily:"'DM Sans',sans-serif", transition:"background .15s" }}>Test Flow</button>
+            <button className="lf-btn" onClick={onPublish} disabled={publishing} style={{ padding:"8px 18px", borderRadius:9, border:"none", background: publishDone ? "#1D9E75" : "#1A1916", fontSize:12, color:"#fff", cursor:"pointer", fontFamily:"'DM Sans',sans-serif", transition:"all .2s", display:"flex", alignItems:"center", gap:6 }}>
               {publishing ? <Loader2 size={13} strokeWidth={2} style={{ animation:"spin 1s linear infinite" }} /> : publishDone ? <Check size={13} strokeWidth={2.5} /> : null}
               {publishing ? "Publishing..." : publishDone ? "Published!" : "Publish"}
             </button>
@@ -698,14 +567,11 @@ function FlowEditor({ title, subtitle, steps, onBack, backLabel = "Back", config
         <div style={{ display:"flex", flexDirection:"column", alignItems:"center", maxWidth:520, margin:"0 auto" }}>
           {steps.map((step, i) => (
             <div key={step.id} style={{ display:"flex", flexDirection:"column", alignItems:"center", width:"100%" }}>
-              <div className="lf-step" onClick={() => setSelected(step.id)}
-                style={{ width:"100%", padding:"16px 18px", borderRadius:14, border:`1.5px solid ${selected === step.id ? step.color : step.border}`, background: selected === step.id ? step.bg : "#FFFFFF", cursor:"pointer", transition:"all .18s", boxShadow: selected === step.id ? `0 6px 20px ${step.color}18` : "0 1px 4px rgba(0,0,0,.05)", position:"relative", overflow:"hidden" }}>
+              <div className="lf-step" onClick={() => setSelected(step.id)} style={{ width:"100%", padding:"16px 18px", borderRadius:14, border:`1.5px solid ${selected === step.id ? step.color : step.border}`, background: selected === step.id ? step.bg : "#FFFFFF", cursor:"pointer", transition:"all .18s", boxShadow: selected === step.id ? `0 6px 20px ${step.color}18` : "0 1px 4px rgba(0,0,0,.05)", position:"relative", overflow:"hidden" }}>
                 {step.live && <div style={{ position:"absolute", top:0, left:0, right:0, height:2, background:step.color, borderRadius:"14px 14px 0 0" }} />}
                 <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between" }}>
                   <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-                    <div style={{ width:32, height:32, borderRadius:9, background: selected === step.id ? "rgba(255,255,255,.7)" : step.bg, border:`1px solid ${step.border}`, display:"flex", alignItems:"center", justifyContent:"center", color:step.color }}>
-                      {step.icon}
-                    </div>
+                    <div style={{ width:32, height:32, borderRadius:9, background: selected === step.id ? "rgba(255,255,255,.7)" : step.bg, border:`1px solid ${step.border}`, display:"flex", alignItems:"center", justifyContent:"center", color:step.color }}>{step.icon}</div>
                     <div>
                       <div style={{ fontFamily:"'Libre Baskerville',serif", fontSize:13, fontWeight:400, color:"#1A1916" }}>{step.label}</div>
                       <div style={{ fontSize:10, color:"#8A8680", fontWeight:300, fontStyle:"italic" }}>{step.sublabel}</div>
@@ -727,9 +593,7 @@ function FlowEditor({ title, subtitle, steps, onBack, backLabel = "Back", config
               {i < steps.length - 1 && (
                 <div style={{ display:"flex", flexDirection:"column", alignItems:"center", margin:"3px 0" }}>
                   <div style={{ width:1.5, height:18, background:"#E8E6E0" }} />
-                  <div style={{ width:20, height:20, borderRadius:"50%", border:"1.5px solid #E8E6E0", background:"#FFFFFF", display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer", color:"#C4C2BC" }}>
-                    <Plus size={11} strokeWidth={1.5} />
-                  </div>
+                  <div style={{ width:20, height:20, borderRadius:"50%", border:"1.5px solid #E8E6E0", background:"#FFFFFF", display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer", color:"#C4C2BC" }}><Plus size={11} strokeWidth={1.5} /></div>
                   <div style={{ width:1.5, height:18, background:"#E8E6E0" }} />
                 </div>
               )}
@@ -745,127 +609,56 @@ function FlowEditor({ title, subtitle, steps, onBack, backLabel = "Back", config
   );
 }
 
-// ─── Choice Card — new design ─────────────────────────────────────────────────
+// ─── Choice Card — reference design ──────────────────────────────────────────
 
 function ChoiceCard({ color, accentBg, title, description, bullets, agent, tag, onClick }: {
-  color: string;
-  accentBg: string;
-  title: string;
-  description: string;
-  bullets: string[];
-  agent: React.ReactNode;
-  tag: string;
-  onClick: () => void;
+  color: string; accentBg: string; title: string; description: string;
+  bullets: string[]; agent: React.ReactNode; tag: string; onClick: () => void;
 }) {
   return (
-    <div
-      className="lf-card"
-      onClick={onClick}
-      style={{
-        background: "#FFFFFF",
-        border: "1px solid #E8E6E0",
-        borderRadius: 20,
-        cursor: "pointer",
-        transition: "box-shadow .2s, transform .2s",
-        flex: 1,
-        display: "flex",
-        flexDirection: "column",
-        overflow: "hidden",
-      }}
-    >
-      {/* Top image area */}
-      <div
-        style={{
-          background: accentBg,
-          height: 220,
-          display: "flex",
-          alignItems: "flex-end",
-          justifyContent: "center",
-          position: "relative",
-          overflow: "hidden",
-          paddingBottom: 0,
-        }}
-      >
-        {/* Tag badge top-right */}
-        <div style={{
-          position: "absolute",
-          top: 16,
-          right: 16,
-          background: "#FFFFFF",
-          border: "1px solid #E8E6E0",
-          borderRadius: 20,
-          padding: "4px 10px",
-          fontSize: 9,
-          color: "#8A8680",
-          fontFamily: "'DM Sans',sans-serif",
-          fontWeight: 400,
-          letterSpacing: "0.8px",
-          textTransform: "uppercase",
-        }}>
-          {tag}
-        </div>
-
-        {/* Agent image — sits at bottom of the panel, slightly oversized for drama */}
-        <div style={{ marginBottom: -4 }}>
-          {agent}
+    <div className="lf-card" onClick={onClick} style={{ background:"#FFFFFF", border:"1px solid #E8E6E0", borderRadius:16, cursor:"pointer", transition:"box-shadow .2s", flex:1, display:"flex", flexDirection:"column", overflow:"hidden" }}>
+      
+      {/* Image area — small square like reference */}
+      <div style={{ padding:"24px 24px 0" }}>
+        <div style={{ background:accentBg, borderRadius:12, height:180, display:"flex", alignItems:"flex-end", justifyContent:"center", position:"relative", overflow:"hidden" }}>
+          {/* Holographic badge top-left */}
+          <div style={{
+            position:"absolute", top:12, left:12,
+            background:"linear-gradient(135deg, #c8b8ff 0%, #a8d8ff 40%, #b8ffd8 70%, #ffd8b8 100%)",
+            borderRadius:"50%", width:48, height:48,
+            display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center",
+            border:"2px solid rgba(255,255,255,0.7)",
+            boxShadow:"0 2px 8px rgba(0,0,0,0.12)",
+          }}>
+            <span style={{ fontSize:7, fontWeight:700, color:"#3B2FC9", lineHeight:1, fontFamily:"'DM Sans',sans-serif", letterSpacing:"0.3px" }}>AI</span>
+            <span style={{ fontSize:7, fontWeight:700, color:"#3B2FC9", lineHeight:1, fontFamily:"'DM Sans',sans-serif", letterSpacing:"0.3px" }}>AGENT</span>
+          </div>
+          {/* Agent image */}
+          <div style={{ marginBottom:-4 }}>{agent}</div>
         </div>
       </div>
 
-      {/* Bottom content area */}
-      <div style={{ padding: "22px 24px 24px", display: "flex", flexDirection: "column", gap: 10, flex: 1 }}>
-        <div style={{ fontFamily: "'Libre Baskerville',serif", fontSize: 19, fontWeight: 400, color: "#1A1916" }}>
-          {title}
-        </div>
-        <div style={{ fontSize: 12, color: "#8A8680", fontWeight: 300, lineHeight: 1.7 }}>
-          {description}
-        </div>
+      {/* Content */}
+      <div style={{ padding:"20px 24px 24px", display:"flex", flexDirection:"column", flex:1 }}>
+        <div style={{ fontFamily:"'Libre Baskerville',serif", fontSize:20, fontWeight:400, color:"#1A1916", marginBottom:8 }}>{title}</div>
+        <div style={{ fontSize:12, color:"#8A8680", fontWeight:300, lineHeight:1.7, marginBottom:16 }}>{description}</div>
 
-        {/* Bullets */}
-        <div style={{ display: "flex", flexWrap: "wrap", gap: "6px 8px", marginTop: 4 }}>
+        {/* Benefit bullets with checkmarks */}
+        <div style={{ display:"flex", flexDirection:"column", gap:10, marginBottom:24 }}>
           {bullets.map(b => (
-            <div
-              key={b}
-              style={{
-                fontSize: 11,
-                color,
-                background: `${color}10`,
-                border: `1px solid ${color}22`,
-                borderRadius: 20,
-                padding: "3px 10px",
-                fontWeight: 400,
-                fontFamily: "'DM Sans',sans-serif",
-              }}
-            >
-              {b}
+            <div key={b} style={{ display:"flex", alignItems:"center", gap:10 }}>
+              <div style={{ width:16, height:16, borderRadius:4, background:`${color}15`, border:`1px solid ${color}30`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                <Check size={9} strokeWidth={2.5} color={color} />
+              </div>
+              <span style={{ fontSize:12, color:"#4A4845", fontWeight:300, fontFamily:"'DM Sans',sans-serif" }}>{b}</span>
             </div>
           ))}
         </div>
 
-        {/* Open button */}
-        <button
-          className="open-btn"
-          style={{
-            marginTop: "auto",
-            paddingTop: 16,
-            width: "100%",
-            padding: "11px",
-            borderRadius: 11,
-            border: `1.5px solid #1A1916`,
-            background: "transparent",
-            color: "#1A1916",
-            fontSize: 13,
-            cursor: "pointer",
-            fontFamily: "'DM Sans',sans-serif",
-            fontWeight: 500,
-            transition: "all .2s",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: 6,
-          }}
-        >
+        {/* CTA link */}
+        <div style={{ marginTop:"auto", display:"flex", alignItems:"center", gap:4, fontSize:13, color, fontWeight:500, fontFamily:"'DM Sans',sans-serif", cursor:"pointer" }}>
           Open Flow <ChevronRight size={14} strokeWidth={2} />
-        </button>
+        </div>
       </div>
     </div>
   );
@@ -880,14 +673,18 @@ function HomeScreen({ onSelect }: { onSelect: (v: View) => void }) {
         <h1 style={{ fontFamily:"'Libre Baskerville',serif", fontSize:26, fontWeight:400, color:"#1A1916", letterSpacing:"-0.5px", marginBottom:6 }}>Lead Flow</h1>
         <p style={{ fontSize:13, color:"#8A8680", fontWeight:300, fontStyle:"italic" }}>Choose your automation flow to configure</p>
       </div>
-      <div style={{ display:"flex", gap:20, maxWidth:860 }}>
+      <div style={{ display:"flex", gap:24, maxWidth:860 }}>
         <ChoiceCard
           color="#4A46B5"
           accentBg="#EEEDF8"
           title="Lead Flow"
           description="Set up the full sequence that greets every lead, delivers your lead magnet, and books the call — on autopilot."
-          bullets={["Trigger","Typing Animation","AI Agent","Script 1","Lead Magnet","Script 2","Booking","Reply Node"]}
-          agent={<BookingAgent size={180} />}
+          bullets={[
+            "Greets every lead instantly, 24/7",
+            "Sends your lead magnet automatically",
+            "Books calls while you sleep",
+          ]}
+          agent={<BookingAgent size={160} />}
           tag="8 steps"
           onClick={() => onSelect("lead-flow-preview")}
         />
@@ -895,9 +692,13 @@ function HomeScreen({ onSelect }: { onSelect: (v: View) => void }) {
           color="#1D9E75"
           accentBg="#E1F5EE"
           title="Follow-Up Flow"
-          description="Configure agents that re-engage cold leads and confirm bookings to maximise show-up rates."
-          bullets={["Follow-Up Automation","Follow-Up Agent"]}
-          agent={<FollowUpAgent size={180} />}
+          description="Configure agents that re-engage leads after booking and confirm calls to maximise show-up rates."
+          bullets={[
+            "Re-engages leads after booking automatically",
+            "Confirms bookings to maximise show-ups",
+            "AI handles replies intelligently",
+          ]}
+          agent={<FollowUpAgent size={160} />}
           tag="2 flows"
           onClick={() => onSelect("followup-home")}
         />
@@ -916,14 +717,18 @@ function FollowUpHome({ onSelect, onBack }: { onSelect: (v: View) => void; onBac
         <h1 style={{ fontFamily:"'Libre Baskerville',serif", fontSize:26, fontWeight:400, color:"#1A1916", letterSpacing:"-0.5px", marginBottom:6 }}>Follow-Up Flow</h1>
         <p style={{ fontSize:13, color:"#8A8680", fontWeight:300, fontStyle:"italic" }}>Choose how you want to re-engage your leads</p>
       </div>
-      <div style={{ display:"flex", gap:20, maxWidth:860 }}>
+      <div style={{ display:"flex", gap:24, maxWidth:860 }}>
         <ChoiceCard
           color="#BA7517"
           accentBg="#FDF3E1"
           title="Follow-Up Automation"
           description="Send scheduled follow-up messages at the perfect time. Choose your delay and let it run automatically."
-          bullets={["Scheduled Trigger","Time-based delays","Re-engage message"]}
-          agent={<FollowUpAgent size={180} />}
+          bullets={[
+            "Fires automatically at the right time",
+            "Re-engages leads with personalised messages",
+            "Zero manual work required",
+          ]}
+          agent={<FollowUpAgent size={160} />}
           tag="Scheduled"
           onClick={() => onSelect("followup-automation-preview")}
         />
@@ -932,8 +737,12 @@ function FollowUpHome({ onSelect, onBack }: { onSelect: (v: View) => void; onBac
           accentBg="#E6F1FB"
           title="Follow-Up Agent"
           description="AI agent takes over when a lead replies — responding intelligently to guide them toward booking."
-          bullets={["Trigger Agent Reply","AI-powered responses","WhatsApp integration"]}
-          agent={<FollowUpAgent size={180} />}
+          bullets={[
+            "AI takes over when a lead replies",
+            "Responds intelligently every time",
+            "Guides leads toward booking automatically",
+          ]}
+          agent={<FollowUpAgent size={160} />}
           tag="AI"
           onClick={() => onSelect("followup-agent-preview")}
         />
@@ -958,18 +767,9 @@ export function LeadFlowScreen() {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session?.user) return;
       setUserId(session.user.id);
-      const { data } = await supabase
-        .from("account_leadflow_automations")
-        .select("*")
-        .eq("user_id", session.user.id)
-        .maybeSingle();
+      const { data } = await supabase.from("account_leadflow_automations").select("*").eq("user_id", session.user.id).maybeSingle();
       if (data) {
-        setConfig(prev => ({
-          ...prev,
-          ...Object.fromEntries(
-            Object.keys(EMPTY_CONFIG).map(k => [k, (data as any)[k] ?? (EMPTY_CONFIG as any)[k]])
-          ),
-        }));
+        setConfig(prev => ({ ...prev, ...Object.fromEntries(Object.keys(EMPTY_CONFIG).map(k => [k, (data as any)[k] ?? (EMPTY_CONFIG as any)[k]])) }));
       }
     };
     load();
@@ -982,78 +782,45 @@ export function LeadFlowScreen() {
 
   const onSave = async () => {
     if (!userId) return;
-    setSaving(true);
-    setSaved(false);
-    await supabase
-      .from("account_leadflow_automations")
-      .upsert({ user_id: userId, ...config }, { onConflict: "user_id" });
+    setSaving(true); setSaved(false);
+    await supabase.from("account_leadflow_automations").upsert({ user_id: userId, ...config }, { onConflict: "user_id" });
     if (config.wa_client_id) {
       const { data: { user } } = await supabase.auth.getUser();
-      const { data: client } = await supabase
-        .from("clients")
-        .upsert({
-          wa_phone_number_id: config.wa_client_id,
-          wa_access_token: config.wa_access_token || "",
-          email: user?.email || "",
-          full_name: user?.user_metadata?.full_name || "",
-          plan: "free",
-        }, { onConflict: "wa_phone_number_id" })
-        .select("id")
-        .single();
-      if (client) {
-        await supabase
-          .from("account_leadflow_automations")
-          .update({ client_id: client.id })
-          .eq("user_id", userId);
-      }
+      const { data: client } = await supabase.from("clients").upsert({ wa_phone_number_id: config.wa_client_id, wa_access_token: config.wa_access_token || "", email: user?.email || "", full_name: user?.user_metadata?.full_name || "", plan: "free" }, { onConflict: "wa_phone_number_id" }).select("id").single();
+      if (client) await supabase.from("account_leadflow_automations").update({ client_id: client.id }).eq("user_id", userId);
     }
-    setSaving(false);
-    setSaved(true);
+    setSaving(false); setSaved(true);
     setTimeout(() => setSaved(false), 2500);
   };
 
   const onPublish = async () => {
     if (!userId) return;
     setPublishing(true);
-    await supabase
-      .from("account_leadflow_automations")
-      .upsert({ user_id: userId, ...config }, { onConflict: "user_id" });
-    const { data: onboarding } = await supabase
-      .from("accounts_leadflow")
-      .select("*")
-      .eq("user_id", userId)
-      .maybeSingle();
+    await supabase.from("account_leadflow_automations").upsert({ user_id: userId, ...config }, { onConflict: "user_id" });
+    const { data: onboarding } = await supabase.from("accounts_leadflow").select("*").eq("user_id", userId).maybeSingle();
     try {
-      await fetch(N8N_WEBHOOK, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ user_id: userId, onboarding: onboarding || {}, automation: config, published_at: new Date().toISOString() }),
-      });
+      await fetch(N8N_WEBHOOK, { method:"POST", headers:{ "Content-Type":"application/json" }, body: JSON.stringify({ user_id: userId, onboarding: onboarding || {}, automation: config, published_at: new Date().toISOString() }) });
       setPublishDone(true);
       setTimeout(() => setPublishDone(false), 3000);
-    } catch (e) {
-      console.error("Webhook error:", e);
-    }
+    } catch (e) { console.error("Webhook error:", e); }
     setPublishing(false);
   };
 
   const editorProps = { config, onChange, onSave, onPublish, saving, saved, publishing, publishDone };
 
   const leadHowItWorks = [
-    { icon:<Wifi size={13} strokeWidth={1.5}/>,          label:"Connect WhatsApp",    desc:"Link your WhatsApp Business account as the trigger for all incoming leads." },
-    { icon:<Bot size={13} strokeWidth={1.5}/>,            label:"AI Agent greets",     desc:"Your agent sends a human-like welcome, qualifies the lead with Script 1." },
-    { icon:<Gift size={13} strokeWidth={1.5}/>,           label:"Lead Magnet sent",    desc:"The lead magnet link is delivered automatically after qualification." },
-    { icon:<Calendar size={13} strokeWidth={1.5}/>,       label:"Booking confirmed",   desc:"Script 2 follows up and guides the lead to book a call automatically." },
+    { icon:<Wifi size={13} strokeWidth={1.5}/>,         label:"Connect WhatsApp",  desc:"Link your WhatsApp Business account as the trigger for all incoming leads." },
+    { icon:<Bot size={13} strokeWidth={1.5}/>,           label:"AI Agent greets",   desc:"Your agent sends a human-like welcome, qualifies the lead with Script 1." },
+    { icon:<Gift size={13} strokeWidth={1.5}/>,          label:"Lead Magnet sent",  desc:"The lead magnet link is delivered automatically after qualification." },
+    { icon:<Calendar size={13} strokeWidth={1.5}/>,      label:"Booking confirmed", desc:"Script 2 follows up and guides the lead to book a call automatically." },
   ];
-
   const followupAutoHowItWorks = [
-    { icon:<Clock size={13} strokeWidth={1.5}/>,          label:"Scheduled trigger",   desc:"Set a delay and the flow fires automatically at the right time." },
-    { icon:<MessageSquare size={13} strokeWidth={1.5}/>,  label:"Re-engage message",   desc:"A personalised follow-up message is sent to bring the lead back." },
+    { icon:<Clock size={13} strokeWidth={1.5}/>,         label:"Scheduled trigger", desc:"Set a delay and the flow fires automatically at the right time." },
+    { icon:<MessageSquare size={13} strokeWidth={1.5}/>, label:"Re-engage message", desc:"A personalised follow-up message is sent to bring the lead back." },
   ];
-
   const followupAgentHowItWorks = [
-    { icon:<Bot size={13} strokeWidth={1.5}/>,            label:"Lead replies",        desc:"When a lead replies, the AI agent takes over the conversation instantly." },
-    { icon:<MessageCircle size={13} strokeWidth={1.5}/>,  label:"AI responds",         desc:"The agent replies intelligently based on the lead's message to push toward booking." },
+    { icon:<Bot size={13} strokeWidth={1.5}/>,           label:"Lead replies",      desc:"When a lead replies, the AI agent takes over the conversation instantly." },
+    { icon:<MessageCircle size={13} strokeWidth={1.5}/>, label:"AI responds",       desc:"The agent replies intelligently based on the lead's message to push toward booking." },
   ];
 
   return (
@@ -1066,100 +833,49 @@ export function LeadFlowScreen() {
 
         {view === "lead-flow-preview" && (
           <PreviewScreen
-            title="Lead Flow"
-            subtitle="Your main lead automation sequence"
+            title="Lead Flow" subtitle="Your main lead automation sequence"
             description="Set up the full sequence that greets every lead, qualifies them, delivers your lead magnet, and books the call — completely on autopilot. Your agent handles everything so you don't have to."
-            accentColor="#4A46B5"
-            accentBg="#EEEDF8"
-            stats={[
-              { label:"Steps", value:"8" },
-              { label:"Automated", value:"100%" },
-              { label:"Channel", value:"WA" },
-            ]}
-            howItWorks={leadHowItWorks}
-            agent={<BookingAgent size={80} />}
-            steps={LEAD_FLOW_STEPS}
-            onStart={() => setView("lead-flow")}
-            onBack={() => setView("home")}
-            backLabel="Back to Lead Flow"
+            accentColor="#4A46B5" accentBg="#EEEDF8"
+            stats={[{ label:"Steps", value:"8" }, { label:"Automated", value:"100%" }, { label:"Channel", value:"WA" }]}
+            howItWorks={leadHowItWorks} agent={<BookingAgent size={80} />} steps={LEAD_FLOW_STEPS}
+            onStart={() => setView("lead-flow")} onBack={() => setView("home")} backLabel="Back to Lead Flow"
           />
         )}
 
         {view === "lead-flow" && (
-          <FlowEditor
-            title="Lead Flow"
-            subtitle="Your main lead automation sequence"
-            steps={LEAD_FLOW_STEPS}
-            onBack={() => setView("lead-flow-preview")}
-            backLabel="Back to Preview"
-            {...editorProps}
-          />
+          <FlowEditor title="Lead Flow" subtitle="Your main lead automation sequence" steps={LEAD_FLOW_STEPS} onBack={() => setView("lead-flow-preview")} backLabel="Back to Preview" {...editorProps} />
         )}
 
         {view === "followup-home" && <FollowUpHome onSelect={setView} onBack={() => setView("home")} />}
 
         {view === "followup-automation-preview" && (
           <PreviewScreen
-            title="Follow-Up Automation"
-            subtitle="Scheduled time-based follow-up messages"
+            title="Follow-Up Automation" subtitle="Scheduled time-based follow-up messages"
             description="Send perfectly timed follow-up messages to leads who haven't responded. Set your delay once and let the automation re-engage them automatically — no manual work needed."
-            accentColor="#BA7517"
-            accentBg="#FDF3E1"
-            stats={[
-              { label:"Steps", value:"2" },
-              { label:"Type", value:"Auto" },
-              { label:"Channel", value:"WA" },
-            ]}
-            howItWorks={followupAutoHowItWorks}
-            agent={<FollowUpAgent size={80} />}
-            steps={FOLLOWUP_AUTO_STEPS}
-            onStart={() => setView("followup-automation")}
-            onBack={() => setView("followup-home")}
-            backLabel="Back to Follow-Up Flow"
+            accentColor="#BA7517" accentBg="#FDF3E1"
+            stats={[{ label:"Steps", value:"2" }, { label:"Type", value:"Auto" }, { label:"Channel", value:"WA" }]}
+            howItWorks={followupAutoHowItWorks} agent={<FollowUpAgent size={80} />} steps={FOLLOWUP_AUTO_STEPS}
+            onStart={() => setView("followup-automation")} onBack={() => setView("followup-home")} backLabel="Back to Follow-Up Flow"
           />
         )}
 
         {view === "followup-automation" && (
-          <FlowEditor
-            title="Follow-Up Automation"
-            subtitle="Scheduled time-based follow-up messages"
-            steps={FOLLOWUP_AUTO_STEPS}
-            onBack={() => setView("followup-automation-preview")}
-            backLabel="Back to Preview"
-            {...editorProps}
-          />
+          <FlowEditor title="Follow-Up Automation" subtitle="Scheduled time-based follow-up messages" steps={FOLLOWUP_AUTO_STEPS} onBack={() => setView("followup-automation-preview")} backLabel="Back to Preview" {...editorProps} />
         )}
 
         {view === "followup-agent-preview" && (
           <PreviewScreen
-            title="Follow-Up Agent"
-            subtitle="AI agent replies to re-engage your leads"
+            title="Follow-Up Agent" subtitle="AI agent replies to re-engage your leads"
             description="When a lead replies, your AI agent takes over instantly — responding intelligently based on the conversation to guide them toward booking a call with you."
-            accentColor="#378ADD"
-            accentBg="#E6F1FB"
-            stats={[
-              { label:"Steps", value:"2" },
-              { label:"Type", value:"AI" },
-              { label:"Channel", value:"WA" },
-            ]}
-            howItWorks={followupAgentHowItWorks}
-            agent={<FollowUpAgent size={80} />}
-            steps={FOLLOWUP_AGENT_STEPS}
-            onStart={() => setView("followup-agent")}
-            onBack={() => setView("followup-home")}
-            backLabel="Back to Follow-Up Flow"
+            accentColor="#378ADD" accentBg="#E6F1FB"
+            stats={[{ label:"Steps", value:"2" }, { label:"Type", value:"AI" }, { label:"Channel", value:"WA" }]}
+            howItWorks={followupAgentHowItWorks} agent={<FollowUpAgent size={80} />} steps={FOLLOWUP_AGENT_STEPS}
+            onStart={() => setView("followup-agent")} onBack={() => setView("followup-home")} backLabel="Back to Follow-Up Flow"
           />
         )}
 
         {view === "followup-agent" && (
-          <FlowEditor
-            title="Follow-Up Agent"
-            subtitle="AI agent replies to re-engage your leads"
-            steps={FOLLOWUP_AGENT_STEPS}
-            onBack={() => setView("followup-agent-preview")}
-            backLabel="Back to Preview"
-            {...editorProps}
-          />
+          <FlowEditor title="Follow-Up Agent" subtitle="AI agent replies to re-engage your leads" steps={FOLLOWUP_AGENT_STEPS} onBack={() => setView("followup-agent-preview")} backLabel="Back to Preview" {...editorProps} />
         )}
 
       </div>
