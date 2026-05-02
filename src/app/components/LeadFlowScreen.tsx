@@ -209,6 +209,20 @@ export const FollowUpAgent = ({ style }: { style?: React.CSSProperties }) => (
   />
 );
 
+export const FollowUpFlow = ({ style }: { style?: React.CSSProperties }) => (
+  <div
+    style={{
+      width: "100%",
+      height: "100%",
+      backgroundImage: "url(/followup6.png)",
+      backgroundSize: "cover",
+      backgroundRepeat: "no-repeat",
+      backgroundPosition: "center",
+      ...style,
+    }}
+  />
+);
+
 // ─── Interactive Flow Diagram ─────────────────────────────────────────────────
 
 function InteractiveFlowDiagram({ steps }: { steps: FlowStep[] }) {
@@ -700,7 +714,7 @@ function HomeScreen({ onSelect }: { onSelect: (v: View) => void }) {
           color="#1D9E75" accentBg="#E1F5EE" title="Follow-Up Flow"
           description="Configure agents that re-engage leads after booking and confirm calls to maximise show-up rates."
           bullets={["Re-engages leads after booking automatically","Confirms bookings to maximise show-ups","AI handles replies intelligently"]}
-          agent={<FollowUpAutomation />} tag="2 flows"
+          agent={<FollowUpFlow />} tag="2 flows"
           onClick={() => onSelect("followup-home")}
         />
       </div>
