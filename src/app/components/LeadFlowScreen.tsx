@@ -702,8 +702,8 @@ function HomeScreen({ onSelect }: { onSelect: (v: View) => void }) {
         <p style={{ fontSize:13, color:"#8A8680", fontWeight:300, fontStyle:"italic" }}>Choose your automation flow to configure</p>
       </div>
       {/* Banner */}
-      <div style={{ width:"100%", borderRadius:16, overflow:"hidden", marginBottom:32, maxHeight:280 }}>
-        <img src="/banner1.png" alt="To the moon" style={{ width:"100%", height:"100%", display:"block", objectFit:"cover", objectPosition:"center" }} />
+      <div style={{ width:"100%", borderRadius:16, overflow:"hidden", marginBottom:32 }}>
+        <img src="/banner2.png" alt="To the moon" style={{ width:"100%", height:"auto", display:"block" }} />
       </div>
       <div style={{ display:"flex", gap:24, maxWidth:860 }}>
         <ChoiceCard
