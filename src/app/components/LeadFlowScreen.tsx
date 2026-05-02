@@ -3,8 +3,7 @@ import {
   Plus, Settings, Zap, MessageSquare, Gift, Phone,
   Calendar, ArrowLeft, Clock, Bot, MessageCircle, ChevronRight,
   Wifi, Type, Link, Check, Loader2, ZoomIn, ZoomOut, Move,
-  LayoutDashboard, Workflow, Users, Bell, Search, ChevronDown,
-  TrendingUp, Activity, Star,
+  Activity,
 } from "lucide-react";
 import { supabase } from "../supabaseClient";
 
