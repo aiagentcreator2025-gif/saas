@@ -167,30 +167,30 @@ const inputStyle: React.CSSProperties = {
 
 // ─── Agents ───────────────────────────────────────────────────────────────────
 
-export const BookingAgent = ({ size = 160 }: { size?: number }) => (
+export const BookingAgent = ({ style }: { style?: React.CSSProperties }) => (
   <div
     style={{
-      width: size,
-      height: size,
+      width: "100%",
+      height: "100%",
       backgroundImage: "url(/booking4.png)",
-      backgroundSize: "contain",
+      backgroundSize: "cover",
       backgroundRepeat: "no-repeat",
       backgroundPosition: "center",
-      imageRendering: "pixelated",
+      ...style,
     }}
   />
 );
 
-export const FollowUpAgent = ({ size = 160 }: { size?: number }) => (
+export const FollowUpAgent = ({ style }: { style?: React.CSSProperties }) => (
   <div
     style={{
-      width: size,
-      height: size,
+      width: "100%",
+      height: "100%",
       backgroundImage: "url(/followup5.png)",
-      backgroundSize: "contain",
+      backgroundSize: "cover",
       backgroundRepeat: "no-repeat",
       backgroundPosition: "center",
-      imageRendering: "pixelated",
+      ...style,
     }}
   />
 );
@@ -274,10 +274,9 @@ function PreviewScreen({ title, subtitle, description, accentColor, accentBg, st
           </button>
         </div>
         <div style={{ padding:"0 28px 24px", display:"flex", flexDirection:"column", alignItems:"center", borderBottom:"1px solid #F2F1EE" }}>
-          <div style={{ width:240, height:240, borderRadius:20, background:accentBg, border:`1px solid ${accentColor}22`, display:"flex", alignItems:"center", justifyContent:"center", marginBottom:20 }}>
-            <div style={{ transform:"scale(2.4)" }}>
-              {agent}
-            </div>
+          {/* Image fills the box completely */}
+          <div style={{ width:"100%", height:240, borderRadius:20, overflow:"hidden", border:`1px solid ${accentColor}22`, marginBottom:20 }}>
+            {agent}
           </div>
           <div style={{ fontFamily:"'Libre Baskerville',serif", fontSize:20, fontWeight:400, color:"#1A1916", marginBottom:4, textAlign:"center" }}>{title}</div>
           <div style={{ fontSize:11, color:"#8A8680", fontWeight:300, fontStyle:"italic", marginBottom:20, textAlign:"center" }}>{subtitle}</div>
@@ -641,10 +640,9 @@ function ChoiceCard({ color, accentBg, title, description, bullets, agent, tag, 
 }) {
   return (
     <div className="lf-card" onClick={onClick} style={{ background:"#FFFFFF", border:"1px solid #E8E6E0", borderRadius:16, cursor:"pointer", transition:"box-shadow .2s", flex:1, display:"flex", flexDirection:"column", overflow:"hidden" }}>
-      <div style={{ background:accentBg, height:340, display:"flex", alignItems:"center", justifyContent:"center", position:"relative", overflow:"hidden" }}>
-        <div style={{ transform:"scale(2.0)" }}>
-          {agent}
-        </div>
+      {/* Image fills the card top area completely */}
+      <div style={{ height:340, overflow:"hidden", flexShrink:0 }}>
+        {agent}
       </div>
       <div style={{ padding:"28px 24px", display:"flex", flexDirection:"column", flex:1, justifyContent:"space-between" }}>
         <div>
@@ -683,14 +681,14 @@ function HomeScreen({ onSelect }: { onSelect: (v: View) => void }) {
           color="#4A46B5" accentBg="#EEEDF8" title="Lead Flow"
           description="Set up the full sequence that greets every lead, delivers your lead magnet, and books the call — on autopilot."
           bullets={["Greets every lead instantly, 24/7","Sends your lead magnet automatically","Books calls while you sleep"]}
-          agent={<BookingAgent size={160} />} tag="8 steps"
+          agent={<BookingAgent />} tag="8 steps"
           onClick={() => onSelect("lead-flow-preview")}
         />
         <ChoiceCard
           color="#1D9E75" accentBg="#E1F5EE" title="Follow-Up Flow"
           description="Configure agents that re-engage leads after booking and confirm calls to maximise show-up rates."
           bullets={["Re-engages leads after booking automatically","Confirms bookings to maximise show-ups","AI handles replies intelligently"]}
-          agent={<FollowUpAgent size={160} />} tag="2 flows"
+          agent={<FollowUpAgent />} tag="2 flows"
           onClick={() => onSelect("followup-home")}
         />
       </div>
@@ -713,14 +711,14 @@ function FollowUpHome({ onSelect, onBack }: { onSelect: (v: View) => void; onBac
           color="#BA7517" accentBg="#FDF3E1" title="Follow-Up Automation"
           description="Send scheduled follow-up messages at the perfect time. Choose your delay and let it run automatically."
           bullets={["Fires automatically at the right time","Re-engages leads with personalised messages","Zero manual work required"]}
-          agent={<FollowUpAgent size={160} />} tag="Scheduled"
+          agent={<FollowUpAgent />} tag="Scheduled"
           onClick={() => onSelect("followup-automation-preview")}
         />
         <ChoiceCard
           color="#378ADD" accentBg="#E6F1FB" title="Follow-Up Agent"
           description="AI agent takes over when a lead replies — responding intelligently to guide them toward booking."
           bullets={["AI takes over when a lead replies","Responds intelligently every time","Guides leads toward booking automatically"]}
-          agent={<FollowUpAgent size={160} />} tag="AI"
+          agent={<FollowUpAgent />} tag="AI"
           onClick={() => onSelect("followup-agent-preview")}
         />
       </div>
@@ -797,8 +795,20 @@ export function LeadFlowScreen() {
   ];
   const followupAgentHowItWorks = [
     { icon:<Bot size={13} strokeWidth={1.5}/>,           label:"Lead replies",      desc:"When a lead replies, the AI agent takes over the conversation instantly." },
-    { icon:<MessageCircle size={13} strokeWidth={1.5}/>, label:"AI responds",       desc:"The agent replies intelligently based on the lead's message to push toward booking." },
+    { icon:<MessageCircle size={15} strokeWidth={1.5}/>, label:"AI responds",       desc:"The agent replies intelligently based on the lead's message to push toward booking." },
   ];
+
+  // Pass agent as a full-size filler for preview screen
+  const bookingAgentFull = (
+    <div style={{ width:"100%", height:"100%" }}>
+      <BookingAgent />
+    </div>
+  );
+  const followUpAgentFull = (
+    <div style={{ width:"100%", height:"100%" }}>
+      <FollowUpAgent />
+    </div>
+  );
 
   return (
     <>
@@ -814,7 +824,7 @@ export function LeadFlowScreen() {
             description="Set up the full sequence that greets every lead, qualifies them, delivers your lead magnet, and books the call — completely on autopilot. Your agent handles everything so you don't have to."
             accentColor="#4A46B5" accentBg="#EEEDF8"
             stats={[{ label:"Steps", value:"8" }, { label:"Automated", value:"100%" }, { label:"Channel", value:"WA" }]}
-            howItWorks={leadHowItWorks} agent={<BookingAgent size={80} />} steps={LEAD_FLOW_STEPS}
+            howItWorks={leadHowItWorks} agent={bookingAgentFull} steps={LEAD_FLOW_STEPS}
             onStart={() => setView("lead-flow")} onBack={() => setView("home")} backLabel="Back to Lead Flow"
           />
         )}
@@ -831,7 +841,7 @@ export function LeadFlowScreen() {
             description="Send perfectly timed follow-up messages to leads who haven't responded. Set your delay once and let the automation re-engage them automatically — no manual work needed."
             accentColor="#BA7517" accentBg="#FDF3E1"
             stats={[{ label:"Steps", value:"2" }, { label:"Type", value:"Auto" }, { label:"Channel", value:"WA" }]}
-            howItWorks={followupAutoHowItWorks} agent={<FollowUpAgent size={80} />} steps={FOLLOWUP_AUTO_STEPS}
+            howItWorks={followupAutoHowItWorks} agent={followUpAgentFull} steps={FOLLOWUP_AUTO_STEPS}
             onStart={() => setView("followup-automation")} onBack={() => setView("followup-home")} backLabel="Back to Follow-Up Flow"
           />
         )}
@@ -846,7 +856,7 @@ export function LeadFlowScreen() {
             description="When a lead replies, your AI agent takes over instantly — responding intelligently based on the conversation to guide them toward booking a call with you."
             accentColor="#378ADD" accentBg="#E6F1FB"
             stats={[{ label:"Steps", value:"2" }, { label:"Type", value:"AI" }, { label:"Channel", value:"WA" }]}
-            howItWorks={followupAgentHowItWorks} agent={<FollowUpAgent size={80} />} steps={FOLLOWUP_AGENT_STEPS}
+            howItWorks={followupAgentHowItWorks} agent={followUpAgentFull} steps={FOLLOWUP_AGENT_STEPS}
             onStart={() => setView("followup-agent")} onBack={() => setView("followup-home")} backLabel="Back to Follow-Up Flow"
           />
         )}
