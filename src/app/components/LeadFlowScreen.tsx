@@ -186,7 +186,7 @@ export const FollowUpAgent = ({ size = 160 }: { size?: number }) => (
     style={{
       width: size,
       height: size,
-      backgroundImage: "url(/followup4.png)",
+      backgroundImage: "url(/followup5.png)",
       backgroundSize: "contain",
       backgroundRepeat: "no-repeat",
       backgroundPosition: "center",
