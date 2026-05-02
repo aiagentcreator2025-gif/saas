@@ -172,7 +172,7 @@ export const BookingAgent = ({ size = 160 }: { size?: number }) => (
     style={{
       width: size,
       height: size,
-      backgroundImage: "url(/booking.png)",
+      backgroundImage: "url(/booking3.png)",
       backgroundSize: "contain",
       backgroundRepeat: "no-repeat",
       backgroundPosition: "center",
@@ -186,7 +186,7 @@ export const FollowUpAgent = ({ size = 160 }: { size?: number }) => (
     style={{
       width: size,
       height: size,
-      backgroundImage: "url(/followup2.png)",
+      backgroundImage: "url(/followup3.png)",
       backgroundSize: "contain",
       backgroundRepeat: "no-repeat",
       backgroundPosition: "center",
