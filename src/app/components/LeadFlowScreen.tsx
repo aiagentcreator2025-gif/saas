@@ -186,7 +186,7 @@ export const FollowUpAgent = ({ style }: { style?: React.CSSProperties }) => (
     style={{
       width: "100%",
       height: "100%",
-      backgroundImage: "url(/followup5.png)",
+      backgroundImage: "url(/followup6.png)",
       backgroundSize: "cover",
       backgroundRepeat: "no-repeat",
       backgroundPosition: "center",
