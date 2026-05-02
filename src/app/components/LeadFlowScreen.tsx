@@ -703,7 +703,7 @@ function HomeScreen({ onSelect }: { onSelect: (v: View) => void }) {
       </div>
       {/* Banner */}
       <div style={{ width:"100%", borderRadius:16, overflow:"hidden", marginBottom:32 }}>
-        <img src="/banner3.png" alt="To the moon" style={{ width:"100%", height:"auto", display:"block" }} />
+        <img src="/banner3.png" alt="To the moon" style={{ width:"100%", height:"260", display:"block" }} />
       </div>
       <div style={{ display:"flex", gap:24, maxWidth:860 }}>
         <ChoiceCard
