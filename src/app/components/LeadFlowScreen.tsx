@@ -1,9 +1,8 @@
-import { useState, useEffect, useCallback, useRef } from "react";
 import {
   Plus, Settings, Zap, MessageSquare, Gift, Phone,
   Calendar, ArrowLeft, Clock, Bot, MessageCircle, ChevronRight,
   Wifi, Type, Link, Check, Loader2, ZoomIn, ZoomOut, Move,
-  Activity,
+  Activity, LayoutDashboard, Workflow, Users, Star, Search, Bell,
 } from "lucide-react";
 import { supabase } from "../supabaseClient";
 
