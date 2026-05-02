@@ -701,25 +701,9 @@ function HomeScreen({ onSelect }: { onSelect: (v: View) => void }) {
         <h1 style={{ fontFamily:"'Libre Baskerville',serif", fontSize:26, fontWeight:400, color:"#1A1916", letterSpacing:"-0.5px", marginBottom:6 }}>Lead Flow</h1>
         <p style={{ fontSize:13, color:"#8A8680", fontWeight:300, fontStyle:"italic" }}>Choose your automation flow to configure</p>
       </div>
-
       {/* Banner */}
       <div style={{ width:"100%", maxWidth:860, borderRadius:20, overflow:"hidden", marginBottom:32 }}>
         <img src="/banner.png" alt="To the moon" style={{ width:"100%", height:"auto", display:"block" }} />
-      </div>
-
-      <div style={{ display:"flex", gap:24, maxWidth:860 }}>
-        {/* ... rest unchanged */}
-      </div>
-    </div>
-  );
-}
-
-function HomeScreen({ onSelect }: { onSelect: (v: View) => void }) {
-  return (
-    <div style={{ padding:"40px 48px", background:"#F9F9F8", minHeight:"100vh", fontFamily:"'DM Sans',sans-serif" }}>
-      <div style={{ marginBottom:36 }}>
-        <h1 style={{ fontFamily:"'Libre Baskerville',serif", fontSize:26, fontWeight:400, color:"#1A1916", letterSpacing:"-0.5px", marginBottom:6 }}>Lead Flow</h1>
-        <p style={{ fontSize:13, color:"#8A8680", fontWeight:300, fontStyle:"italic" }}>Choose your automation flow to configure</p>
       </div>
       <div style={{ display:"flex", gap:24, maxWidth:860 }}>
         <ChoiceCard
@@ -740,7 +724,6 @@ function HomeScreen({ onSelect }: { onSelect: (v: View) => void }) {
     </div>
   );
 }
-
 // ─── Follow-Up Home ───────────────────────────────────────────────────────────
 
 function FollowUpHome({ onSelect, onBack }: { onSelect: (v: View) => void; onBack: () => void }) {
