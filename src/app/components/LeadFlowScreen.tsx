@@ -181,12 +181,26 @@ export const BookingAgent = ({ style }: { style?: React.CSSProperties }) => (
   />
 );
 
+export const FollowUpAutomation = ({ style }: { style?: React.CSSProperties }) => (
+  <div
+    style={{
+      width: "100%",
+      height: "100%",
+      backgroundImage: "url(/followupautomation.png)",
+      backgroundSize: "cover",
+      backgroundRepeat: "no-repeat",
+      backgroundPosition: "center",
+      ...style,
+    }}
+  />
+);
+
 export const FollowUpAgent = ({ style }: { style?: React.CSSProperties }) => (
   <div
     style={{
       width: "100%",
       height: "100%",
-      backgroundImage: "url(/followup6.png)",
+      backgroundImage: "url(/followupagent.png)",
       backgroundSize: "cover",
       backgroundRepeat: "no-repeat",
       backgroundPosition: "center",
@@ -274,7 +288,6 @@ function PreviewScreen({ title, subtitle, description, accentColor, accentBg, st
           </button>
         </div>
         <div style={{ padding:"0 28px 24px", display:"flex", flexDirection:"column", alignItems:"center", borderBottom:"1px solid #F2F1EE" }}>
-          {/* Image fills the box completely */}
           <div style={{ width:"100%", height:240, borderRadius:20, overflow:"hidden", border:`1px solid ${accentColor}22`, marginBottom:20 }}>
             {agent}
           </div>
@@ -640,7 +653,6 @@ function ChoiceCard({ color, accentBg, title, description, bullets, agent, tag, 
 }) {
   return (
     <div className="lf-card" onClick={onClick} style={{ background:"#FFFFFF", border:"1px solid #E8E6E0", borderRadius:16, cursor:"pointer", transition:"box-shadow .2s", flex:1, display:"flex", flexDirection:"column", overflow:"hidden" }}>
-      {/* Image fills the card top area completely */}
       <div style={{ height:340, overflow:"hidden", flexShrink:0 }}>
         {agent}
       </div>
@@ -688,7 +700,7 @@ function HomeScreen({ onSelect }: { onSelect: (v: View) => void }) {
           color="#1D9E75" accentBg="#E1F5EE" title="Follow-Up Flow"
           description="Configure agents that re-engage leads after booking and confirm calls to maximise show-up rates."
           bullets={["Re-engages leads after booking automatically","Confirms bookings to maximise show-ups","AI handles replies intelligently"]}
-          agent={<FollowUpAgent />} tag="2 flows"
+          agent={<FollowUpAutomation />} tag="2 flows"
           onClick={() => onSelect("followup-home")}
         />
       </div>
@@ -711,7 +723,7 @@ function FollowUpHome({ onSelect, onBack }: { onSelect: (v: View) => void; onBac
           color="#BA7517" accentBg="#FDF3E1" title="Follow-Up Automation"
           description="Send scheduled follow-up messages at the perfect time. Choose your delay and let it run automatically."
           bullets={["Fires automatically at the right time","Re-engages leads with personalised messages","Zero manual work required"]}
-          agent={<FollowUpAgent />} tag="Scheduled"
+          agent={<FollowUpAutomation />} tag="Scheduled"
           onClick={() => onSelect("followup-automation-preview")}
         />
         <ChoiceCard
@@ -798,16 +810,14 @@ export function LeadFlowScreen() {
     { icon:<MessageCircle size={15} strokeWidth={1.5}/>, label:"AI responds",       desc:"The agent replies intelligently based on the lead's message to push toward booking." },
   ];
 
-  // Pass agent as a full-size filler for preview screen
   const bookingAgentFull = (
-    <div style={{ width:"100%", height:"100%" }}>
-      <BookingAgent />
-    </div>
+    <div style={{ width:"100%", height:"100%" }}><BookingAgent /></div>
+  );
+  const followUpAutomationFull = (
+    <div style={{ width:"100%", height:"100%" }}><FollowUpAutomation /></div>
   );
   const followUpAgentFull = (
-    <div style={{ width:"100%", height:"100%" }}>
-      <FollowUpAgent />
-    </div>
+    <div style={{ width:"100%", height:"100%" }}><FollowUpAgent /></div>
   );
 
   return (
@@ -841,7 +851,7 @@ export function LeadFlowScreen() {
             description="Send perfectly timed follow-up messages to leads who haven't responded. Set your delay once and let the automation re-engage them automatically — no manual work needed."
             accentColor="#BA7517" accentBg="#FDF3E1"
             stats={[{ label:"Steps", value:"2" }, { label:"Type", value:"Auto" }, { label:"Channel", value:"WA" }]}
-            howItWorks={followupAutoHowItWorks} agent={followUpAgentFull} steps={FOLLOWUP_AUTO_STEPS}
+            howItWorks={followupAutoHowItWorks} agent={followUpAutomationFull} steps={FOLLOWUP_AUTO_STEPS}
             onStart={() => setView("followup-automation")} onBack={() => setView("followup-home")} backLabel="Back to Follow-Up Flow"
           />
         )}
