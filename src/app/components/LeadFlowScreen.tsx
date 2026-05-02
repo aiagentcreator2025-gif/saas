@@ -1,3 +1,4 @@
+import { useState, useEffect, useCallback, useRef } from "react";
 import {
   Plus, Settings, Zap, MessageSquare, Gift, Phone,
   Calendar, ArrowLeft, Clock, Bot, MessageCircle, ChevronRight,
