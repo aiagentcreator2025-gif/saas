@@ -1,7 +1,7 @@
 import { useState } from "react";
 import {
   TrendingUp, TrendingDown, Users, Mail, CalendarCheck, CheckSquare,
-  Zap, Phone, FileText, ChevronDown, ArrowUpRight, CalendarDays,
+  ChevronDown, ArrowUpRight, CalendarDays,
 } from "lucide-react";
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
@@ -53,17 +53,175 @@ const ACTIVITIES = [
 
 const BASE = "https://raw.githubusercontent.com/aiagentcreator2025-gif/saas/main/public/";
 
+// ─── Agent profile images per flow ───────────────────────────────────────────
+const AGENT_IMAGES: Record<string, string> = {
+  "Booking Flow":         `${BASE}facebooking1.png`,
+  "Follow-Up Automation": `${BASE}facefollowupautomation.png`,
+  "Follow-Up Agent":      `${BASE}facefollowupagent.png`,
+};
+
+// ─── Modern SVG step illustrations ───────────────────────────────────────────
+function IconTrigger({ color }: { color: string }) {
+  return (
+    <svg width="44" height="44" viewBox="0 0 44 44" fill="none">
+      <circle cx="22" cy="22" r="22" fill={color + "18"}/>
+      {/* Lightning bolt */}
+      <polygon points="25,8 15,24 22,24 19,36 29,20 22,20" fill={color} opacity="0.9"/>
+    </svg>
+  );
+}
+
+function IconScript({ color }: { color: string }) {
+  return (
+    <svg width="44" height="44" viewBox="0 0 44 44" fill="none">
+      <circle cx="22" cy="22" r="22" fill={color + "18"}/>
+      {/* Chat bubble */}
+      <rect x="9" y="12" width="24" height="16" rx="4" fill={color} opacity="0.85"/>
+      <polygon points="13,28 9,35 20,28" fill={color} opacity="0.85"/>
+      <rect x="13" y="17" width="14" height="2" rx="1" fill="white" opacity="0.8"/>
+      <rect x="13" y="21" width="10" height="2" rx="1" fill="white" opacity="0.6"/>
+    </svg>
+  );
+}
+
+function IconLeadMagnet({ color }: { color: string }) {
+  return (
+    <svg width="44" height="44" viewBox="0 0 44 44" fill="none">
+      <circle cx="22" cy="22" r="22" fill={color + "18"}/>
+      {/* Document */}
+      <rect x="11" y="8" width="18" height="24" rx="3" fill={color} opacity="0.85"/>
+      <path d="M23 8 L29 14 L23 14 Z" fill="white" opacity="0.45"/>
+      <rect x="14" y="18" width="10" height="1.5" rx="0.75" fill="white" opacity="0.7"/>
+      <rect x="14" y="21" width="8"  height="1.5" rx="0.75" fill="white" opacity="0.5"/>
+      <rect x="14" y="24" width="10" height="1.5" rx="0.75" fill="white" opacity="0.4"/>
+      {/* Download arrow badge */}
+      <circle cx="30" cy="32" r="7" fill={color}/>
+      <path d="M30 28.5 L30 33 M27.5 31 L30 33.5 L32.5 31" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  );
+}
+
+function IconFollowUp({ color }: { color: string }) {
+  return (
+    <svg width="44" height="44" viewBox="0 0 44 44" fill="none">
+      <circle cx="22" cy="22" r="22" fill={color + "18"}/>
+      {/* Circular arrow */}
+      <path d="M13 22 A9 9 0 1 1 22 31" stroke={color} strokeWidth="2.5" strokeLinecap="round" fill="none"/>
+      <polygon points="13,17.5 13,25.5 19.5,22" fill={color}/>
+      {/* Clock */}
+      <circle cx="30" cy="14" r="6" fill={color} opacity="0.9"/>
+      <path d="M30 11 L30 14 L33 14" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
+    </svg>
+  );
+}
+
+function IconBooking({ color }: { color: string }) {
+  return (
+    <svg width="44" height="44" viewBox="0 0 44 44" fill="none">
+      <circle cx="22" cy="22" r="22" fill={color + "18"}/>
+      {/* Calendar body */}
+      <rect x="9" y="13" width="26" height="22" rx="3" fill={color} opacity="0.85"/>
+      <rect x="9" y="13" width="26" height="8"  rx="3" fill={color}/>
+      {/* Pins */}
+      <rect x="15" y="9" width="2.5" height="7" rx="1.25" fill={color}/>
+      <rect x="27" y="9" width="2.5" height="7" rx="1.25" fill={color}/>
+      {/* Checkmark */}
+      <path d="M16 27 L21 32 L28 22" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  );
+}
+
+function IconScheduledTrigger({ color }: { color: string }) {
+  return (
+    <svg width="44" height="44" viewBox="0 0 44 44" fill="none">
+      <circle cx="22" cy="22" r="22" fill={color + "18"}/>
+      {/* Clock face */}
+      <circle cx="22" cy="22" r="13" fill={color} opacity="0.85"/>
+      <path d="M22 14 L22 22 L28 22" stroke="white" strokeWidth="2" strokeLinecap="round"/>
+      <circle cx="22" cy="22" r="1.8" fill="white"/>
+    </svg>
+  );
+}
+
+function IconFollowUpMsg({ color }: { color: string }) {
+  return (
+    <svg width="44" height="44" viewBox="0 0 44 44" fill="none">
+      <circle cx="22" cy="22" r="22" fill={color + "18"}/>
+      {/* Envelope */}
+      <rect x="8" y="14" width="22" height="15" rx="3" fill={color} opacity="0.85"/>
+      <path d="M8 17 L19 24 L30 17" stroke="white" strokeWidth="1.5" strokeLinecap="round" fill="none"/>
+      {/* Arrow badge */}
+      <circle cx="33" cy="30" r="6" fill={color}/>
+      <path d="M30 30 L35 30 M33 27.5 L35 30 L33 32.5" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  );
+}
+
+function IconIngestAgent({ color }: { color: string }) {
+  return (
+    <svg width="44" height="44" viewBox="0 0 44 44" fill="none">
+      <circle cx="22" cy="22" r="22" fill={color + "18"}/>
+      {/* Robot head */}
+      <rect x="12" y="15" width="20" height="15" rx="5" fill={color} opacity="0.9"/>
+      {/* Eyes */}
+      <circle cx="18" cy="21" r="2.2" fill="white"/>
+      <circle cx="26" cy="21" r="2.2" fill="white"/>
+      <circle cx="18.9" cy="21" r="1" fill={color}/>
+      <circle cx="26.9" cy="21" r="1" fill={color}/>
+      {/* Antenna */}
+      <line x1="22" y1="15" x2="22" y2="9" stroke={color} strokeWidth="2" strokeLinecap="round"/>
+      <circle cx="22" cy="8" r="2.5" fill={color}/>
+      {/* Mouth */}
+      <path d="M17.5 26.5 Q22 30 26.5 26.5" stroke="white" strokeWidth="1.5" strokeLinecap="round" fill="none"/>
+    </svg>
+  );
+}
+
+function IconAgentReply({ color }: { color: string }) {
+  return (
+    <svg width="44" height="44" viewBox="0 0 44 44" fill="none">
+      <circle cx="22" cy="22" r="22" fill={color + "18"}/>
+      {/* Incoming bubble */}
+      <rect x="7" y="11" width="18" height="11" rx="3" fill={color} opacity="0.5"/>
+      <polygon points="11,22 7,28 17,22" fill={color} opacity="0.5"/>
+      {/* Reply bubble */}
+      <rect x="17" y="23" width="20" height="11" rx="3" fill={color} opacity="0.95"/>
+      <polygon points="33,34 37,40 23,34" fill={color} opacity="0.95"/>
+      {/* Typing dots */}
+      <circle cx="22" cy="28.5" r="1.3" fill="white"/>
+      <circle cx="27" cy="28.5" r="1.3" fill="white"/>
+      <circle cx="32" cy="28.5" r="1.3" fill="white"/>
+    </svg>
+  );
+}
+
+function StepIllustration({ label, color }: { label: string; color: string }) {
+  const map: Record<string, JSX.Element> = {
+    "Trigger":           <IconTrigger color={color}/>,
+    "Script 1":          <IconScript color={color}/>,
+    "Script 2":          <IconFollowUp color={color}/>,
+    "Lead Magnet":       <IconLeadMagnet color={color}/>,
+    "Booking":           <IconBooking color={color}/>,
+    "Scheduled Trigger": <IconScheduledTrigger color={color}/>,
+    "Follow-Up Message": <IconFollowUpMsg color={color}/>,
+    "Ingest Agent":      <IconIngestAgent color={color}/>,
+    "Agent Reply":       <IconAgentReply color={color}/>,
+  };
+  return map[label] ?? <IconTrigger color={color}/>;
+}
+
+// ─── Flow data ────────────────────────────────────────────────────────────────
 const FLOWS = [
   {
     title: "Booking Flow",
     subtitle: "Your main automation pipeline",
     conversion: { label: "24% (34/142)", pct: 24 },
     steps: [
-      { label:"Trigger",     sub:"WhatsApp",  count:"142", color:"#4F46E5", bg:"#EEF2FF", img:`${BASE}facebooking1.png`         },
-      { label:"Script 1",    sub:"Welcome",   count:"138", color:"#2563EB", bg:"#DBEAFE", img:`${BASE}facebooking1.png`         },
-      { label:"Lead Magnet", sub:"Send PDF",  count:"98",  color:"#16A34A", bg:"#DCFCE7", img:`${BASE}facebooking1.png`         },
-      { label:"Script 2",    sub:"Follow-up", count:"61",  color:"#D97706", bg:"#FEF3C7", img:`${BASE}facebooking1.png`         },
-      { label:"Booking",     sub:"Schedule",  count:"34",  color:"#7C3AED", bg:"#EDE9FE", img:`${BASE}facebooking1.png`         },
+      { label:"Trigger",     sub:"WhatsApp",  count:"142", color:"#4F46E5", bg:"#EEF2FF" },
+      { label:"Script 1",    sub:"Welcome",   count:"138", color:"#2563EB", bg:"#DBEAFE" },
+      { label:"Lead Magnet", sub:"Send PDF",  count:"98",  color:"#16A34A", bg:"#DCFCE7" },
+      { label:"Script 2",    sub:"Follow-up", count:"61",  color:"#D97706", bg:"#FEF3C7" },
+      { label:"Booking",     sub:"Schedule",  count:"34",  color:"#7C3AED", bg:"#EDE9FE" },
     ],
   },
   {
@@ -71,8 +229,8 @@ const FLOWS = [
     subtitle: "Re-engage no-shows automatically",
     conversion: { label: "82% (72/87)", pct: 82 },
     steps: [
-      { label:"Scheduled Trigger", sub:"Trigger", count:"87", color:"#4F46E5", bg:"#EEF2FF", img:`${BASE}facefollowupautomation.png` },
-      { label:"Follow-Up Message", sub:"Message", count:"72", color:"#2563EB", bg:"#DBEAFE", img:`${BASE}facefollowupautomation.png` },
+      { label:"Scheduled Trigger", sub:"Trigger", count:"87", color:"#4F46E5", bg:"#EEF2FF" },
+      { label:"Follow-Up Message", sub:"Message", count:"72", color:"#2563EB", bg:"#DBEAFE" },
     ],
   },
   {
@@ -80,14 +238,34 @@ const FLOWS = [
     subtitle: "AI agent handles responses",
     conversion: { label: "88% (48/54)", pct: 88 },
     steps: [
-      { label:"Ingest Agent", sub:"Agent",      count:"54", color:"#DC2626", bg:"#FEE2E2", img:`${BASE}facefollowupagent.png` },
-      { label:"Agent Reply",  sub:"Auto reply", count:"48", color:"#16A34A", bg:"#DCFCE7", img:`${BASE}facefollowupagent.png` },
+      { label:"Ingest Agent", sub:"Agent",      count:"54", color:"#DC2626", bg:"#FEE2E2" },
+      { label:"Agent Reply",  sub:"Auto reply", count:"48", color:"#16A34A", bg:"#DCFCE7" },
     ],
   },
 ];
 
 type FlowStep = typeof FLOWS[0]["steps"][0];
 type Flow = typeof FLOWS[0];
+
+// ─── Agent Avatar ─────────────────────────────────────────────────────────────
+function AgentAvatar({ flowTitle }: { flowTitle: string }) {
+  const src = AGENT_IMAGES[flowTitle];
+  return (
+    <div style={{
+      width: 52, height: 52, borderRadius: "50%", overflow: "hidden",
+      border: "3px solid #fff", boxShadow: "0 4px 14px rgba(79,70,229,.22)",
+      background: "#EEF2FF", flexShrink: 0,
+      display: "flex", alignItems: "center", justifyContent: "center",
+    }}>
+      <img
+        src={src}
+        alt={flowTitle}
+        style={{ width: "100%", height: "100%", objectFit: "cover" }}
+        onError={e => { (e.target as HTMLImageElement).style.display = "none"; }}
+      />
+    </div>
+  );
+}
 
 // ─── Donut Chart ──────────────────────────────────────────────────────────────
 function DonutChart() {
@@ -99,7 +277,6 @@ function DonutChart() {
   ];
   const cx=80, cy=80, r1=62, r2=38;
   let cum = -Math.PI/2;
-  // FIX L97: typed pct parameter
   function arc(pct: number) {
     const s=cum, e=cum+pct*2*Math.PI-0.03; cum=e+0.03;
     const x1s=cx+r1*Math.cos(s), y1s=cy+r1*Math.sin(s);
@@ -135,15 +312,14 @@ function DonutChart() {
 }
 
 // ─── Bar Chart ────────────────────────────────────────────────────────────────
-// FIX L132: typed props for BubbleBarChart
 function BubbleBarChart({ data, labels }: { data: DataRow[]; labels: string[] }) {
   const [tooltip, setTooltip] = useState<number | null>(null);
-  const maxVal = Math.max(...data.map((d: DataRow) => d.leadsHandled)); // FIX L134
+  const maxVal = Math.max(...data.map((d: DataRow) => d.leadsHandled));
   const BAR_H = 140;
   return (
     <div style={{position:"relative"}}>
       <div style={{display:"flex",alignItems:"flex-end",gap:8,height:BAR_H+24}}>
-        {data.map((entry: DataRow, i: number) => { // FIX L139
+        {data.map((entry: DataRow, i: number) => {
           const h1=Math.max(8,Math.round((entry.leadsHandled/maxVal)*BAR_H));
           const h2=Math.max(8,Math.round((entry.magnetSent/maxVal)*BAR_H));
           const hov=tooltip===i;
@@ -185,7 +361,6 @@ function BubbleBarChart({ data, labels }: { data: DataRow[]; labels: string[] })
 }
 
 // ─── Avatar ───────────────────────────────────────────────────────────────────
-// FIX L181: typed Avatar props
 function Avatar({ init, bg="#EEF2FF", color="#4F46E5", size=30 }: { init: string; bg?: string; color?: string; size?: number }) {
   return (
     <div style={{width:size,height:size,borderRadius:"50%",background:bg,
@@ -196,22 +371,18 @@ function Avatar({ init, bg="#EEF2FF", color="#4F46E5", size=30 }: { init: string
   );
 }
 
-// ─── Flow Step ────────────────────────────────────────────────────────────────
-// FIX L192: typed FlowStep props
+// ─── Flow Step Card ───────────────────────────────────────────────────────────
 function FlowStepCard({ step }: { step: FlowStep }) {
   return (
-    <div style={{textAlign:"center",background:"#FAFAFA",borderRadius:14,
-      border:`1.5px solid ${step.color}22`,padding:"14px 10px",
-      boxShadow:"0 2px 8px rgba(0,0,0,.04)",transition:"transform .15s",cursor:"pointer"}}
-      // FIX L204: cast EventTarget to HTMLElement to access .style
+    <div
+      style={{textAlign:"center",background:"#FAFAFA",borderRadius:14,
+        border:`1.5px solid ${step.color}22`,padding:"14px 10px",
+        boxShadow:"0 2px 8px rgba(0,0,0,.04)",transition:"transform .15s",cursor:"pointer"}}
       onMouseEnter={e=>(e.currentTarget as HTMLElement).style.transform="scale(1.04)"}
-      onMouseLeave={e=>(e.currentTarget as HTMLElement).style.transform="scale(1)"}>
-      <div style={{width:44,height:44,borderRadius:"50%",display:"flex",alignItems:"center",
-        justifyContent:"center",margin:"0 auto 8px",overflow:"hidden",
-        border:`2px solid ${step.color}33`,background:step.bg}}>
-        <img src={step.img} alt={step.label}
-          style={{width:"100%",height:"100%",objectFit:"cover"}}
-          onError={e=>{(e.target as HTMLImageElement).style.display="none";}}/>
+      onMouseLeave={e=>(e.currentTarget as HTMLElement).style.transform="scale(1)"}
+    >
+      <div style={{display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 8px"}}>
+        <StepIllustration label={step.label} color={step.color}/>
       </div>
       <div style={{fontSize:11,fontWeight:700,color:"#111827",marginBottom:1}}>{step.label}</div>
       <div style={{fontSize:9,color:"#9CA3AF",marginBottom:8}}>{step.sub}</div>
@@ -221,22 +392,27 @@ function FlowStepCard({ step }: { step: FlowStep }) {
 }
 
 // ─── Flow Section ─────────────────────────────────────────────────────────────
-// FIX L214: typed FlowSection props
 function FlowSection({ flow }: { flow: Flow }) {
   return (
     <div style={{background:"#fff",borderRadius:18,padding:"22px 24px",boxShadow:"0 1px 4px rgba(0,0,0,.06)"}}>
+      {/* Header: agent avatar + title + button */}
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:18}}>
-        <div>
-          <div style={{fontSize:15,fontWeight:800,color:"#111827",letterSpacing:"-0.3px",marginBottom:2}}>{flow.title}</div>
-          <div style={{fontSize:11,color:"#9CA3AF"}}>{flow.subtitle}</div>
+        <div style={{display:"flex",alignItems:"center",gap:12}}>
+          <AgentAvatar flowTitle={flow.title}/>
+          <div>
+            <div style={{fontSize:15,fontWeight:800,color:"#111827",letterSpacing:"-0.3px",marginBottom:2}}>{flow.title}</div>
+            <div style={{fontSize:11,color:"#9CA3AF"}}>{flow.subtitle}</div>
+          </div>
         </div>
         <button style={{padding:"7px 16px",borderRadius:10,border:"none",background:"#111827",
           color:"#fff",fontSize:11,fontWeight:600,cursor:"pointer",fontFamily:"'Plus Jakarta Sans',sans-serif"}}>
           Edit Flow
         </button>
       </div>
+
+      {/* Steps */}
       <div style={{display:"flex",alignItems:"center"}}>
-        {flow.steps.map((step: FlowStep, i: number) => ( // FIX L228
+        {flow.steps.map((step: FlowStep, i: number) => (
           <div key={i} style={{display:"flex",alignItems:"center",flex:1,minWidth:0}}>
             <div style={{flex:1}}><FlowStepCard step={step}/></div>
             {i<flow.steps.length-1&&(
@@ -249,6 +425,8 @@ function FlowSection({ flow }: { flow: Flow }) {
           </div>
         ))}
       </div>
+
+      {/* Conversion */}
       <div style={{marginTop:14,display:"flex",alignItems:"center",gap:12,
         background:"#F9FAFB",borderRadius:10,padding:"10px 14px",border:"1px solid #F3F4F6"}}>
         <span style={{fontSize:11,color:"#9CA3AF",flexShrink:0}}>Conversion rate</span>
@@ -392,7 +570,6 @@ export function DashboardScreen() {
         {/* ── Booking Flow + Recent Activity ── */}
         <div style={{display:"grid",gridTemplateColumns:"1.7fr 1fr",gap:16}}>
           <FlowSection flow={FLOWS[0]}/>
-
           <div style={{background:"#fff",borderRadius:18,padding:"22px 20px",boxShadow:"0 1px 4px rgba(0,0,0,.06)",display:"flex",flexDirection:"column"}}>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:2}}>
               <div style={{fontSize:15,fontWeight:800,color:"#111827",letterSpacing:"-0.3px"}}>Recent Activity</div>
