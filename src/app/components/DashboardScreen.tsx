@@ -2,7 +2,7 @@ import { useState } from "react";
 import {
   TrendingUp, ArrowUpRight, Clock, CheckSquare,
   Users, Mail, CalendarCheck, Zap, Phone, FileText,
-  Search, Bell, ChevronDown, TrendingDown,
+  Search, Bell, ChevronDown, TrendingDown, type LucideIcon,
 } from "lucide-react";
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
@@ -66,7 +66,7 @@ interface FlowStepDef {
   sub: string;
   color: string;
   count: string;
-  Icon: React.ComponentType<{ size?: number; strokeWidth?: number; color?: string }>;
+  Icon: LucideIcon;
   faceImg: string | null; // circular avatar image
 }
 
