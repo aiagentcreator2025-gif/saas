@@ -854,17 +854,17 @@ function HomeScreen({ onSelect }: { onSelect: (v: View) => void }) {
         />
         {/* Dark fade from left so text is readable */}
         <div style={{ position:"absolute", inset:0, background:"linear-gradient(90deg, #1A1245 38%, rgba(26,18,69,0.7) 60%, transparent 80%)" }}/>
-        {/* Text */}
-        <div style={{ position:"absolute", inset:0, display:"flex", flexDirection:"column", justifyContent:"center", padding:"0 36px" }}>
-          <div style={{ fontSize:11, fontWeight:700, letterSpacing:"2px", textTransform:"uppercase", color:"#A5B4FC", marginBottom:10 }}>
-            ⚡ Automation
-          </div>
-          <div style={{ fontSize:26, fontWeight:800, color:"#fff", letterSpacing:"-0.5px", lineHeight:1.25, marginBottom:8, maxWidth:340 }}>
-            Boost your business<br/>while you sleep
-          </div>
-          <div style={{ fontSize:13, color:"rgba(255,255,255,0.7)", marginBottom:20, maxWidth:280, lineHeight:1.6 }}>
-            Set up once. Convert leads to booked calls on autopilot, 24/7.
-          </div>
+       {/* Text */}
+<div style={{ position:"absolute", inset:0, display:"flex", flexDirection:"column", justifyContent:"center", padding:"0 48px" }}>
+  <div style={{ fontSize:11, fontWeight:700, letterSpacing:"2px", textTransform:"uppercase", color:"#A5B4FC", marginBottom:10 }}>
+    ⚡ Automation
+  </div>
+  <div style={{ fontSize:26, fontWeight:800, color:"#fff", letterSpacing:"-0.5px", lineHeight:1.35, marginBottom:8, maxWidth:420 }}>
+    Boost your business<br/>while you sleep
+  </div>
+  <div style={{ fontSize:13, color:"rgba(255,255,255,0.7)", marginBottom:20, maxWidth:360, lineHeight:1.7 }}>
+    Set up once. Convert leads to booked calls on autopilot, 24/7.
+  </div>
           <button
             onClick={() => onSelect("lead-flow-preview")}
             style={{ display:"inline-flex", alignItems:"center", gap:7, padding:"11px 22px", borderRadius:12, background:"#FFFFFF", color:"#4F46E5", fontSize:13, fontWeight:800, border:"none", cursor:"pointer", width:"fit-content", boxShadow:"0 4px 14px rgba(0,0,0,.2)", transition:"transform 0.15s" }}
