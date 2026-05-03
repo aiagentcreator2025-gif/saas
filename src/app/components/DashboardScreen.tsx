@@ -67,7 +67,7 @@ interface FlowStepDef {
   color: string;
   count: string;
   Icon: LucideIcon;
-  faceImg: string | null; // circular avatar image
+  faceImg: string | null;
 }
 
 // Lead Flow — Booking gets the face avatar
@@ -94,7 +94,6 @@ const FOLLOWUP_AGENT_STEPS: FlowStepDef[] = [
 type Entry = { leadsHandled:number; magnetSent:number; bookedCalls:number; showUp:number };
 
 // ─── Circular Face Avatar ─────────────────────────────────────────────────────
-// Uses object-fit:cover + object-position:center top to show the face properly
 function FaceAvatar({ src, size = 36, borderColor }: { src: string; size?: number; borderColor?: string }) {
   return (
     <div style={{
@@ -114,7 +113,7 @@ function FaceAvatar({ src, size = 36, borderColor }: { src: string; size?: numbe
           width: "100%",
           height: "100%",
           objectFit: "cover",
-          objectPosition: "center top", // keeps face in frame
+          objectPosition: "center top",
           display: "block",
         }}
       />
@@ -193,19 +192,27 @@ function LayeredBarChart({ data, labels }: { data: Entry[]; labels: string[] }) 
 }
 
 // ─── Flow Sequence Block ──────────────────────────────────────────────────────
-function FlowSequence({ title, subtitle, steps, conversionRate, conversionLabel }: {
+function FlowSequence({ title, subtitle, steps, conversionRate, conversionLabel, titleImage }: {
   title: string;
   subtitle: string;
   steps: FlowStepDef[];
   conversionRate: string;
   conversionLabel: string;
+  titleImage?: string;
 }) {
   return (
     <div style={{ background:"#FFFFFF", borderRadius:16, padding:"22px 24px", boxShadow:"0 1px 4px rgba(0,0,0,.05)" }}>
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:18 }}>
-        <div>
-          <div style={{ fontSize:15, fontWeight:700, color:"#111827", letterSpacing:"-0.2px", marginBottom:2 }}>{title}</div>
-          <div style={{ fontSize:11, color:"#9CA3AF" }}>{subtitle}</div>
+        <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+          {titleImage && (
+            <div style={{ width:38, height:38, borderRadius:"50%", overflow:"hidden", flexShrink:0, border:"2px solid #E5E7EB", boxShadow:"0 2px 8px rgba(0,0,0,.1)" }}>
+              <img src={titleImage} alt="agent" style={{ width:"100%", height:"100%", objectFit:"cover", objectPosition:"center top", display:"block" }} />
+            </div>
+          )}
+          <div>
+            <div style={{ fontSize:15, fontWeight:700, color:"#111827", letterSpacing:"-0.2px", marginBottom:2 }}>{title}</div>
+            <div style={{ fontSize:11, color:"#9CA3AF" }}>{subtitle}</div>
+          </div>
         </div>
         <button style={{ padding:"7px 16px", borderRadius:10, border:"none", background:"#111827", color:"#fff", fontSize:11, fontWeight:600, cursor:"pointer", fontFamily:"'Plus Jakarta Sans',sans-serif" }}>
           Edit Flow
@@ -392,14 +399,15 @@ export function DashboardScreen() {
           </div>
         </div>
 
-        {/* ── Lead Flow Sequence ── */}
+        {/* ── Booking Flow Sequence ── */}
         <div style={{ marginBottom:14 }}>
           <FlowSequence
-            title="Lead Flow Sequence"
+            title="Booking Flow"
             subtitle="Your main automation pipeline"
             steps={LEAD_FLOW_STEPS}
             conversionRate="24%"
             conversionLabel="24% (34/142)"
+            titleImage="/facebooking.png"
           />
         </div>
 
@@ -411,6 +419,7 @@ export function DashboardScreen() {
             steps={FOLLOWUP_AUTO_STEPS}
             conversionRate="82%"
             conversionLabel="82% (72/87)"
+            titleImage="/facefollowupautomation.png"
           />
           <FlowSequence
             title="Follow-Up Agent"
@@ -418,6 +427,7 @@ export function DashboardScreen() {
             steps={FOLLOWUP_AGENT_STEPS}
             conversionRate="88%"
             conversionLabel="88% (48/54)"
+            titleImage="/facefollowupagent.png"
           />
         </div>
 
