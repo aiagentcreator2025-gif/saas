@@ -780,18 +780,12 @@ function HomeScreen({ onSelect }: { onSelect: (v: View) => void }) {
   marginBottom: 32,
   position: "relative",
   maxHeight: 240,
-  overflow: "hidden",
 }}>
   <img
     src={`${BASE}banner7.png`}
     alt="banner"
     style={{ width:1046, height:"auto", display:"block", borderRadius: 20 }}
   />
-  <div style={{
-    position: "absolute",
-    inset: 0,
-    background: "linear-gradient(90deg, rgba(30,27,90,0.92) 0%, rgba(30,27,90,0.80) 25%, rgba(30,27,90,0.45) 45%, transparent 65%)",
-  }} />
   <div style={{
     position: "absolute",
     inset: 0,
