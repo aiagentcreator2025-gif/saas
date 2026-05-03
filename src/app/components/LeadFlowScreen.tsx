@@ -787,6 +787,7 @@ function HomeScreen({ onSelect }: { onSelect: (v: View) => void }) {
       height: "auto",
       display: "block",
       borderRadius: 20,
+      imageRendering: "crisp-edges",
     }}
   />
 </div>
