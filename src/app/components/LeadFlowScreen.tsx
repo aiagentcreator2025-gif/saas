@@ -780,11 +780,12 @@ function HomeScreen({ onSelect }: { onSelect: (v: View) => void }) {
   overflow: "hidden",
   marginBottom: 32,
   position: "relative",
+  maxHeight: 240,
 }}>
   <img
     src={`${BASE}banner7.png`}
     alt="banner"
-    style={{ width:"100%", height:"auto", display:"block" }}
+    style={{ width: 1046, height:"auto", display:"block" }}
   />
   <div style={{
     position: "absolute",
