@@ -287,7 +287,7 @@ function FlowCardNew({
 
       {/* Right: image */}
       <div style={{
-        width:160, flexShrink:0,
+        width:180, flexShrink:0,
         background:bgColor,
         display:"flex", alignItems:"flex-end", justifyContent:"center",
         overflow:"hidden",
@@ -295,7 +295,7 @@ function FlowCardNew({
         <img
           src={agentImgUrl}
           alt={title}
-          style={{ width:"100%", height:"100%", objectFit:"contain", objectPosition:"bottom center" }}
+          style={{ width:"100%", height:"100%", objectFit:"cover", objectPosition:"center center" }}
         />
       </div>
     </div>
