@@ -955,7 +955,7 @@ function FollowUpHome({ onSelect, onBack }: { onSelect: (v: View) => void; onBac
             "Responds intelligently every time",
             "Guides leads toward booking automatically",
           ]}
-          agentImgUrl={`${BASE}followupagent.png`}}
+          agentImgUrl={`${BASE}followupagent.png`}
           accentColor="#2563EB"
           accentBg="#DBEAFE"
           stepCount="AI Agent"
