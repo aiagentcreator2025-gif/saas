@@ -67,59 +67,30 @@ interface FlowStepDef {
   color: string;
   count: string;
   Icon: LucideIcon;
-  faceImg: string | null;
 }
 
-// Lead Flow — Booking gets the face avatar
+// Booking Flow
 const LEAD_FLOW_STEPS: FlowStepDef[] = [
-  { label:"Trigger",     sub:"WhatsApp",  color:"#4F46E5", count:"142", Icon: Zap,           faceImg: null             },
-  { label:"Script 1",    sub:"Welcome",   color:"#2563EB", count:"138", Icon: Mail,          faceImg: null             },
-  { label:"Lead Magnet", sub:"Send PDF",  color:"#16A34A", count:"98",  Icon: FileText,      faceImg: null             },
-  { label:"Script 2",    sub:"Follow-up", color:"#D97706", count:"61",  Icon: Phone,         faceImg: null             },
-  { label:"Booking",     sub:"Schedule",  color:"#4F46E5", count:"34",  Icon: CalendarCheck, faceImg: "/booking4.png"  },
+  { label:"Trigger",     sub:"WhatsApp",  color:"#4F46E5", count:"142", Icon: Zap           },
+  { label:"Script 1",    sub:"Welcome",   color:"#2563EB", count:"138", Icon: Mail          },
+  { label:"Lead Magnet", sub:"Send PDF",  color:"#16A34A", count:"98",  Icon: FileText      },
+  { label:"Script 2",    sub:"Follow-up", color:"#D97706", count:"61",  Icon: Phone         },
+  { label:"Booking",     sub:"Schedule",  color:"#4F46E5", count:"34",  Icon: CalendarCheck },
 ];
 
-// Follow-Up Automation — first step gets face avatar
+// Follow-Up Automation
 const FOLLOWUP_AUTO_STEPS: FlowStepDef[] = [
-  { label:"Scheduled Trigger", sub:"Time-based Send", color:"#D97706", count:"87", Icon: Clock, faceImg: "/facefollowupautomation.png" },
-  { label:"Follow-Up Message", sub:"Re-engage Lead",  color:"#2563EB", count:"72", Icon: Mail,  faceImg: null },
+  { label:"Scheduled Trigger", sub:"Time-based Send", color:"#D97706", count:"87", Icon: Clock },
+  { label:"Follow-Up Message", sub:"Re-engage Lead",  color:"#2563EB", count:"72", Icon: Mail  },
 ];
 
-// Follow-Up Agent — first step gets face avatar
+// Follow-Up Agent
 const FOLLOWUP_AGENT_STEPS: FlowStepDef[] = [
-  { label:"Trigger Agent", sub:"AI Reply Trigger", color:"#7C3AED", count:"54", Icon: Zap,      faceImg: "/facefollowupagent.png" },
-  { label:"Agent Reply",   sub:"WhatsApp Reply",   color:"#16A34A", count:"48", Icon: FileText, faceImg: null },
+  { label:"Trigger Agent", sub:"AI Reply Trigger", color:"#7C3AED", count:"54", Icon: Zap      },
+  { label:"Agent Reply",   sub:"WhatsApp Reply",   color:"#16A34A", count:"48", Icon: FileText },
 ];
 
 type Entry = { leadsHandled:number; magnetSent:number; bookedCalls:number; showUp:number };
-
-// ─── Circular Face Avatar ─────────────────────────────────────────────────────
-function FaceAvatar({ src, size = 36, borderColor }: { src: string; size?: number; borderColor?: string }) {
-  return (
-    <div style={{
-      width: size,
-      height: size,
-      borderRadius: "50%",
-      overflow: "hidden",
-      flexShrink: 0,
-      border: `2px solid ${borderColor ?? "#fff"}`,
-      boxShadow: "0 2px 8px rgba(0,0,0,.15)",
-      background: "#F3F4F6",
-    }}>
-      <img
-        src={src}
-        alt="flow face"
-        style={{
-          width: "100%",
-          height: "100%",
-          objectFit: "cover",
-          objectPosition: "center top",
-          display: "block",
-        }}
-      />
-    </div>
-  );
-}
 
 // ─── Text Avatar (initials fallback) ─────────────────────────────────────────
 function Avatar({ init, bg="#EEF2FF", color="#4F46E5", size=32 }: {
@@ -227,17 +198,11 @@ function FlowSequence({ title, subtitle, steps, conversionRate, conversionLabel,
               <div style={{ height:3, background:step.color, width:"100%" }} />
 
               <div style={{ padding:"12px 14px 14px" }}>
-                {/* Icon row — either circular face image or icon box */}
                 <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:10 }}>
-                  {step.faceImg ? (
-                    <FaceAvatar src={step.faceImg} size={36} borderColor={`${step.color}40`} />
-                  ) : (
-                    <div style={{ width:36, height:36, borderRadius:"50%", background:"#F3F4F6", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, border:"2px solid #E5E7EB" }}>
-                      <step.Icon size={15} strokeWidth={1.8} color={step.color} />
-                    </div>
-                  )}
+                  <div style={{ width:36, height:36, borderRadius:"50%", background:"#F3F4F6", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, border:"2px solid #E5E7EB" }}>
+                    <step.Icon size={15} strokeWidth={1.8} color={step.color} />
+                  </div>
                 </div>
-
                 <div style={{ fontSize:13, fontWeight:700, color:"#111827", letterSpacing:"-0.2px", marginBottom:1 }}>{step.label}</div>
                 <div style={{ fontSize:10, color:"#9CA3AF", marginBottom:10 }}>{step.sub}</div>
                 <div style={{ fontSize:26, fontWeight:800, color:step.color, letterSpacing:"-1px", lineHeight:1 }}>{step.count}</div>
