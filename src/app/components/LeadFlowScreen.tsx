@@ -778,7 +778,7 @@ function HomeScreen({ onSelect }: { onSelect: (v: View) => void }) {
 {/* ── BANNER ── */}
 <div className="lf-animate-delay-1" style={{ marginBottom: 32 }}>
   <img
-    src={`${BASE}banner8.png`}
+    src={`${BASE}banner9.png`}
     alt="Automate your leads"
     width={1400}
     height={300}
