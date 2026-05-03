@@ -60,30 +60,69 @@ const ACTIVITIES = [
   { init:"CL", name:"Chris Lee",     action:"no-showed the call",   time:"3 hours ago", bg:"#FEE2E2", color:"#DC2626" },
 ];
 
-// Lead Flow steps — Booking gets face image
-const LEAD_FLOW_STEPS = [
-  { label:"Trigger",     sub:"WhatsApp",  color:"#4F46E5", count:"142", Icon: Zap,           img: null           },
-  { label:"Script 1",    sub:"Welcome",   color:"#2563EB", count:"138", Icon: Mail,          img: null           },
-  { label:"Lead Magnet", sub:"Send PDF",  color:"#16A34A", count:"98",  Icon: FileText,      img: null           },
-  { label:"Script 2",    sub:"Follow-up", color:"#D97706", count:"61",  Icon: Phone,         img: null           },
-  { label:"Booking",     sub:"Schedule",  color:"#4F46E5", count:"34",  Icon: CalendarCheck, img: "/booking4.png" },
+// ─── Flow Step Types ───────────────────────────────────────────────────────────
+interface FlowStepDef {
+  label: string;
+  sub: string;
+  color: string;
+  count: string;
+  Icon: React.ComponentType<{ size?: number; strokeWidth?: number; color?: string }>;
+  faceImg: string | null; // circular avatar image
+}
+
+// Lead Flow — Booking gets the face avatar
+const LEAD_FLOW_STEPS: FlowStepDef[] = [
+  { label:"Trigger",     sub:"WhatsApp",  color:"#4F46E5", count:"142", Icon: Zap,           faceImg: null             },
+  { label:"Script 1",    sub:"Welcome",   color:"#2563EB", count:"138", Icon: Mail,          faceImg: null             },
+  { label:"Lead Magnet", sub:"Send PDF",  color:"#16A34A", count:"98",  Icon: FileText,      faceImg: null             },
+  { label:"Script 2",    sub:"Follow-up", color:"#D97706", count:"61",  Icon: Phone,         faceImg: null             },
+  { label:"Booking",     sub:"Schedule",  color:"#4F46E5", count:"34",  Icon: CalendarCheck, faceImg: "/booking4.png"  },
 ];
 
-// Follow-Up Automation — first card gets face
-const FOLLOWUP_AUTO_STEPS = [
-  { label:"Scheduled Trigger", sub:"Time-based Send", color:"#D97706", count:"87", Icon: Clock, img: "/facefollowupautomation.png" },
-  { label:"Follow-Up Message", sub:"Re-engage Lead",  color:"#2563EB", count:"72", Icon: Mail,  img: null },
+// Follow-Up Automation — first step gets face avatar
+const FOLLOWUP_AUTO_STEPS: FlowStepDef[] = [
+  { label:"Scheduled Trigger", sub:"Time-based Send", color:"#D97706", count:"87", Icon: Clock, faceImg: "/facefollowupautomation.png" },
+  { label:"Follow-Up Message", sub:"Re-engage Lead",  color:"#2563EB", count:"72", Icon: Mail,  faceImg: null },
 ];
 
-// Follow-Up Agent — first card gets face
-const FOLLOWUP_AGENT_STEPS = [
-  { label:"Trigger Agent", sub:"AI Reply Trigger", color:"#7C3AED", count:"54", Icon: Zap,      img: "/facefollowupagent.png" },
-  { label:"Agent Reply",   sub:"WhatsApp Reply",   color:"#16A34A", count:"48", Icon: FileText, img: null },
+// Follow-Up Agent — first step gets face avatar
+const FOLLOWUP_AGENT_STEPS: FlowStepDef[] = [
+  { label:"Trigger Agent", sub:"AI Reply Trigger", color:"#7C3AED", count:"54", Icon: Zap,      faceImg: "/facefollowupagent.png" },
+  { label:"Agent Reply",   sub:"WhatsApp Reply",   color:"#16A34A", count:"48", Icon: FileText, faceImg: null },
 ];
 
 type Entry = { leadsHandled:number; magnetSent:number; bookedCalls:number; showUp:number };
 
-// ─── Avatar ───────────────────────────────────────────────────────────────────
+// ─── Circular Face Avatar ─────────────────────────────────────────────────────
+// Uses object-fit:cover + object-position:center top to show the face properly
+function FaceAvatar({ src, size = 36, borderColor }: { src: string; size?: number; borderColor?: string }) {
+  return (
+    <div style={{
+      width: size,
+      height: size,
+      borderRadius: "50%",
+      overflow: "hidden",
+      flexShrink: 0,
+      border: `2px solid ${borderColor ?? "#fff"}`,
+      boxShadow: "0 2px 8px rgba(0,0,0,.15)",
+      background: "#F3F4F6",
+    }}>
+      <img
+        src={src}
+        alt="flow face"
+        style={{
+          width: "100%",
+          height: "100%",
+          objectFit: "cover",
+          objectPosition: "center top", // keeps face in frame
+          display: "block",
+        }}
+      />
+    </div>
+  );
+}
+
+// ─── Text Avatar (initials fallback) ─────────────────────────────────────────
 function Avatar({ init, bg="#EEF2FF", color="#4F46E5", size=32 }: {
   init:string; bg?:string; color?:string; size?:number;
 }) {
@@ -155,9 +194,11 @@ function LayeredBarChart({ data, labels }: { data: Entry[]; labels: string[] }) 
 
 // ─── Flow Sequence Block ──────────────────────────────────────────────────────
 function FlowSequence({ title, subtitle, steps, conversionRate, conversionLabel }: {
-  title: string; subtitle: string;
-  steps: { label:string; sub:string; color:string; count:string; Icon:any; img:string|null }[];
-  conversionRate: string; conversionLabel: string;
+  title: string;
+  subtitle: string;
+  steps: FlowStepDef[];
+  conversionRate: string;
+  conversionLabel: string;
 }) {
   return (
     <div style={{ background:"#FFFFFF", borderRadius:16, padding:"22px 24px", boxShadow:"0 1px 4px rgba(0,0,0,.05)" }}>
@@ -173,27 +214,25 @@ function FlowSequence({ title, subtitle, steps, conversionRate, conversionLabel 
 
       <div style={{ display:"flex", alignItems:"stretch" }}>
         {steps.map((step, i) => (
-          <div key={i} style={{ display:"flex", alignItems:"center", flex:1 }}>
-            <div className="ds-flow" style={{ flex:1, borderRadius:14, border:"1px solid #E5E7EB", background:"#FFFFFF", position:"relative", overflow:"hidden", boxShadow:"0 1px 3px rgba(0,0,0,.04)" }}>
+          <div key={i} style={{ display:"flex", alignItems:"center", flex:1, minWidth:0 }}>
+            <div className="ds-flow" style={{ flex:1, minWidth:0, borderRadius:14, border:"1px solid #E5E7EB", background:"#FFFFFF", position:"relative", overflow:"hidden", boxShadow:"0 1px 3px rgba(0,0,0,.04)" }}>
               {/* Top colour accent */}
               <div style={{ height:3, background:step.color, width:"100%" }} />
 
-              {/* Face image or icon */}
-              {step.img ? (
-                <div style={{ height:80, overflow:"hidden", background:"#F3F4F6" }}>
-                  <img src={step.img} alt={step.label} style={{ width:"100%", height:"100%", objectFit:"cover", objectPosition:"center top" }} />
+              <div style={{ padding:"12px 14px 14px" }}>
+                {/* Icon row — either circular face image or icon box */}
+                <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:10 }}>
+                  {step.faceImg ? (
+                    <FaceAvatar src={step.faceImg} size={36} borderColor={`${step.color}40`} />
+                  ) : (
+                    <div style={{ width:36, height:36, borderRadius:"50%", background:"#F3F4F6", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, border:"2px solid #E5E7EB" }}>
+                      <step.Icon size={15} strokeWidth={1.8} color={step.color} />
+                    </div>
+                  )}
                 </div>
-              ) : (
-                <div style={{ padding:"12px 14px 0" }}>
-                  <div style={{ width:32, height:32, borderRadius:9, background:"#F3F4F6", display:"flex", alignItems:"center", justifyContent:"center" }}>
-                    <step.Icon size={14} strokeWidth={1.8} color={step.color} />
-                  </div>
-                </div>
-              )}
 
-              <div style={{ padding: step.img ? "10px 14px 14px" : "8px 14px 14px" }}>
                 <div style={{ fontSize:13, fontWeight:700, color:"#111827", letterSpacing:"-0.2px", marginBottom:1 }}>{step.label}</div>
-                <div style={{ fontSize:10, color:"#9CA3AF", marginBottom:8 }}>{step.sub}</div>
+                <div style={{ fontSize:10, color:"#9CA3AF", marginBottom:10 }}>{step.sub}</div>
                 <div style={{ fontSize:26, fontWeight:800, color:step.color, letterSpacing:"-1px", lineHeight:1 }}>{step.count}</div>
               </div>
             </div>
