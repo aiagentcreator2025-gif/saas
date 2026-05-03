@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Sidebar } from "./components/Sidebar";
 import { DashboardScreen } from "./components/DashboardScreen";
 import { LeadFlowScreen } from "./components/LeadFlowScreen";
-import { CalendarScreen, BookingFormScreen, SettingsScreen } from "./components/CalendarScreen";
+import { CalendarScreen, SettingsScreen } from "./components/CalendarScreen";
 import { LeadListScreen } from "./components/LeadListScreen";
 import { ConversationScreen } from "./components/ConversationScreen";
 import { AuthScreen } from "./components/AuthScreen";
@@ -11,7 +11,7 @@ import { NotificationPopup } from "./components/NotificationPopup";
 import { MyAgentScreen } from "./components/MyAgentScreen";
 import { supabase } from "./supabaseClient";
 
-export type Screen = "dashboard" | "leadflow" | "calendar" | "booking-form" | "settings" | "leadlist" | "conversations" | "my-agent";
+export type Screen = "dashboard" | "leadflow" | "calendar" | "settings" | "leadlist" | "conversations" | "my-agent";
 
 export default function App() {
   const [screen, setScreen] = useState<Screen>("dashboard");
@@ -98,7 +98,6 @@ export default function App() {
         {screen === "dashboard"     && <DashboardScreen />}
         {screen === "leadflow"      && <LeadFlowScreen />}
         {screen === "calendar"      && <CalendarScreen />}
-        {screen === "booking-form"  && <BookingFormScreen />}
         {screen === "settings"      && <SettingsScreen />}
         {screen === "leadlist"      && <LeadListScreen />}
         {screen === "conversations" && <ConversationScreen />}
