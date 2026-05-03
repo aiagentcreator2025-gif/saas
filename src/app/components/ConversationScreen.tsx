@@ -17,9 +17,12 @@ interface Message {
 }
 
 const GLOBAL_STYLES = `
-  @import url('https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;1,400&family=DM+Sans:wght@300;400;500&display=swap');
-  .lead-row:hover { background: #F7F6F3 !important; }
-  .send-btn:hover { opacity: .8; }
+  @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+  * { box-sizing: border-box; }
+  .lead-row:hover { background: #F3F4F6 !important; }
+  .send-btn:hover { background: #4338CA !important; }
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-thumb { background: #D1D5DB; border-radius: 4px; }
 `;
 
 export function ConversationScreen() {
@@ -31,7 +34,6 @@ export function ConversationScreen() {
   const [input, setInput] = useState("");
   const bottomRef = useRef<HTMLDivElement>(null);
 
-  // Get client_id dynamically from logged-in user
   useEffect(() => {
     const load = async () => {
       const { data: { session } } = await supabase.auth.getSession();
@@ -46,7 +48,6 @@ export function ConversationScreen() {
     load();
   }, []);
 
-  // Fetch leads only when clientId is ready
   useEffect(() => {
     if (!clientId) return;
     supabase
@@ -61,7 +62,6 @@ export function ConversationScreen() {
     if (!selectedLead) return;
     setMessages([]);
     setConversationId(null);
-
     supabase
       .from("conversations")
       .select("id")
@@ -100,11 +100,11 @@ export function ConversationScreen() {
   }, [messages]);
 
   const STATUS_COLORS: Record<string, { color: string; bg: string }> = {
-    new:          { color: "#378ADD", bg: "#E6F1FB" },
-    magnet_sent:  { color: "#1D9E75", bg: "#E1F5EE" },
-    booked:       { color: "#4A46B5", bg: "#EEEDF8" },
-    no_show:      { color: "#D85A30", bg: "#FAECE7" },
-    follow_up:    { color: "#BA7517", bg: "#FDF3E1" },
+    new:         { color: "#2563EB", bg: "#EFF6FF" },
+    magnet_sent: { color: "#059669", bg: "#ECFDF5" },
+    booked:      { color: "#4F46E5", bg: "#EEF2FF" },
+    no_show:     { color: "#DC2626", bg: "#FEF2F2" },
+    follow_up:   { color: "#D97706", bg: "#FFFBEB" },
   };
 
   const initials = (lead: Lead) =>
@@ -113,32 +113,33 @@ export function ConversationScreen() {
   return (
     <>
       <style>{GLOBAL_STYLES}</style>
-      <div style={{ display: "flex", height: "100vh", fontFamily: "'DM Sans', sans-serif", background: "#F9F9F8" }}>
+      <div style={{ display:"flex", height:"100vh", fontFamily:"'Plus Jakarta Sans',sans-serif", background:"#EDEEF5" }}>
 
-        <div style={{ width: 280, flexShrink: 0, borderRight: "1px solid #E8E6E0", background: "#FFFFFF", display: "flex", flexDirection: "column" }}>
-          <div style={{ padding: "24px 20px 14px" }}>
-            <h1 style={{ fontFamily: "'Libre Baskerville', serif", fontSize: 20, fontWeight: 400, color: "#1A1916", letterSpacing: "-0.4px", marginBottom: 2 }}>Conversations</h1>
-            <p style={{ fontSize: 11, color: "#8A8680", fontWeight: 300, fontStyle: "italic" }}>{leads.length} leads</p>
+        {/* ── Lead list sidebar ── */}
+        <div style={{ width:280, flexShrink:0, background:"#FFFFFF", borderRight:"1px solid #E5E7EB", display:"flex", flexDirection:"column" }}>
+          <div style={{ padding:"24px 20px 14px" }}>
+            <h1 style={{ fontSize:20, fontWeight:800, color:"#111827", letterSpacing:"-0.4px", marginBottom:2 }}>Conversations</h1>
+            <p style={{ fontSize:12, color:"#9CA3AF" }}>{leads.length} leads</p>
           </div>
-          <div style={{ flex: 1, overflowY: "auto" }}>
+          <div style={{ flex:1, overflowY:"auto" }}>
             {leads.map(lead => {
-              const s = STATUS_COLORS[lead.status] || { color: "#8A8680", bg: "#F2F1EE" };
+              const s = STATUS_COLORS[lead.status] || { color:"#6B7280", bg:"#F3F4F6" };
               const isSelected = selectedLead?.id === lead.id;
               return (
                 <div
                   key={lead.id}
                   className={isSelected ? "" : "lead-row"}
                   onClick={() => setSelectedLead(lead)}
-                  style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 16px", cursor: "pointer", background: isSelected ? "#EEEDF8" : "transparent", borderBottom: "1px solid #F2F1EE", transition: "background .14s" }}
+                  style={{ display:"flex", alignItems:"center", gap:10, padding:"12px 16px", cursor:"pointer", background: isSelected ? "#EEF2FF" : "transparent", borderBottom:"1px solid #F3F4F6", transition:"background .14s" }}
                 >
-                  <div style={{ width: 36, height: 36, borderRadius: "50%", background: isSelected ? "#4A46B5" : "#F2F1EE", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 500, color: isSelected ? "#fff" : "#8A8680", flexShrink: 0 }}>
+                  <div style={{ width:36, height:36, borderRadius:"50%", background: isSelected ? "#4F46E5" : "#F3F4F6", display:"flex", alignItems:"center", justifyContent:"center", fontSize:12, fontWeight:700, color: isSelected ? "#fff" : "#6B7280", flexShrink:0 }}>
                     {initials(lead)}
                   </div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 13, fontWeight: 500, color: isSelected ? "#4A46B5" : "#1A1916", marginBottom: 3, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                  <div style={{ flex:1, minWidth:0 }}>
+                    <div style={{ fontSize:13, fontWeight:700, color: isSelected ? "#4F46E5" : "#111827", marginBottom:3, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>
                       {lead.name || lead.whatsapp_number}
                     </div>
-                    <span style={{ fontSize: 9, fontWeight: 400, color: s.color, background: s.bg, padding: "2px 8px", borderRadius: 20 }}>
+                    <span style={{ fontSize:9, fontWeight:700, color:s.color, background:s.bg, padding:"2px 8px", borderRadius:20, textTransform:"uppercase", letterSpacing:"0.4px" }}>
                       {lead.status.replace("_", " ")}
                     </span>
                   </div>
@@ -146,36 +147,41 @@ export function ConversationScreen() {
               );
             })}
             {leads.length === 0 && (
-              <div style={{ padding: 32, textAlign: "center", color: "#8A8680", fontSize: 12, fontStyle: "italic" }}>
+              <div style={{ padding:32, textAlign:"center", color:"#9CA3AF", fontSize:12 }}>
                 {clientId ? "No leads yet" : "Connecting..."}
               </div>
             )}
           </div>
         </div>
 
+        {/* ── Chat area ── */}
         {selectedLead ? (
-          <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
-            <div style={{ padding: "16px 24px", borderBottom: "1px solid #E8E6E0", background: "#FFFFFF", display: "flex", alignItems: "center", gap: 12 }}>
-              <div style={{ width: 38, height: 38, borderRadius: "50%", background: "#EEEDF8", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 500, color: "#4A46B5" }}>
+          <div style={{ flex:1, display:"flex", flexDirection:"column", background:"#EDEEF5" }}>
+
+            {/* Header */}
+            <div style={{ padding:"16px 24px", background:"#FFFFFF", borderBottom:"1px solid #E5E7EB", display:"flex", alignItems:"center", gap:12 }}>
+              <div style={{ width:38, height:38, borderRadius:"50%", background:"#EEF2FF", display:"flex", alignItems:"center", justifyContent:"center", fontSize:13, fontWeight:700, color:"#4F46E5" }}>
                 {initials(selectedLead)}
               </div>
               <div>
-                <div style={{ fontSize: 14, fontWeight: 500, color: "#1A1916" }}>{selectedLead.name || selectedLead.whatsapp_number}</div>
-                <div style={{ fontSize: 11, color: "#8A8680", fontWeight: 300 }}>{selectedLead.whatsapp_number}</div>
+                <div style={{ fontSize:14, fontWeight:700, color:"#111827" }}>{selectedLead.name || selectedLead.whatsapp_number}</div>
+                <div style={{ fontSize:11, color:"#9CA3AF" }}>{selectedLead.whatsapp_number}</div>
               </div>
             </div>
-            <div style={{ flex: 1, overflowY: "auto", padding: "20px 24px", display: "flex", flexDirection: "column", gap: 10 }}>
+
+            {/* Messages */}
+            <div style={{ flex:1, overflowY:"auto", padding:"20px 24px", display:"flex", flexDirection:"column", gap:10 }}>
               {messages.length === 0 && (
-                <div style={{ textAlign: "center", color: "#C4C2BC", fontSize: 12, fontStyle: "italic", marginTop: 40 }}>No messages yet</div>
+                <div style={{ textAlign:"center", color:"#D1D5DB", fontSize:12, marginTop:40 }}>No messages yet</div>
               )}
               {messages.map(msg => {
                 const isOutbound = msg.direction === "outbound";
                 return (
-                  <div key={msg.id} style={{ display: "flex", justifyContent: isOutbound ? "flex-end" : "flex-start" }}>
-                    <div style={{ maxWidth: "65%", padding: "9px 14px", borderRadius: isOutbound ? "14px 14px 4px 14px" : "14px 14px 14px 4px", background: isOutbound ? "#1A1916" : "#FFFFFF", border: isOutbound ? "none" : "1px solid #E8E6E0", fontSize: 13, color: isOutbound ? "#fff" : "#1A1916", fontWeight: 300, lineHeight: 1.5 }}>
+                  <div key={msg.id} style={{ display:"flex", justifyContent: isOutbound ? "flex-end" : "flex-start" }}>
+                    <div style={{ maxWidth:"65%", padding:"10px 14px", borderRadius: isOutbound ? "14px 14px 4px 14px" : "14px 14px 14px 4px", background: isOutbound ? "#4F46E5" : "#FFFFFF", border: isOutbound ? "none" : "1px solid #E5E7EB", fontSize:13, fontWeight: isOutbound ? 500 : 400, color: isOutbound ? "#fff" : "#111827", lineHeight:1.6, boxShadow:"0 1px 3px rgba(0,0,0,0.04)" }}>
                       {msg.content}
-                      <div style={{ fontSize: 9, color: isOutbound ? "rgba(255,255,255,.45)" : "#C4C2BC", marginTop: 4, textAlign: "right" }}>
-                        {new Date(msg.sent_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                      <div style={{ fontSize:9, color: isOutbound ? "rgba(255,255,255,.5)" : "#D1D5DB", marginTop:4, textAlign:"right" }}>
+                        {new Date(msg.sent_at).toLocaleTimeString([], { hour:"2-digit", minute:"2-digit" })}
                       </div>
                     </div>
                   </div>
@@ -183,18 +189,28 @@ export function ConversationScreen() {
               })}
               <div ref={bottomRef} />
             </div>
-            <div style={{ padding: "14px 24px", borderTop: "1px solid #E8E6E0", background: "#FFFFFF", display: "flex", gap: 10, alignItems: "flex-end" }}>
-              <textarea value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); } }} placeholder="Type a message..." rows={1} style={{ flex: 1, padding: "10px 14px", border: "1px solid #E8E6E0", borderRadius: 10, fontSize: 13, color: "#1A1916", background: "#F9F9F8", outline: "none", fontFamily: "'DM Sans', sans-serif", fontWeight: 300, resize: "none", lineHeight: 1.5 }} />
-              <button className="send-btn" style={{ width: 38, height: 38, borderRadius: 10, border: "none", background: "#1A1916", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0, transition: "opacity .15s" }}>
-                <Send size={14} strokeWidth={1.5} />
+
+            {/* Input */}
+            <div style={{ padding:"14px 24px", borderTop:"1px solid #E5E7EB", background:"#FFFFFF", display:"flex", gap:10, alignItems:"flex-end" }}>
+              <textarea
+                value={input}
+                onChange={e => setInput(e.target.value)}
+                onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); }}}
+                placeholder="Type a message..."
+                rows={1}
+                style={{ flex:1, padding:"10px 14px", border:"1.5px solid #E5E7EB", borderRadius:10, fontSize:13, color:"#111827", background:"#F9FAFB", outline:"none", fontFamily:"'Plus Jakarta Sans',sans-serif", resize:"none", lineHeight:1.5, transition:"border-color .15s" }}
+              />
+              <button className="send-btn" style={{ width:38, height:38, borderRadius:10, border:"none", background:"#4F46E5", color:"#fff", display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer", flexShrink:0, transition:"background .15s" }}>
+                <Send size={14} strokeWidth={2} />
               </button>
             </div>
           </div>
         ) : (
-          <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", color: "#C4C2BC", fontSize: 13, fontStyle: "italic" }}>
+          <div style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", color:"#D1D5DB", fontSize:13 }}>
             Select a lead to view the conversation
           </div>
         )}
+
       </div>
     </>
   );
