@@ -264,27 +264,6 @@ function FlowCardNew({
   return (
     <div className="lf-flow-card" onClick={onClick}>
 
-      {/* TOP: image banner — no colored box, just the image */}
-      <div style={{
-        width: "100%",
-        height: 160,
-        overflow: "hidden",
-        position: "relative",
-        background: bgColor,
-      }}>
-        <img
-          src={agentImgUrl}
-          alt={title}
-          style={{
-            width: "100%",
-            height: "100%",
-            objectFit: "cover",
-            objectPosition: "center top",
-            display: "block",
-          }}
-        />
-      </div>
-
       {/* BOTTOM: card content */}
       <div style={{ padding: "16px 18px 18px", display: "flex", flexDirection: "column", flex: 1 }}>
 
