@@ -753,7 +753,7 @@ function HomeScreen({ onSelect }: { onSelect: (v: View) => void }) {
         background:"#3730A3",
       }}>
         <img
-          src={`${BASE}banner6.png`}
+          src={`${BASE}banner7.png`}
           alt="banner"
           style={{
             position:"absolute", right:0, top:0,
