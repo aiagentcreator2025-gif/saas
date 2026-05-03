@@ -309,47 +309,79 @@ export const FollowUpFlow = ({ style }: { style?: React.CSSProperties }) => (
   <div style={{ width:"100%", height:"100%", backgroundImage:`url(${BASE}followup6.png)`, backgroundSize:"cover", backgroundRepeat:"no-repeat", backgroundPosition:"center", ...style }} />
 );
 
-// ─── New Flow Card ─────────────────────────────────────────────────────────────
+// ─── New Flow Card — Pinterest style ─────────────────────────────────────────
 function FlowCardNew({
-  bgColor, title, description, bullets, agentImg,
+  bgColor, title, description, bullets, agentImgUrl,
   accentColor, accentBg, stepCount, onClick,
 }: {
   bgColor: string; title: string; description: string;
-  bullets: string[]; agentImg: React.ReactNode;
+  bullets: string[]; agentImgUrl: string;
   accentColor: string; accentBg: string;
   stepCount: string; onClick: () => void;
 }) {
   return (
-    <div className="lf-flow-card-new" onClick={onClick}>
-      {/* Colored image block */}
-      <div className="lf-flow-card-img-new" style={{ background: bgColor }}>
-        <div style={{ width:"100%", height:"100%" }}>{agentImg}</div>
+    <div
+      onClick={onClick}
+      style={{
+        background:"#fff", borderRadius:16, border:"1px solid #E8E6E0",
+        overflow:"hidden", cursor:"pointer",
+        transition:"transform 0.2s, box-shadow 0.2s",
+        display:"flex", flexDirection:"column",
+        boxShadow:"0 1px 4px rgba(0,0,0,.05)",
+      }}
+      onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform="translateY(-3px)"; (e.currentTarget as HTMLElement).style.boxShadow="0 12px 36px rgba(0,0,0,.10)"; }}
+      onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform="translateY(0)"; (e.currentTarget as HTMLElement).style.boxShadow="0 1px 4px rgba(0,0,0,.05)"; }}
+    >
+      {/* Small colored rounded square with contained image */}
+      <div style={{ padding:"24px 24px 0" }}>
+        <div style={{
+          width: 160, height: 160,
+          background: bgColor,
+          borderRadius: 14,
+          overflow: "hidden",
+          flexShrink: 0,
+        }}>
+          <img
+            src={agentImgUrl}
+            alt={title}
+            style={{
+              width: "100%", height: "100%",
+              objectFit: "contain",
+              objectPosition: "bottom center",
+            }}
+          />
+        </div>
       </div>
 
-      {/* Body */}
-      <div className="lf-flow-card-body-new">
-        {/* Step count badge */}
-        <div style={{ display:"inline-flex", alignItems:"center", gap:5, fontSize:10, fontWeight:700,
-          color:accentColor, background:accentBg, padding:"3px 10px", borderRadius:20,
-          letterSpacing:"0.5px", textTransform:"uppercase", width:"fit-content" }}>
-          <Zap size={9} strokeWidth={2.5}/> {stepCount}
+      {/* Card body */}
+      <div style={{ padding:"20px 24px 24px", display:"flex", flexDirection:"column", gap:10 }}>
+        <div style={{ fontSize:22, fontWeight:800, color:"#111827", letterSpacing:"-0.4px", lineHeight:1.2 }}>
+          {title}
         </div>
-
-        <div className="lf-flow-card-title-new">{title}</div>
-        <div className="lf-flow-card-desc-new">{description}</div>
-
-        <div className="lf-flow-card-bullets-new">
+        <div style={{ fontSize:13, color:"#6B7280", lineHeight:1.7 }}>
+          {description}
+        </div>
+        <div style={{ display:"flex", flexDirection:"column", gap:9, margin:"4px 0" }}>
           {bullets.map((b, i) => (
-            <div key={i} className="lf-flow-card-bullet-new">
-              <div className="lf-flow-card-check" style={{ background: accentBg, border:`1.5px solid ${accentColor}30` }}>
-                <Check size={10} strokeWidth={3} color={accentColor}/>
+            <div key={i} style={{ display:"flex", alignItems:"center", gap:10, fontSize:13, color:"#374151", fontWeight:500 }}>
+              <div style={{
+                width:22, height:22, borderRadius:7,
+                background: accentBg,
+                border:`1.5px solid ${accentColor}25`,
+                display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0,
+              }}>
+                <Check size={11} strokeWidth={3} color={accentColor}/>
               </div>
               {b}
             </div>
           ))}
         </div>
-
-        <div className="lf-flow-card-cta-new" style={{ color: accentColor }}>
+        <div style={{
+          display:"flex", alignItems:"center", gap:4,
+          fontSize:13, fontWeight:700, color:accentColor,
+          marginTop:4, paddingTop:14,
+          borderTop:"1px solid #F3F4F6",
+        }}>
           Configure Flow <ChevronRight size={14} strokeWidth={2.5}/>
         </div>
       </div>
@@ -803,28 +835,39 @@ function HomeScreen({ onSelect }: { onSelect: (v: View) => void }) {
         <div style={{ fontSize:13, color:"#9CA3AF" }}>Build and manage your automation flows</div>
       </div>
 
-      {/* Banner */}
-      <div className="lf-animate-delay-1" style={{ borderRadius:20, overflow:"hidden", marginBottom:32, position:"relative", height:210, boxShadow:"0 8px 32px rgba(79,70,229,.18)" }}>
+      {/* Banner — image contained with no stretch, text overlaid on left */}
+      <div className="lf-animate-delay-1" style={{
+        borderRadius:20, overflow:"hidden", marginBottom:32,
+        position:"relative", height:210,
+        boxShadow:"0 8px 32px rgba(79,70,229,.18)",
+        background:"#1A1245",
+      }}>
+        {/* Image anchored to right, contained */}
         <img
           src={`${BASE}banner6.png`}
-          alt="LeadFlow banner"
-          style={{ width:"100%", height:"100%", objectFit:"cover", objectPosition:"center", display:"block" }}
+          alt="banner"
+          style={{
+            position:"absolute", right:0, top:0,
+            height:"100%", width:"65%",
+            objectFit:"cover", objectPosition:"left center",
+          }}
         />
-        {/* Gradient overlay */}
-        <div style={{ position:"absolute", inset:0, background:"linear-gradient(100deg, rgba(30,27,75,0.82) 0%, rgba(79,70,229,0.55) 45%, transparent 75%)" }}/>
+        {/* Dark fade from left so text is readable */}
+        <div style={{ position:"absolute", inset:0, background:"linear-gradient(90deg, #1A1245 38%, rgba(26,18,69,0.7) 60%, transparent 80%)" }}/>
+        {/* Text */}
         <div style={{ position:"absolute", inset:0, display:"flex", flexDirection:"column", justifyContent:"center", padding:"0 36px" }}>
           <div style={{ fontSize:11, fontWeight:700, letterSpacing:"2px", textTransform:"uppercase", color:"#A5B4FC", marginBottom:10 }}>
             ⚡ Automation
           </div>
-          <div style={{ fontSize:26, fontWeight:800, color:"#fff", letterSpacing:"-0.5px", lineHeight:1.2, marginBottom:8, maxWidth:380 }}>
+          <div style={{ fontSize:26, fontWeight:800, color:"#fff", letterSpacing:"-0.5px", lineHeight:1.25, marginBottom:8, maxWidth:340 }}>
             Boost your business<br/>while you sleep
           </div>
-          <div style={{ fontSize:13, color:"rgba(255,255,255,0.75)", marginBottom:20, maxWidth:300, lineHeight:1.6 }}>
+          <div style={{ fontSize:13, color:"rgba(255,255,255,0.7)", marginBottom:20, maxWidth:280, lineHeight:1.6 }}>
             Set up once. Convert leads to booked calls on autopilot, 24/7.
           </div>
           <button
             onClick={() => onSelect("lead-flow-preview")}
-            style={{ display:"inline-flex", alignItems:"center", gap:7, padding:"11px 22px", borderRadius:12, background:"#FFFFFF", color:"#4F46E5", fontSize:13, fontWeight:800, border:"none", cursor:"pointer", width:"fit-content", boxShadow:"0 4px 14px rgba(0,0,0,.15)", transition:"transform 0.15s" }}
+            style={{ display:"inline-flex", alignItems:"center", gap:7, padding:"11px 22px", borderRadius:12, background:"#FFFFFF", color:"#4F46E5", fontSize:13, fontWeight:800, border:"none", cursor:"pointer", width:"fit-content", boxShadow:"0 4px 14px rgba(0,0,0,.2)", transition:"transform 0.15s" }}
             onMouseEnter={e => (e.currentTarget as HTMLElement).style.transform="translateY(-1px)"}
             onMouseLeave={e => (e.currentTarget as HTMLElement).style.transform="translateY(0)"}
           >
@@ -840,8 +883,7 @@ function HomeScreen({ onSelect }: { onSelect: (v: View) => void }) {
           <div style={{ fontSize:12, color:"#9CA3AF" }}>Choose a flow to configure</div>
         </div>
 
-        <div style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:20 }}>
-          {/* Lead Flow card */}
+        <div style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:24 }}>
           <FlowCardNew
             bgColor="#EEE9FF"
             title="Lead Flow"
@@ -851,16 +893,14 @@ function HomeScreen({ onSelect }: { onSelect: (v: View) => void }) {
               "Sends your lead magnet automatically",
               "Books calls while you sleep",
             ]}
-            agentImg={<BookingAgent />}
+            agentImgUrl={`${BASE}booking4.png`}
             accentColor="#4F46E5"
             accentBg="#EEF2FF"
             stepCount="8 Steps"
             onClick={() => onSelect("lead-flow-preview")}
           />
-
-          {/* Follow-Up Flow card */}
           <FlowCardNew
-            bgColor="#FFF3E0"
+            bgColor="#FFF0C2"
             title="Follow-Up Flow"
             description="Re-engage leads after booking and confirm calls to maximise show-up rates with AI."
             bullets={[
@@ -868,7 +908,7 @@ function HomeScreen({ onSelect }: { onSelect: (v: View) => void }) {
               "AI confirms bookings to maximise show-ups",
               "Handles replies intelligently around the clock",
             ]}
-            agentImg={<FollowUpFlow />}
+            agentImgUrl={`${BASE}followup6.png`}
             accentColor="#D97706"
             accentBg="#FEF3C7"
             stepCount="2 Flows"
@@ -900,7 +940,7 @@ function FollowUpHome({ onSelect, onBack }: { onSelect: (v: View) => void; onBac
             "Re-engages leads with personalised messages",
             "Zero manual work required",
           ]}
-          agentImg={<FollowUpAutomation />}
+          agentImgUrl={`${BASE}followupautomation.png`}
           accentColor="#D97706"
           accentBg="#FEF3C7"
           stepCount="Scheduled"
@@ -915,7 +955,7 @@ function FollowUpHome({ onSelect, onBack }: { onSelect: (v: View) => void; onBac
             "Responds intelligently every time",
             "Guides leads toward booking automatically",
           ]}
-          agentImg={<FollowUpAgent />}
+          agentImgUrl={`${BASE}followupagent.png`}}
           accentColor="#2563EB"
           accentBg="#DBEAFE"
           stepCount="AI Agent"
