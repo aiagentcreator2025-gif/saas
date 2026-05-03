@@ -758,7 +758,7 @@ function HomeScreen({ onSelect }: { onSelect: (v: View) => void }) {
           style={{
             position:"absolute", right:0, top:0,
             height:"100%", width:"100%",
-            objectFit:"cover", objectPosition:"center center",
+            objectFit:"cover", objectPosition:"left center",
           }}
         />
         <div style={{ position:"absolute", inset:0, background:"linear-gradient(90deg, rgba(55,48,163,0.5) 0%, rgba(55,48,163,0.3) 30%, rgba(55,48,163,0.05) 50%, transparent 10%)" }}/>
