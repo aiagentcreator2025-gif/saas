@@ -776,64 +776,56 @@ function HomeScreen({ onSelect }: { onSelect: (v: View) => void }) {
 
       {/* ── BANNER — image fills 100%, gradient only on left 45% for text legibility ── */}
       <div className="lf-animate-delay-1" style={{
-        borderRadius: 20,
-        overflow: "hidden",
-        marginBottom: 32,
-        position: "relative",
-        height: 200,
-      }}>
-        {/* The image — no wrapper container, fills the full banner */}
-        <img
-          src={`${BASE}banner7.png`}
-          alt="banner"
-          style={{
-            position: "absolute",
-            inset: 0,
-            width: "100%",
-            height: "100%",
-            objectFit: "cover",
-            objectPosition: "left center",
-            display: "block",
-          }}
-        />
-        {/* Gradient only on left side so right-side image is fully visible */}
-        <div style={{
-          position: "absolute",
-          inset: 0,
-          background: "linear-gradient(90deg, rgba(30,27,90,0.92) 0%, rgba(30,27,90,0.80) 25%, rgba(30,27,90,0.45) 45%, transparent 65%)",
-        }} />
-        {/* Text content */}
-        <div style={{
-          position: "absolute",
-          inset: 0,
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "center",
-          padding: "0 44px",
-          maxWidth: 440,
-        }}>
-          <div style={{ fontSize:30, fontWeight:800, color:"#fff", letterSpacing:"-0.5px", lineHeight:1.2, marginBottom:10 }}>
-            Automate your leads
-          </div>
-          <div style={{ fontSize:13, color:"rgba(255,255,255,0.85)", marginBottom:22, maxWidth:280, lineHeight:1.65 }}>
-            Set up your flows once and convert leads to booked calls on autopilot, 24/7.
-          </div>
-          <button
-            onClick={() => onSelect("lead-flow-preview")}
-            style={{
-              display:"inline-flex", alignItems:"center", gap:7,
-              padding:"10px 20px", borderRadius:10,
-              background:"#FFFFFF", color:"#4F46E5",
-              fontSize:13, fontWeight:800, border:"none", cursor:"pointer",
-              width:"fit-content", transition:"opacity 0.15s",
-            }}
-            onMouseEnter={e => (e.currentTarget as HTMLElement).style.opacity="0.9"}
-            onMouseLeave={e => (e.currentTarget as HTMLElement).style.opacity="1"}
-          >
-            Get Started <ChevronRight size={15} strokeWidth={2.5} />
-          </button>
-        </div>
-      </div>
+  borderRadius: 20,
+  overflow: "hidden",
+  marginBottom: 32,
+  position: "relative",
+}}>
+  <img
+    src={`${BASE}banner7.png`}
+    alt="banner"
+    style={{
+      width: "100%",
+      height: "auto",
+      display: "block",
+    }}
+  />
+  <div style={{
+    position: "absolute",
+    inset: 0,
+    background: "linear-gradient(90deg, rgba(30,27,90,0.92) 0%, rgba(30,27,90,0.80) 25%, rgba(30,27,90,0.45) 45%, transparent 65%)",
+  }} />
+  <div style={{
+    position: "absolute",
+    inset: 0,
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "center",
+    padding: "0 44px",
+    maxWidth: 440,
+  }}>
+    <div style={{ fontSize:30, fontWeight:800, color:"#fff", letterSpacing:"-0.5px", lineHeight:1.2, marginBottom:10 }}>
+      Automate your leads
+    </div>
+    <div style={{ fontSize:13, color:"rgba(255,255,255,0.85)", marginBottom:22, maxWidth:280, lineHeight:1.65 }}>
+      Set up your flows once and convert leads to booked calls on autopilot, 24/7.
+    </div>
+    <button
+      onClick={() => onSelect("lead-flow-preview")}
+      style={{
+        display:"inline-flex", alignItems:"center", gap:7,
+        padding:"10px 20px", borderRadius:10,
+        background:"#FFFFFF", color:"#4F46E5",
+        fontSize:13, fontWeight:800, border:"none", cursor:"pointer",
+        width:"fit-content", transition:"opacity 0.15s",
+      }}
+      onMouseEnter={e => (e.currentTarget as HTMLElement).style.opacity="0.9"}
+      onMouseLeave={e => (e.currentTarget as HTMLElement).style.opacity="1"}
+    >
+      Get Started <ChevronRight size={15} strokeWidth={2.5} />
+    </button>
+  </div>
+</div>
 
       {/* Your Flows */}
       <div className="lf-animate-delay-2">
