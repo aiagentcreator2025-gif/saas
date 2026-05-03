@@ -757,7 +757,7 @@ function HomeScreen({ onSelect }: { onSelect: (v: View) => void }) {
           alt="banner"
           style={{
             position:"absolute", right:0, top:0,
-            height:"100%", width:"70%",
+            height:"100%", width:"100%",
             objectFit:"cover", objectPosition:"center center",
           }}
         />
