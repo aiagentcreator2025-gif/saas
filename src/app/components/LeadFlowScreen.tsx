@@ -144,81 +144,6 @@ const GLOBAL_STYLES = `
     min-height: 100vh;
   }
 
-  /* ── Flow card (new Pinterest-inspired style) ── */
-  .lf-flow-card-new {
-    background: #fff;
-    border-radius: 20px;
-    border: 1px solid #E8E6E0;
-    overflow: hidden;
-    cursor: pointer;
-    transition: transform 0.2s, box-shadow 0.2s;
-    display: flex;
-    flex-direction: column;
-  }
-  .lf-flow-card-new:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 16px 48px rgba(0,0,0,0.10);
-  }
-  .lf-flow-card-img-new {
-    width: 100%;
-    height: 220px;
-    overflow: hidden;
-    position: relative;
-    display: flex;
-    align-items: flex-end;
-    justify-content: center;
-  }
-  .lf-flow-card-body-new {
-    padding: 20px 22px 22px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-  .lf-flow-card-title-new {
-    font-size: 18px;
-    font-weight: 800;
-    color: #111827;
-    letter-spacing: -0.4px;
-  }
-  .lf-flow-card-desc-new {
-    font-size: 12px;
-    color: #6B7280;
-    line-height: 1.7;
-  }
-  .lf-flow-card-bullets-new {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    margin: 2px 0 4px;
-  }
-  .lf-flow-card-bullet-new {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 12.5px;
-    color: #374151;
-    font-weight: 500;
-  }
-  .lf-flow-card-check {
-    width: 20px;
-    height: 20px;
-    border-radius: 6px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-  }
-  .lf-flow-card-cta-new {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    font-size: 13px;
-    font-weight: 700;
-    margin-top: 4px;
-    padding-top: 14px;
-    border-top: 1px solid #F3F4F6;
-  }
-
   /* ── Back button ── */
   .lf-back-btn {
     display: inline-flex; align-items: center; gap: 6px;
@@ -309,7 +234,7 @@ export const FollowUpFlow = ({ style }: { style?: React.CSSProperties }) => (
   <div style={{ width:"100%", height:"100%", backgroundImage:`url(${BASE}followup6.png)`, backgroundSize:"cover", backgroundRepeat:"no-repeat", backgroundPosition:"center", ...style }} />
 );
 
-// ─── New Flow Card — Pinterest style ─────────────────────────────────────────
+// ─── Flow Card — Marketplace horizontal style ─────────────────────────────────
 function FlowCardNew({
   bgColor, title, description, bullets, agentImgUrl,
   accentColor, accentBg, stepCount, onClick,
@@ -326,64 +251,52 @@ function FlowCardNew({
         background:"#fff", borderRadius:16, border:"1px solid #E8E6E0",
         overflow:"hidden", cursor:"pointer",
         transition:"transform 0.2s, box-shadow 0.2s",
-        display:"flex", flexDirection:"column",
+        display:"flex", flexDirection:"row",
         boxShadow:"0 1px 4px rgba(0,0,0,.05)",
+        minHeight:180,
       }}
       onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform="translateY(-3px)"; (e.currentTarget as HTMLElement).style.boxShadow="0 12px 36px rgba(0,0,0,.10)"; }}
       onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform="translateY(0)"; (e.currentTarget as HTMLElement).style.boxShadow="0 1px 4px rgba(0,0,0,.05)"; }}
     >
-      {/* Small colored rounded square with contained image */}
-      <div style={{ padding:"24px 24px 0" }}>
-        <div style={{
-          width: 160, height: 160,
-          background: bgColor,
-          borderRadius: 14,
-          overflow: "hidden",
-          flexShrink: 0,
-        }}>
-          <img
-            src={agentImgUrl}
-            alt={title}
-            style={{
-              width: "100%", height: "100%",
-              objectFit: "contain",
-              objectPosition: "bottom center",
-            }}
-          />
-        </div>
-      </div>
-
-      {/* Card body */}
-      <div style={{ padding:"20px 24px 24px", display:"flex", flexDirection:"column", gap:10 }}>
-        <div style={{ fontSize:22, fontWeight:800, color:"#111827", letterSpacing:"-0.4px", lineHeight:1.2 }}>
-          {title}
-        </div>
-        <div style={{ fontSize:13, color:"#6B7280", lineHeight:1.7 }}>
-          {description}
-        </div>
-        <div style={{ display:"flex", flexDirection:"column", gap:9, margin:"4px 0" }}>
-          {bullets.map((b, i) => (
-            <div key={i} style={{ display:"flex", alignItems:"center", gap:10, fontSize:13, color:"#374151", fontWeight:500 }}>
-              <div style={{
-                width:22, height:22, borderRadius:7,
-                background: accentBg,
-                border:`1.5px solid ${accentColor}25`,
-                display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0,
-              }}>
-                <Check size={11} strokeWidth={3} color={accentColor}/>
-              </div>
-              {b}
-            </div>
-          ))}
+      {/* Left: text */}
+      <div style={{ flex:1, padding:"24px 24px 20px", display:"flex", flexDirection:"column", justifyContent:"space-between" }}>
+        <div>
+          <div style={{
+            display:"inline-flex", alignItems:"center", gap:5,
+            fontSize:10, fontWeight:700, color:accentColor,
+            background:accentBg, padding:"3px 10px", borderRadius:20,
+            marginBottom:12, letterSpacing:"0.5px", textTransform:"uppercase",
+          }}>
+            ⚡ {stepCount}
+          </div>
+          <div style={{ fontSize:18, fontWeight:800, color:"#111827", letterSpacing:"-0.4px", lineHeight:1.2, marginBottom:8 }}>
+            {title}
+          </div>
+          <div style={{ fontSize:12, color:"#6B7280", lineHeight:1.7 }}>
+            {description}
+          </div>
         </div>
         <div style={{
-          display:"flex", alignItems:"center", gap:4,
+          display:"inline-flex", alignItems:"center", gap:4,
           fontSize:13, fontWeight:700, color:accentColor,
-          marginTop:4, paddingTop:14,
-          borderTop:"1px solid #F3F4F6",
+          paddingTop:12, borderTop:"1px solid #F3F4F6", marginTop:12,
         }}>
           Configure Flow <ChevronRight size={14} strokeWidth={2.5}/>
         </div>
+      </div>
+
+      {/* Right: image */}
+      <div style={{
+        width:160, flexShrink:0,
+        background:bgColor,
+        display:"flex", alignItems:"flex-end", justifyContent:"center",
+        overflow:"hidden",
+      }}>
+        <img
+          src={agentImgUrl}
+          alt={title}
+          style={{ width:"100%", height:"100%", objectFit:"contain", objectPosition:"bottom center" }}
+        />
       </div>
     </div>
   );
@@ -536,7 +449,7 @@ function BackBtn({ label, onClick }: { label: string; onClick: () => void }) {
   );
 }
 
-// ─── Panels (all logic unchanged) ─────────────────────────────────────────────
+// ─── Panels ───────────────────────────────────────────────────────────────────
 interface PanelProps {
   config: AutomationConfig;
   onChange: (key: keyof AutomationConfig, value: string | string[]) => void;
@@ -822,78 +735,6 @@ function FlowEditor({ title, subtitle, steps, onBack, backLabel="Back", config, 
   );
 }
 
-// ─── New Flow Card — Marketplace horizontal style ─────────────────────────────
-function FlowCardNew({
-  bgColor, title, description, bullets, agentImgUrl,
-  accentColor, accentBg, stepCount, onClick,
-}: {
-  bgColor: string; title: string; description: string;
-  bullets: string[]; agentImgUrl: string;
-  accentColor: string; accentBg: string;
-  stepCount: string; onClick: () => void;
-}) {
-  return (
-    <div
-      onClick={onClick}
-      style={{
-        background:"#fff", borderRadius:16, border:"1px solid #E8E6E0",
-        overflow:"hidden", cursor:"pointer",
-        transition:"transform 0.2s, box-shadow 0.2s",
-        display:"flex", flexDirection:"row",
-        boxShadow:"0 1px 4px rgba(0,0,0,.05)",
-        minHeight:180,
-      }}
-      onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform="translateY(-3px)"; (e.currentTarget as HTMLElement).style.boxShadow="0 12px 36px rgba(0,0,0,.10)"; }}
-      onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform="translateY(0)"; (e.currentTarget as HTMLElement).style.boxShadow="0 1px 4px rgba(0,0,0,.05)"; }}
-    >
-      {/* Left: text */}
-      <div style={{ flex:1, padding:"24px 24px 20px", display:"flex", flexDirection:"column", justifyContent:"space-between" }}>
-        <div>
-          <div style={{
-            display:"inline-flex", alignItems:"center", gap:5,
-            fontSize:10, fontWeight:700, color:accentColor,
-            background:accentBg, padding:"3px 10px", borderRadius:20,
-            marginBottom:12, letterSpacing:"0.5px", textTransform:"uppercase",
-          }}>
-            ⚡ {stepCount}
-          </div>
-          <div style={{ fontSize:18, fontWeight:800, color:"#111827", letterSpacing:"-0.4px", lineHeight:1.2, marginBottom:8 }}>
-            {title}
-          </div>
-          <div style={{ fontSize:12, color:"#6B7280", lineHeight:1.7, marginBottom:4 }}>
-            {description}
-          </div>
-        </div>
-        <div style={{
-          display:"inline-flex", alignItems:"center", gap:4,
-          fontSize:13, fontWeight:700, color:accentColor,
-          paddingTop:12, borderTop:"1px solid #F3F4F6", marginTop:12,
-        }}>
-          Configure Flow <ChevronRight size={14} strokeWidth={2.5}/>
-        </div>
-      </div>
-
-      {/* Right: image */}
-      <div style={{
-        width:160, flexShrink:0,
-        background:bgColor,
-        display:"flex", alignItems:"flex-end", justifyContent:"center",
-        overflow:"hidden",
-      }}>
-        <img
-          src={agentImgUrl}
-          alt={title}
-          style={{
-            width:"100%", height:"100%",
-            objectFit:"contain",
-            objectPosition:"bottom center",
-          }}
-        />
-      </div>
-    </div>
-  );
-}
-
 // ─── Home Screen ──────────────────────────────────────────────────────────────
 function HomeScreen({ onSelect }: { onSelect: (v: View) => void }) {
   return (
@@ -901,9 +742,7 @@ function HomeScreen({ onSelect }: { onSelect: (v: View) => void }) {
 
       {/* Page header */}
       <div className="lf-animate" style={{ marginBottom:28 }}>
-        <div style={{ fontSize:24, fontWeight:800, color:"#111827", letterSpacing:"-0.5px", marginBottom:4 }}>
-          Lead Flow
-        </div>
+        <div style={{ fontSize:24, fontWeight:800, color:"#111827", letterSpacing:"-0.5px", marginBottom:4 }}>Lead Flow</div>
         <div style={{ fontSize:13, color:"#9CA3AF" }}>Build and manage your automation flows</div>
       </div>
 
@@ -913,7 +752,6 @@ function HomeScreen({ onSelect }: { onSelect: (v: View) => void }) {
         position:"relative", height:200,
         background:"#3730A3",
       }}>
-        {/* Full image */}
         <img
           src={`${BASE}banner6.png`}
           alt="banner"
@@ -923,15 +761,13 @@ function HomeScreen({ onSelect }: { onSelect: (v: View) => void }) {
             objectFit:"cover", objectPosition:"center center",
           }}
         />
-        {/* Subtle left fade so text stays readable */}
         <div style={{ position:"absolute", inset:0, background:"linear-gradient(90deg, #3730A3 30%, rgba(55,48,163,0.85) 50%, rgba(55,48,163,0.2) 70%, transparent 90%)" }}/>
-        {/* Text */}
         <div style={{ position:"absolute", inset:0, display:"flex", flexDirection:"column", justifyContent:"center", padding:"0 44px" }}>
           <div style={{ fontSize:30, fontWeight:800, color:"#fff", letterSpacing:"-0.5px", lineHeight:1.2, marginBottom:10 }}>
             Automate your leads
           </div>
           <div style={{ fontSize:13, color:"rgba(255,255,255,0.85)", marginBottom:22, maxWidth:300, lineHeight:1.65 }}>
-            Set up your flows once and convert leads to<br/>booked calls on autopilot, 24/7.
+            Set up your flows once and convert leads to booked calls on autopilot, 24/7.
           </div>
           <button
             onClick={() => onSelect("lead-flow-preview")}
@@ -956,17 +792,12 @@ function HomeScreen({ onSelect }: { onSelect: (v: View) => void }) {
           <div style={{ fontSize:17, fontWeight:800, color:"#111827", letterSpacing:"-0.3px", marginBottom:3 }}>Your Flows</div>
           <div style={{ fontSize:12, color:"#9CA3AF" }}>Choose a flow to configure</div>
         </div>
-
         <div style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:20 }}>
           <FlowCardNew
             bgColor="#EEE9FF"
             title="Lead Flow"
             description="Greet every lead, deliver your lead magnet, and book calls — fully automated on WhatsApp."
-            bullets={[
-              "Responds to every lead instantly, 24/7",
-              "Sends your lead magnet automatically",
-              "Books calls while you sleep",
-            ]}
+            bullets={[]}
             agentImgUrl={`${BASE}booking4.png`}
             accentColor="#4F46E5"
             accentBg="#EEF2FF"
@@ -977,11 +808,7 @@ function HomeScreen({ onSelect }: { onSelect: (v: View) => void }) {
             bgColor="#FFF0C2"
             title="Follow-Up Flow"
             description="Re-engage leads after booking and confirm calls to maximise show-up rates with AI."
-            bullets={[
-              "Re-engages no-shows automatically",
-              "AI confirms bookings to maximise show-ups",
-              "Handles replies intelligently around the clock",
-            ]}
+            bullets={[]}
             agentImgUrl={`${BASE}followup6.png`}
             accentColor="#D97706"
             accentBg="#FEF3C7"
@@ -1003,17 +830,12 @@ function FollowUpHome({ onSelect, onBack }: { onSelect: (v: View) => void; onBac
         <div style={{ fontSize:24, fontWeight:800, color:"#111827", letterSpacing:"-0.5px", marginBottom:4 }}>Follow-Up Flow</div>
         <div style={{ fontSize:13, color:"#9CA3AF" }}>Choose your follow-up strategy</div>
       </div>
-
       <div style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:20 }}>
         <FlowCardNew
           bgColor="#FFFBEB"
           title="Follow-Up Automation"
           description="Send scheduled follow-up messages at the perfect time. Set your delay and let it run automatically."
-          bullets={[
-            "Fires automatically at the right time",
-            "Re-engages leads with personalised messages",
-            "Zero manual work required",
-          ]}
+          bullets={[]}
           agentImgUrl={`${BASE}followupautomation.png`}
           accentColor="#D97706"
           accentBg="#FEF3C7"
@@ -1024,11 +846,7 @@ function FollowUpHome({ onSelect, onBack }: { onSelect: (v: View) => void; onBac
           bgColor="#EFF6FF"
           title="Follow-Up Agent"
           description="AI agent takes over when a lead replies — responding intelligently to guide them toward booking."
-          bullets={[
-            "AI takes over when a lead replies",
-            "Responds intelligently every time",
-            "Guides leads toward booking automatically",
-          ]}
+          bullets={[]}
           agentImgUrl={`${BASE}followupagent.png`}
           accentColor="#2563EB"
           accentBg="#DBEAFE"
