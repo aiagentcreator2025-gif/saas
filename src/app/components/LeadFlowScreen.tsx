@@ -3,11 +3,11 @@ import {
   Plus, Settings, Zap, MessageSquare, Gift, Phone,
   Calendar, ArrowLeft, Clock, Bot, MessageCircle, ChevronRight,
   Wifi, Type, Link, Check, Loader2, ZoomIn, ZoomOut, Move,
-  Activity, LayoutDashboard, Workflow, Users, Star, Search, Bell,
 } from "lucide-react";
 import { supabase } from "../supabaseClient";
 
 const N8N_WEBHOOK = "https://rosegoldprojectai2.app.n8n.cloud/webhook/ea72ec64-9444-495a-ae04-babcb9e90cdd";
+const BASE = "https://raw.githubusercontent.com/aiagentcreator2025-gif/saas/main/public/";
 
 type View =
   | "home"
@@ -134,233 +134,224 @@ const FOLLOWUP_AGENT_STEPS: FlowStep[] = [
 
 // ─── Global Styles ─────────────────────────────────────────────────────────────
 const GLOBAL_STYLES = `
-  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 
-  * { box-sizing: border-box; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
 
-  .lf-root { font-family: 'Inter', sans-serif; background: #F0F2F8; min-height: 100vh; display: flex; }
+  .lf-root {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    background: #EDEEF5;
+    min-height: 100vh;
+  }
 
-  /* Sidebar */
-  .lf-sidebar { width: 240px; background: #FFFFFF; border-right: 1px solid #E5E7EB; display: flex; flex-direction: column; flex-shrink: 0; height: 100vh; position: sticky; top: 0; }
-  .lf-sidebar-logo { padding: 24px 20px 20px; border-bottom: 1px solid #F3F4F6; }
-  .lf-sidebar-logo-inner { display: flex; align-items: center; gap: 10px; }
-  .lf-sidebar-logo-icon { width: 36px; height: 36px; background: #4F46E5; border-radius: 10px; display: flex; align-items: center; justify-content: center; }
-  .lf-sidebar-logo-text { font-size: 16px; font-weight: 700; color: #111827; letter-spacing: -0.3px; }
-  .lf-sidebar-section { padding: 20px 12px 8px; }
-  .lf-sidebar-section-label { font-size: 10px; font-weight: 600; color: #9CA3AF; text-transform: uppercase; letter-spacing: 1px; padding: 0 8px; margin-bottom: 6px; }
-  .lf-nav-item { display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: 8px; font-size: 13px; font-weight: 500; color: #6B7280; cursor: pointer; transition: all 0.15s; margin-bottom: 2px; }
-  .lf-nav-item:hover { background: #F9FAFB; color: #111827; }
-  .lf-nav-item.active { background: #EEF2FF; color: #4F46E5; }
-  .lf-nav-item.active svg { color: #4F46E5; }
-  .lf-sidebar-bottom { margin-top: auto; padding: 16px 12px; border-top: 1px solid #F3F4F6; }
-  .lf-upgrade-card { background: linear-gradient(135deg, #1E1B4B 0%, #312E81 100%); border-radius: 12px; padding: 16px; }
-  .lf-upgrade-card-title { font-size: 14px; font-weight: 600; color: #FFFFFF; margin-bottom: 4px; }
-  .lf-upgrade-card-desc { font-size: 11px; color: #A5B4FC; margin-bottom: 12px; line-height: 1.5; }
-  .lf-upgrade-btn { width: 100%; background: #4F46E5; border: none; color: #fff; font-size: 12px; font-weight: 600; padding: 8px; border-radius: 8px; cursor: pointer; transition: background 0.15s; font-family: 'Inter', sans-serif; }
-  .lf-upgrade-btn:hover { background: #4338CA; }
+  /* ── Flow card (new Pinterest-inspired style) ── */
+  .lf-flow-card-new {
+    background: #fff;
+    border-radius: 20px;
+    border: 1px solid #E8E6E0;
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    display: flex;
+    flex-direction: column;
+  }
+  .lf-flow-card-new:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 16px 48px rgba(0,0,0,0.10);
+  }
+  .lf-flow-card-img-new {
+    width: 100%;
+    height: 220px;
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+  }
+  .lf-flow-card-body-new {
+    padding: 20px 22px 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .lf-flow-card-title-new {
+    font-size: 18px;
+    font-weight: 800;
+    color: #111827;
+    letter-spacing: -0.4px;
+  }
+  .lf-flow-card-desc-new {
+    font-size: 12px;
+    color: #6B7280;
+    line-height: 1.7;
+  }
+  .lf-flow-card-bullets-new {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin: 2px 0 4px;
+  }
+  .lf-flow-card-bullet-new {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 12.5px;
+    color: #374151;
+    font-weight: 500;
+  }
+  .lf-flow-card-check {
+    width: 20px;
+    height: 20px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .lf-flow-card-cta-new {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 13px;
+    font-weight: 700;
+    margin-top: 4px;
+    padding-top: 14px;
+    border-top: 1px solid #F3F4F6;
+  }
 
-  /* Top bar */
-  .lf-topbar { height: 64px; background: #FFFFFF; border-bottom: 1px solid #E5E7EB; display: flex; align-items: center; padding: 0 28px; gap: 16px; flex-shrink: 0; }
-  .lf-topbar-title { font-size: 18px; font-weight: 700; color: #111827; letter-spacing: -0.3px; flex: 1; }
-  .lf-topbar-sub { font-size: 12px; color: #9CA3AF; font-weight: 400; margin-top: 1px; }
-  .lf-topbar-icon { width: 36px; height: 36px; border-radius: 10px; border: 1px solid #E5E7EB; background: #FFFFFF; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #6B7280; transition: all 0.15s; }
-  .lf-topbar-icon:hover { background: #F9FAFB; color: #111827; }
-  .lf-avatar { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, #4F46E5, #7C3AED); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; color: #fff; cursor: pointer; }
-
-  /* Stat cards */
-  .lf-stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px; }
-  .lf-stat-card { background: #FFFFFF; border-radius: 14px; padding: 20px 22px; border: 1px solid #E5E7EB; position: relative; overflow: hidden; }
-  .lf-stat-card.accent { background: #4F46E5; border-color: #4F46E5; }
-  .lf-stat-label { font-size: 11px; font-weight: 500; color: #9CA3AF; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 10px; }
-  .lf-stat-card.accent .lf-stat-label { color: #A5B4FC; }
-  .lf-stat-value { font-size: 28px; font-weight: 700; color: #111827; letter-spacing: -0.5px; line-height: 1; margin-bottom: 8px; }
-  .lf-stat-card.accent .lf-stat-value { color: #FFFFFF; }
-  .lf-stat-badge { display: inline-flex; align-items: center; gap: 3px; font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 20px; }
-  .lf-stat-badge.up { background: #DCFCE7; color: #15803D; }
-  .lf-stat-badge.down { background: #FEE2E2; color: #DC2626; }
-  .lf-stat-card.accent .lf-stat-badge { background: rgba(255,255,255,0.2); color: #E0E7FF; }
-  .lf-stat-sub { font-size: 11px; color: #9CA3AF; margin-top: 4px; }
-  .lf-stat-card.accent .lf-stat-sub { color: #A5B4FC; }
-
-  /* Flow cards */
-  .lf-flow-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
-  .lf-flow-card { background: #FFFFFF; border-radius: 16px; border: 1px solid #E5E7EB; overflow: hidden; cursor: pointer; transition: all 0.2s; }
-  .lf-flow-card:hover { box-shadow: 0 8px 30px rgba(0,0,0,0.1); transform: translateY(-2px); border-color: #C7D2FE; }
-  .lf-flow-card-img { height: 200px; overflow: hidden; background: #F9FAFB; }
-  .lf-flow-card-body { padding: 20px; }
-  .lf-flow-card-tag { display: inline-flex; align-items: center; gap: 5px; font-size: 10px; font-weight: 600; padding: 3px 10px; border-radius: 20px; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
-  .lf-flow-card-title { font-size: 17px; font-weight: 700; color: #111827; margin-bottom: 6px; letter-spacing: -0.3px; }
-  .lf-flow-card-desc { font-size: 12px; color: #6B7280; line-height: 1.6; margin-bottom: 14px; }
-  .lf-flow-card-bullets { display: flex; flex-direction: column; gap: 7px; margin-bottom: 16px; }
-  .lf-flow-card-bullet { display: flex; align-items: center; gap: 8px; font-size: 12px; color: #374151; }
-  .lf-flow-card-bullet-dot { width: 16px; height: 16px; border-radius: 5px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-  .lf-flow-card-cta { display: flex; align-items: center; justify-content: space-between; padding-top: 14px; border-top: 1px solid #F3F4F6; }
-  .lf-flow-card-open { font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 4px; }
-
-  /* Back button */
-  .lf-back-btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 8px; border: 1px solid #E5E7EB; background: #FFFFFF; font-size: 12px; font-weight: 500; color: #6B7280; cursor: pointer; font-family: 'Inter', sans-serif; margin-bottom: 24px; transition: all 0.15s; }
+  /* ── Back button ── */
+  .lf-back-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 8px 14px; border-radius: 10px;
+    border: 1px solid #E5E7EB; background: #FFFFFF;
+    font-size: 12px; font-weight: 600; color: #6B7280;
+    cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif;
+    margin-bottom: 24px; transition: all 0.15s;
+    box-shadow: 0 1px 4px rgba(0,0,0,.05);
+  }
   .lf-back-btn:hover { background: #F9FAFB; color: #111827; border-color: #D1D5DB; }
 
-  /* Preview */
+  /* ── Preview ── */
   .lf-preview-layout { display: flex; height: 100%; }
   .lf-preview-sidebar { width: 340px; background: #FFFFFF; border-right: 1px solid #E5E7EB; display: flex; flex-direction: column; overflow-y: auto; }
-  .lf-preview-main { flex: 1; display: flex; flex-direction: column; padding: 28px; gap: 16px; overflow: hidden; }
-  .lf-preview-img { width: 100%; height: 200px; border-radius: 14px; overflow: hidden; border: 1px solid #E5E7EB; }
-  .lf-preview-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
   .lf-preview-stat { background: #F9FAFB; border: 1px solid #E5E7EB; border-radius: 10px; padding: 12px; text-align: center; }
   .lf-preview-stat-val { font-size: 18px; font-weight: 700; color: #4F46E5; margin-bottom: 2px; }
   .lf-preview-stat-label { font-size: 9px; font-weight: 600; color: #9CA3AF; text-transform: uppercase; letter-spacing: 0.8px; }
 
-  /* Flow node */
+  /* ── Flow node ── */
   .lf-flow-node { border-radius: 12px; padding: 14px 16px; cursor: pointer; transition: all 0.18s; position: relative; overflow: hidden; }
   .lf-flow-node:hover { transform: translateX(2px); }
-  .lf-flow-node.selected { box-shadow: 0 4px 20px rgba(79,70,229,0.15); }
+  .lf-preview-node { border-radius: 12px; padding: 12px 16px; display: flex; align-items: center; gap: 10px; transition: all 0.15s; }
+  .lf-preview-node:hover { transform: translateX(2px); }
+  .lf-connector { display: flex; flex-direction: column; align-items: center; margin: 3px 0; }
 
-  /* Right panel */
+  /* ── Right panel ── */
   .lf-right-panel { width: 380px; background: #FFFFFF; border-left: 1px solid #E5E7EB; padding: 24px; overflow-y: auto; flex-shrink: 0; }
 
-  /* Form elements */
-  .lf-label { display: block; font-size: 11px; font-weight: 600; color: #374151; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 6px; }
-  .lf-input { width: 100%; padding: 9px 12px; border: 1.5px solid #E5E7EB; border-radius: 8px; font-size: 13px; color: #111827; background: #FFFFFF; outline: none; font-family: 'Inter', sans-serif; transition: border-color 0.15s; box-sizing: border-box; }
+  /* ── Form elements ── */
+  .lf-label { display: block; font-size: 11px; font-weight: 700; color: #374151; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 6px; }
+  .lf-input { width: 100%; padding: 9px 12px; border: 1.5px solid #E5E7EB; border-radius: 8px; font-size: 13px; color: #111827; background: #FFFFFF; outline: none; font-family: 'Plus Jakarta Sans', sans-serif; transition: border-color 0.15s; }
   .lf-input:focus { border-color: #4F46E5; box-shadow: 0 0 0 3px rgba(79,70,229,0.08); }
-  .lf-select { width: 100%; padding: 9px 12px; border: 1.5px solid #E5E7EB; border-radius: 8px; font-size: 13px; color: #111827; background: #FFFFFF; outline: none; font-family: 'Inter', sans-serif; cursor: pointer; }
-  .lf-textarea { width: 100%; padding: 10px 12px; border: 1.5px solid #E5E7EB; border-radius: 8px; font-size: 12px; color: #111827; background: #F9FAFB; outline: none; resize: none; line-height: 1.7; font-family: 'Inter', sans-serif; box-sizing: border-box; }
+  .lf-select { width: 100%; padding: 9px 12px; border: 1.5px solid #E5E7EB; border-radius: 8px; font-size: 13px; color: #111827; background: #FFFFFF; outline: none; font-family: 'Plus Jakarta Sans', sans-serif; cursor: pointer; }
+  .lf-textarea { width: 100%; padding: 10px 12px; border: 1.5px solid #E5E7EB; border-radius: 8px; font-size: 12px; color: #111827; background: #F9FAFB; outline: none; resize: none; line-height: 1.7; font-family: 'Plus Jakarta Sans', sans-serif; }
   .lf-textarea:focus { border-color: #4F46E5; background: #FFFFFF; }
   .lf-info-banner { padding: 10px 14px; border-radius: 8px; background: #EEF2FF; border: 1px solid #C7D2FE; font-size: 12px; color: #4338CA; line-height: 1.6; margin-bottom: 18px; }
 
-  /* Save button */
-  .lf-save-btn { width: 100%; padding: 11px; border-radius: 9px; border: none; background: #4F46E5; color: #fff; font-size: 13px; font-weight: 600; cursor: pointer; font-family: 'Inter', sans-serif; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 7px; }
+  /* ── Buttons ── */
+  .lf-save-btn { width: 100%; padding: 11px; border-radius: 9px; border: none; background: #4F46E5; color: #fff; font-size: 13px; font-weight: 700; cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 7px; }
   .lf-save-btn:hover { background: #4338CA; }
   .lf-save-btn.saved { background: #059669; }
   .lf-save-btn:disabled { opacity: 0.6; cursor: not-allowed; }
-
-  /* Publish / test buttons */
-  .lf-publish-btn { padding: 9px 20px; border-radius: 9px; border: none; background: #4F46E5; font-size: 13px; font-weight: 600; color: #fff; cursor: pointer; font-family: 'Inter', sans-serif; transition: all 0.2s; display: flex; align-items: center; gap: 6px; }
+  .lf-publish-btn { padding: 9px 20px; border-radius: 9px; border: none; background: #4F46E5; font-size: 13px; font-weight: 700; color: #fff; cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif; transition: all 0.2s; display: flex; align-items: center; gap: 6px; }
   .lf-publish-btn:hover { background: #4338CA; }
   .lf-publish-btn.done { background: #059669; }
-  .lf-test-btn { padding: 9px 16px; border-radius: 9px; border: 1.5px solid #E5E7EB; background: #FFFFFF; font-size: 13px; font-weight: 500; color: #6B7280; cursor: pointer; font-family: 'Inter', sans-serif; transition: all 0.15s; }
+  .lf-test-btn { padding: 9px 16px; border-radius: 9px; border: 1.5px solid #E5E7EB; background: #FFFFFF; font-size: 13px; font-weight: 600; color: #6B7280; cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif; transition: all 0.15s; }
   .lf-test-btn:hover { background: #F9FAFB; color: #111827; }
+  .lf-start-btn { width: 100%; padding: 13px; border-radius: 12px; border: none; background: #4F46E5; color: #fff; font-size: 14px; font-weight: 700; cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+  .lf-start-btn:hover { background: #4338CA; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(79,70,229,0.3); }
 
-  /* Style selector */
+  /* ── Style selector ── */
   .lf-style-opt { padding: 12px 14px; border-radius: 10px; cursor: pointer; transition: all 0.15s; border: 1.5px solid #E5E7EB; background: #FAFAFA; margin-bottom: 8px; }
   .lf-style-opt:hover { border-color: #A5B4FC; }
   .lf-style-opt.selected { border-color: #4F46E5; background: #EEF2FF; }
 
-  /* Day toggle */
+  /* ── Day toggle ── */
   .lf-day { padding: 6px 12px; border-radius: 7px; border: 1.5px solid #E5E7EB; background: #FAFAFA; font-size: 12px; font-weight: 500; color: #6B7280; cursor: pointer; transition: all 0.15s; }
   .lf-day.selected { border-color: #4F46E5; background: #EEF2FF; color: #4F46E5; }
 
-  /* Add step dashed */
-  .lf-add-step { margin-top: 14px; display: flex; align-items: center; gap: 8px; padding: 11px 20px; border-radius: 10px; border: 1.5px dashed #D1D5DB; background: #FFFFFF; font-size: 12px; font-weight: 500; color: #9CA3AF; cursor: pointer; width: 100%; justify-content: center; font-family: 'Inter', sans-serif; transition: all 0.15s; }
+  /* ── Add step ── */
+  .lf-add-step { margin-top: 14px; display: flex; align-items: center; gap: 8px; padding: 11px 20px; border-radius: 10px; border: 1.5px dashed #D1D5DB; background: #FFFFFF; font-size: 12px; font-weight: 500; color: #9CA3AF; cursor: pointer; width: 100%; justify-content: center; font-family: 'Plus Jakarta Sans', sans-serif; transition: all 0.15s; }
   .lf-add-step:hover { background: #F9FAFB; color: #6B7280; border-color: #9CA3AF; }
 
-  /* Flow connector */
-  .lf-connector { display: flex; flex-direction: column; align-items: center; margin: 3px 0; }
-
-  /* Preview flow node */
-  .lf-preview-node { border-radius: 12px; padding: 12px 16px; display: flex; align-items: center; gap: 10px; transition: all 0.15s; }
-  .lf-preview-node:hover { transform: translateX(2px); }
-
-  /* Scrollbar */
+  /* ── Scrollbar ── */
   ::-webkit-scrollbar { width: 4px; }
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: #D1D5DB; border-radius: 4px; }
 
-  /* Start config button */
-  .lf-start-btn { width: 100%; padding: 13px; border-radius: 10px; border: none; background: #4F46E5; color: #fff; font-size: 14px; font-weight: 600; cursor: pointer; font-family: 'Inter', sans-serif; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
-  .lf-start-btn:hover { background: #4338CA; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(79,70,229,0.3); }
-
   @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-  @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-  .lf-animate { animation: fadeUp 0.3s ease forwards; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+  .lf-animate { animation: fadeUp 0.35s ease forwards; }
+  .lf-animate-delay-1 { animation: fadeUp 0.35s ease 0.08s forwards; opacity: 0; }
+  .lf-animate-delay-2 { animation: fadeUp 0.35s ease 0.16s forwards; opacity: 0; }
 `;
 
-// ─── Style helpers ─────────────────────────────────────────────────────────────
-const inputStyle: React.CSSProperties = {};
-const selectStyle: React.CSSProperties = {};
-const textareaStyle: React.CSSProperties = {};
-
-// ─── Agents (unchanged) ───────────────────────────────────────────────────────
+// ─── Agent Images ─────────────────────────────────────────────────────────────
 export const BookingAgent = ({ style }: { style?: React.CSSProperties }) => (
-  <div style={{ width:"100%", height:"100%", backgroundImage:"url(/booking4.png)", backgroundSize:"cover", backgroundRepeat:"no-repeat", backgroundPosition:"center", ...style }} />
+  <div style={{ width:"100%", height:"100%", backgroundImage:`url(${BASE}booking4.png)`, backgroundSize:"cover", backgroundRepeat:"no-repeat", backgroundPosition:"center", ...style }} />
 );
 export const FollowUpAutomation = ({ style }: { style?: React.CSSProperties }) => (
-  <div style={{ width:"100%", height:"100%", backgroundImage:"url(/followupautomation.png)", backgroundSize:"cover", backgroundRepeat:"no-repeat", backgroundPosition:"center", ...style }} />
+  <div style={{ width:"100%", height:"100%", backgroundImage:`url(${BASE}followupautomation.png)`, backgroundSize:"cover", backgroundRepeat:"no-repeat", backgroundPosition:"center", ...style }} />
 );
 export const FollowUpAgent = ({ style }: { style?: React.CSSProperties }) => (
-  <div style={{ width:"100%", height:"100%", backgroundImage:"url(/followupagent.png)", backgroundSize:"cover", backgroundRepeat:"no-repeat", backgroundPosition:"center", ...style }} />
+  <div style={{ width:"100%", height:"100%", backgroundImage:`url(${BASE}followupagent.png)`, backgroundSize:"cover", backgroundRepeat:"no-repeat", backgroundPosition:"center", ...style }} />
 );
 export const FollowUpFlow = ({ style }: { style?: React.CSSProperties }) => (
-  <div style={{ width:"100%", height:"100%", backgroundImage:"url(/followup6.png)", backgroundSize:"cover", backgroundRepeat:"no-repeat", backgroundPosition:"center", ...style }} />
+  <div style={{ width:"100%", height:"100%", backgroundImage:`url(${BASE}followup6.png)`, backgroundSize:"cover", backgroundRepeat:"no-repeat", backgroundPosition:"center", ...style }} />
 );
 
-// ─── Sidebar ──────────────────────────────────────────────────────────────────
-function Sidebar({ activeView, onSelect }: { activeView: View; onSelect: (v: View) => void }) {
-  const isFlow = activeView === "home" || activeView === "lead-flow-preview" || activeView === "lead-flow";
-  const isFollowup = ["followup-home","followup-automation-preview","followup-automation","followup-agent-preview","followup-agent"].includes(activeView);
-
+// ─── New Flow Card ─────────────────────────────────────────────────────────────
+function FlowCardNew({
+  bgColor, title, description, bullets, agentImg,
+  accentColor, accentBg, stepCount, onClick,
+}: {
+  bgColor: string; title: string; description: string;
+  bullets: string[]; agentImg: React.ReactNode;
+  accentColor: string; accentBg: string;
+  stepCount: string; onClick: () => void;
+}) {
   return (
-    <div className="lf-sidebar">
-      <div className="lf-sidebar-logo">
-        <div className="lf-sidebar-logo-inner">
-          <div className="lf-sidebar-logo-icon">
-            <Zap size={18} color="#fff" strokeWidth={2} />
-          </div>
-          <span className="lf-sidebar-logo-text">LeadFlow</span>
-        </div>
+    <div className="lf-flow-card-new" onClick={onClick}>
+      {/* Colored image block */}
+      <div className="lf-flow-card-img-new" style={{ background: bgColor }}>
+        <div style={{ width:"100%", height:"100%" }}>{agentImg}</div>
       </div>
 
-      <div className="lf-sidebar-section">
-        <div className="lf-sidebar-section-label">Menu</div>
-        <div className={`lf-nav-item ${activeView === "home" ? "active" : ""}`} onClick={() => onSelect("home")}>
-          <LayoutDashboard size={16} strokeWidth={1.8} /> Dashboard
+      {/* Body */}
+      <div className="lf-flow-card-body-new">
+        {/* Step count badge */}
+        <div style={{ display:"inline-flex", alignItems:"center", gap:5, fontSize:10, fontWeight:700,
+          color:accentColor, background:accentBg, padding:"3px 10px", borderRadius:20,
+          letterSpacing:"0.5px", textTransform:"uppercase", width:"fit-content" }}>
+          <Zap size={9} strokeWidth={2.5}/> {stepCount}
         </div>
-        <div className={`lf-nav-item ${isFlow ? "active" : ""}`} onClick={() => onSelect("lead-flow-preview")}>
-          <Workflow size={16} strokeWidth={1.8} /> Lead Flow
-        </div>
-        <div className={`lf-nav-item ${isFollowup ? "active" : ""}`} onClick={() => onSelect("followup-home")}>
-          <MessageCircle size={16} strokeWidth={1.8} /> Follow-Up
-        </div>
-        <div className="lf-nav-item">
-          <Users size={16} strokeWidth={1.8} /> Contacts
-        </div>
-      </div>
 
-      <div className="lf-sidebar-section">
-        <div className="lf-sidebar-section-label">Tools</div>
-        <div className="lf-nav-item">
-          <Settings size={16} strokeWidth={1.8} /> Settings
-        </div>
-        <div className="lf-nav-item">
-          <Star size={16} strokeWidth={1.8} /> Feedback
-        </div>
-      </div>
+        <div className="lf-flow-card-title-new">{title}</div>
+        <div className="lf-flow-card-desc-new">{description}</div>
 
-      <div className="lf-sidebar-bottom">
-        <div className="lf-upgrade-card">
-          <div className="lf-upgrade-card-title">Upgrade Pro</div>
-          <div className="lf-upgrade-card-desc">Unlock unlimited flows and AI replies.</div>
-          <button className="lf-upgrade-btn">Upgrade $30</button>
+        <div className="lf-flow-card-bullets-new">
+          {bullets.map((b, i) => (
+            <div key={i} className="lf-flow-card-bullet-new">
+              <div className="lf-flow-card-check" style={{ background: accentBg, border:`1.5px solid ${accentColor}30` }}>
+                <Check size={10} strokeWidth={3} color={accentColor}/>
+              </div>
+              {b}
+            </div>
+          ))}
         </div>
-      </div>
-    </div>
-  );
-}
 
-// ─── Top Bar ──────────────────────────────────────────────────────────────────
-function TopBar({ title, subtitle }: { title: string; subtitle: string }) {
-  return (
-    <div className="lf-topbar">
-      <div style={{ flex: 1 }}>
-        <div className="lf-topbar-title">{title}</div>
-        <div className="lf-topbar-sub">{subtitle}</div>
-      </div>
-      <div className="lf-topbar-icon"><Search size={15} strokeWidth={1.8} /></div>
-      <div className="lf-topbar-icon"><Bell size={15} strokeWidth={1.8} /></div>
-      <div className="lf-avatar">LA</div>
-      <div style={{ fontSize:13, fontWeight:600, color:"#111827", lineHeight:1.2 }}>
-        <div>LeadFlow</div>
-        <div style={{ fontSize:10, color:"#9CA3AF", fontWeight:400 }}>Admin</div>
+        <div className="lf-flow-card-cta-new" style={{ color: accentColor }}>
+          Configure Flow <ChevronRight size={14} strokeWidth={2.5}/>
+        </div>
       </div>
     </div>
   );
@@ -386,11 +377,13 @@ function InteractiveFlowDiagram({ steps }: { steps: FlowStep[] }) {
   return (
     <div style={{ position:"relative", flex:1, background:"#F9FAFB", borderRadius:14, border:"1px solid #E5E7EB", overflow:"hidden" }}>
       <div style={{ position:"absolute", top:12, right:12, zIndex:10, display:"flex", flexDirection:"column", gap:6 }}>
-        {[{ icon:<ZoomIn size={13}/>, fn:() => setZoom(z => Math.min(3, z+1)) }, { icon:<ZoomOut size={13}/>, fn:() => setZoom(z => Math.max(1, z-1)) }, { icon:<Move size={13}/>, fn:() => { setZoom(1); setOffset({x:0,y:0}); } }].map((b, i) => (
+        {[{ icon:<ZoomIn size={13}/>, fn:() => setZoom(z => Math.min(3, z+1)) },
+          { icon:<ZoomOut size={13}/>, fn:() => setZoom(z => Math.max(1, z-1)) },
+          { icon:<Move size={13}/>, fn:() => { setZoom(1); setOffset({x:0,y:0}); } }].map((b, i) => (
           <button key={i} onClick={b.fn} style={{ width:30, height:30, borderRadius:8, border:"1px solid #E5E7EB", background:"#fff", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", color:"#6B7280" }}>{b.icon}</button>
         ))}
       </div>
-      <div style={{ position:"absolute", bottom:10, left:12, fontSize:10, color:"#9CA3AF", fontFamily:"'Inter',sans-serif" }}>Drag to pan · scroll to zoom</div>
+      <div style={{ position:"absolute", bottom:10, left:12, fontSize:10, color:"#9CA3AF", fontFamily:"'Plus Jakarta Sans',sans-serif" }}>Drag to pan · scroll to zoom</div>
       <div onMouseDown={onMouseDown} onMouseMove={onMouseMove} onMouseUp={onMouseUp} onMouseLeave={onMouseUp}
         style={{ width:"100%", height:"100%", cursor: dragging ? "grabbing" : "grab", userSelect:"none", overflow:"hidden" }}>
         <div style={{ transform:`translate(${offset.x}px,${offset.y}px)`, paddingTop:24, display:"flex", flexDirection:"column", alignItems:"center", gap:0, width:"100%" }}>
@@ -440,12 +433,14 @@ function PreviewScreen({ title, subtitle, description, accentColor, accentBg, st
           <button className="lf-back-btn" onClick={onBack}><ArrowLeft size={13} strokeWidth={1.8} /> {backLabel}</button>
         </div>
         <div style={{ padding:"0 24px 24px", display:"flex", flexDirection:"column", alignItems:"center", borderBottom:"1px solid #F3F4F6" }}>
-          <div className="lf-preview-img"><div style={{ width:"100%", height:"100%" }}>{agent}</div></div>
+          <div style={{ width:"100%", height:200, borderRadius:14, overflow:"hidden", border:"1px solid #E5E7EB" }}>
+            <div style={{ width:"100%", height:"100%" }}>{agent}</div>
+          </div>
           <div style={{ marginTop:16, textAlign:"center" }}>
-            <div style={{ fontSize:20, fontWeight:700, color:"#111827", letterSpacing:"-0.3px", marginBottom:2 }}>{title}</div>
+            <div style={{ fontSize:20, fontWeight:800, color:"#111827", letterSpacing:"-0.3px", marginBottom:2 }}>{title}</div>
             <div style={{ fontSize:12, color:"#9CA3AF", fontStyle:"italic", marginBottom:16 }}>{subtitle}</div>
           </div>
-          <div className="lf-preview-stats" style={{ width:"100%" }}>
+          <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:10, width:"100%" }}>
             {stats.map(s => (
               <div key={s.label} className="lf-preview-stat">
                 <div className="lf-preview-stat-val" style={{ color:accentColor }}>{s.value}</div>
@@ -455,17 +450,17 @@ function PreviewScreen({ title, subtitle, description, accentColor, accentBg, st
           </div>
         </div>
         <div style={{ padding:"20px 24px", borderBottom:"1px solid #F3F4F6" }}>
-          <div style={{ fontSize:10, fontWeight:600, color:"#9CA3AF", textTransform:"uppercase", letterSpacing:"1px", marginBottom:8 }}>About this flow</div>
-          <p style={{ fontSize:12, color:"#6B7280", lineHeight:1.8, margin:0, fontWeight:400 }}>{description}</p>
+          <div style={{ fontSize:10, fontWeight:700, color:"#9CA3AF", textTransform:"uppercase", letterSpacing:"1px", marginBottom:8 }}>About this flow</div>
+          <p style={{ fontSize:12, color:"#6B7280", lineHeight:1.8, margin:0 }}>{description}</p>
         </div>
         <div style={{ padding:"20px 24px", flex:1 }}>
-          <div style={{ fontSize:10, fontWeight:600, color:"#9CA3AF", textTransform:"uppercase", letterSpacing:"1px", marginBottom:14 }}>How it works</div>
+          <div style={{ fontSize:10, fontWeight:700, color:"#9CA3AF", textTransform:"uppercase", letterSpacing:"1px", marginBottom:14 }}>How it works</div>
           <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
             {howItWorks.map((step, i) => (
               <div key={i} style={{ display:"flex", gap:12, alignItems:"flex-start" }}>
                 <div style={{ width:30, height:30, borderRadius:8, background:accentBg, border:`1px solid ${accentColor}30`, display:"flex", alignItems:"center", justifyContent:"center", color:accentColor, flexShrink:0 }}>{step.icon}</div>
                 <div>
-                  <div style={{ fontSize:13, fontWeight:600, color:"#111827", marginBottom:2 }}>{step.label}</div>
+                  <div style={{ fontSize:13, fontWeight:700, color:"#111827", marginBottom:2 }}>{step.label}</div>
                   <div style={{ fontSize:11, color:"#6B7280", lineHeight:1.6 }}>{step.desc}</div>
                 </div>
               </div>
@@ -474,13 +469,13 @@ function PreviewScreen({ title, subtitle, description, accentColor, accentBg, st
         </div>
         <div style={{ padding:"16px 24px 28px" }}>
           <button className="lf-start-btn" onClick={onStart}>
-            Start Configuration <ChevronRight size={14} strokeWidth={2} />
+            Start Configuration <ChevronRight size={14} strokeWidth={2.5} />
           </button>
         </div>
       </div>
-      <div style={{ flex:1, padding:"28px", display:"flex", flexDirection:"column", gap:16, overflow:"hidden", background:"#F0F2F8" }}>
+      <div style={{ flex:1, padding:"28px", display:"flex", flexDirection:"column", gap:16, overflow:"hidden", background:"#EDEEF5" }}>
         <div>
-          <div style={{ fontSize:16, fontWeight:700, color:"#111827", marginBottom:3, letterSpacing:"-0.2px" }}>Flow Preview</div>
+          <div style={{ fontSize:16, fontWeight:800, color:"#111827", marginBottom:3, letterSpacing:"-0.2px" }}>Flow Preview</div>
           <div style={{ fontSize:11, color:"#9CA3AF" }}>Interactive — drag to pan, use +/- to zoom</div>
         </div>
         <InteractiveFlowDiagram steps={steps} />
@@ -509,7 +504,7 @@ function BackBtn({ label, onClick }: { label: string; onClick: () => void }) {
   );
 }
 
-// ─── Panels (all unchanged logic) ────────────────────────────────────────────
+// ─── Panels (all logic unchanged) ─────────────────────────────────────────────
 interface PanelProps {
   config: AutomationConfig;
   onChange: (key: keyof AutomationConfig, value: string | string[]) => void;
@@ -560,7 +555,7 @@ function AgentPanel({ config, onChange, onSave, saving, saved }: PanelProps) {
         {styles.map(s => (
           <div key={s.key} className={`lf-style-opt ${config.writing_style === s.key ? "selected" : ""}`} onClick={() => onChange("writing_style", s.key)}>
             <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:4 }}>
-              <span style={{ fontSize:10, fontWeight:600, color: config.writing_style === s.key ? "#4F46E5" : "#6B7280", textTransform:"uppercase", letterSpacing:"0.8px" }}>{s.key}</span>
+              <span style={{ fontSize:10, fontWeight:700, color: config.writing_style === s.key ? "#4F46E5" : "#6B7280", textTransform:"uppercase", letterSpacing:"0.8px" }}>{s.key}</span>
               {config.writing_style === s.key && <Check size={11} strokeWidth={2.5} color="#4F46E5" />}
             </div>
             <p style={{ fontSize:11, color:"#374151", lineHeight:1.6, margin:0 }}>{s.msg}</p>
@@ -688,16 +683,20 @@ function ReplyNodePanel({ config, onChange, onSave, saving, saved }: PanelProps)
   );
 }
 
-function RightPanel({ step, config, onChange, onSave, saving, saved }: { step: FlowStep; config: AutomationConfig; onChange: (key: keyof AutomationConfig, value: string | string[]) => void; onSave: () => void; saving: boolean; saved: boolean }) {
+function RightPanel({ step, config, onChange, onSave, saving, saved }: {
+  step: FlowStep; config: AutomationConfig;
+  onChange: (key: keyof AutomationConfig, value: string | string[]) => void;
+  onSave: () => void; saving: boolean; saved: boolean;
+}) {
   return (
     <div className="lf-right-panel">
       <div style={{ marginBottom:20 }}>
-        <div style={{ fontSize:15, fontWeight:700, color:"#111827", marginBottom:3, letterSpacing:"-0.2px" }}>{step.label} Settings</div>
+        <div style={{ fontSize:15, fontWeight:800, color:"#111827", marginBottom:3, letterSpacing:"-0.2px" }}>{step.label} Settings</div>
         <div style={{ fontSize:11, color:"#9CA3AF" }}>Configure this step</div>
       </div>
       <div style={{ marginBottom:16 }}>
         <label className="lf-label">Step Type</label>
-        <div style={{ padding:"9px 12px", borderRadius:8, border:`1.5px solid ${step.border}`, background:step.bg, fontSize:12, fontWeight:600, color:step.color, display:"flex", alignItems:"center", gap:8 }}>
+        <div style={{ padding:"9px 12px", borderRadius:8, border:`1.5px solid ${step.border}`, background:step.bg, fontSize:12, fontWeight:700, color:step.color, display:"flex", alignItems:"center", gap:8 }}>
           <span>{step.icon}</span><span>{step.sublabel}</span>
         </div>
       </div>
@@ -733,12 +732,12 @@ function FlowEditor({ title, subtitle, steps, onBack, backLabel="Back", config, 
   const selectedStep = steps.find(s => s.id === selected)!;
 
   return (
-    <div style={{ display:"flex", height:"100%", background:"#F0F2F8" }}>
+    <div style={{ display:"flex", height:"100%", background:"#EDEEF5" }}>
       <div style={{ flex:1, padding:"32px 36px", overflowY:"auto" }}>
         <BackBtn label={backLabel} onClick={onBack} />
         <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between", marginBottom:28 }}>
           <div>
-            <h1 style={{ fontFamily:"'Inter',sans-serif", fontSize:22, fontWeight:700, color:"#111827", letterSpacing:"-0.4px", marginBottom:4 }}>{title}</h1>
+            <h1 style={{ fontFamily:"'Plus Jakarta Sans',sans-serif", fontSize:22, fontWeight:800, color:"#111827", letterSpacing:"-0.4px", marginBottom:4 }}>{title}</h1>
             <p style={{ fontSize:12, color:"#9CA3AF" }}>{subtitle}</p>
           </div>
           <div style={{ display:"flex", gap:8, alignItems:"center" }}>
@@ -749,26 +748,25 @@ function FlowEditor({ title, subtitle, steps, onBack, backLabel="Back", config, 
             </button>
           </div>
         </div>
-
         <div style={{ display:"flex", flexDirection:"column", alignItems:"center", maxWidth:520, margin:"0 auto" }}>
           {steps.map((step, i) => (
             <div key={step.id} style={{ display:"flex", flexDirection:"column", alignItems:"center", width:"100%" }}>
               <div className={`lf-flow-node ${selected === step.id ? "selected" : ""}`}
                 onClick={() => setSelected(step.id)}
-                style={{ width:"100%", border:`1.5px solid ${selected === step.id ? step.color : step.border}`, background: selected === step.id ? step.bg : "#FFFFFF", boxShadow: selected === step.id ? `0 4px 20px ${step.color}18` : "0 1px 3px rgba(0,0,0,0.04)", cursor:"pointer" }}>
+                style={{ width:"100%", border:`1.5px solid ${selected === step.id ? step.color : step.border}`, background: selected === step.id ? step.bg : "#FFFFFF", boxShadow: selected === step.id ? `0 4px 20px ${step.color}18` : "0 1px 3px rgba(0,0,0,0.04)" }}>
                 {step.live && <div style={{ position:"absolute", top:0, left:0, right:0, height:3, background:`linear-gradient(90deg, ${step.color}, ${step.color}88)`, borderRadius:"12px 12px 0 0" }} />}
                 <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between" }}>
                   <div style={{ display:"flex", alignItems:"center", gap:10 }}>
                     <div style={{ width:34, height:34, borderRadius:9, background: selected === step.id ? "rgba(255,255,255,0.8)" : step.bg, border:`1px solid ${step.border}`, display:"flex", alignItems:"center", justifyContent:"center", color:step.color }}>{step.icon}</div>
                     <div>
-                      <div style={{ fontSize:13, fontWeight:600, color:"#111827" }}>{step.label}</div>
+                      <div style={{ fontSize:13, fontWeight:700, color:"#111827" }}>{step.label}</div>
                       <div style={{ fontSize:10, color:"#9CA3AF", fontStyle:"italic" }}>{step.sublabel}</div>
                     </div>
                   </div>
                   <div style={{ display:"flex", alignItems:"center", gap:8 }}>
                     {step.live
-                      ? <div style={{ display:"flex", alignItems:"center", gap:4, fontSize:9, fontWeight:600, color:"#059669", background:"#DCFCE7", padding:"3px 9px", borderRadius:20 }}><span style={{ width:5, height:5, borderRadius:"50%", background:"#059669", display:"inline-block" }} />Live</div>
-                      : <div style={{ fontSize:9, fontWeight:600, color:"#9CA3AF", background:"#F3F4F6", padding:"3px 9px", borderRadius:20 }}>Draft</div>
+                      ? <div style={{ display:"flex", alignItems:"center", gap:4, fontSize:9, fontWeight:700, color:"#059669", background:"#DCFCE7", padding:"3px 9px", borderRadius:20 }}><span style={{ width:5, height:5, borderRadius:"50%", background:"#059669", display:"inline-block" }} />Live</div>
+                      : <div style={{ fontSize:9, fontWeight:700, color:"#9CA3AF", background:"#F3F4F6", padding:"3px 9px", borderRadius:20 }}>Draft</div>
                     }
                     <Settings size={13} strokeWidth={1.5} color="#9CA3AF" />
                   </div>
@@ -792,102 +790,88 @@ function FlowEditor({ title, subtitle, steps, onBack, backLabel="Back", config, 
   );
 }
 
-// ─── Flow Card ────────────────────────────────────────────────────────────────
-function FlowCard({ color, accentBg, title, description, bullets, agent, tag, tagBg, tagColor, onClick }: {
-  color: string; accentBg: string; title: string; description: string;
-  bullets: string[]; agent: React.ReactNode; tag: string; tagBg: string; tagColor: string; onClick: () => void;
-}) {
-  return (
-    <div className="lf-flow-card" onClick={onClick}>
-      <div className="lf-flow-card-img">{agent}</div>
-      <div className="lf-flow-card-body">
-        <div className="lf-flow-card-tag" style={{ background:tagBg, color:tagColor }}><Activity size={10} />{tag}</div>
-        <div className="lf-flow-card-title">{title}</div>
-        <div className="lf-flow-card-desc">{description}</div>
-        <div className="lf-flow-card-bullets">
-          {bullets.map(b => (
-            <div key={b} className="lf-flow-card-bullet">
-              <div className="lf-flow-card-bullet-dot" style={{ background:accentBg, border:`1px solid ${color}30` }}>
-                <Check size={8} strokeWidth={2.5} color={color} />
-              </div>
-              {b}
-            </div>
-          ))}
-        </div>
-        <div className="lf-flow-card-cta">
-          <div className="lf-flow-card-open" style={{ color }}> Open Flow <ChevronRight size={13} strokeWidth={2} /></div>
-          <div style={{ fontSize:11, color:"#9CA3AF" }}>Click to configure</div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 // ─── Home Screen ──────────────────────────────────────────────────────────────
 function HomeScreen({ onSelect }: { onSelect: (v: View) => void }) {
   return (
-    <div style={{ flex:1, display:"flex", flexDirection:"column", overflow:"hidden" }}>
-      <TopBar title="Dashboard" subtitle="Manage your automation flows" />
-      <div style={{ flex:1, overflowY:"auto", padding:"28px 32px" }}>
+    <div style={{ flex:1, overflowY:"auto", padding:"32px 32px 40px", background:"#EDEEF5" }}>
 
-        {/* Stat row */}
-        <div className="lf-stat-grid">
-          <div className="lf-stat-card accent">
-            <div className="lf-stat-label">Total Leads</div>
-            <div className="lf-stat-value">2,847</div>
-            <div style={{ display:"flex", alignItems:"center", gap:8 }}>
-              <span className="lf-stat-badge">+12.4%</span>
-              <span className="lf-stat-sub">vs last month</span>
-            </div>
-          </div>
-          <div className="lf-stat-card">
-            <div className="lf-stat-label">Calls Booked</div>
-            <div className="lf-stat-value" style={{ color:"#111827" }}>341</div>
-            <div style={{ display:"flex", alignItems:"center", gap:8 }}>
-              <span className="lf-stat-badge up">+8.1%</span>
-              <span className="lf-stat-sub" style={{ color:"#9CA3AF" }}>vs last month</span>
-            </div>
-          </div>
-          <div className="lf-stat-card">
-            <div className="lf-stat-label">Conversion Rate</div>
-            <div className="lf-stat-value" style={{ color:"#111827" }}>11.9%</div>
-            <div style={{ display:"flex", alignItems:"center", gap:8 }}>
-              <span className="lf-stat-badge down">-2.0%</span>
-              <span className="lf-stat-sub" style={{ color:"#9CA3AF" }}>vs last month</span>
-            </div>
-          </div>
+      {/* Page header */}
+      <div className="lf-animate" style={{ marginBottom:28 }}>
+        <div style={{ fontSize:24, fontWeight:800, color:"#111827", letterSpacing:"-0.5px", marginBottom:4 }}>
+          Lead Flow
         </div>
+        <div style={{ fontSize:13, color:"#9CA3AF" }}>Build and manage your automation flows</div>
+      </div>
 
-        {/* Banner */}
-        <div style={{ width:"100%", borderRadius:16, overflow:"hidden", marginBottom:28, height:200, position:"relative" }}>
-          <img src="/banner6.png" alt="LeadFlow banner" style={{ width:"100%", height:"100%", objectFit:"cover", objectPosition:"center", display:"block" }} />
-          <div style={{ position:"absolute", inset:0, background:"linear-gradient(90deg, rgba(79,70,229,0.7) 0%, transparent 60%)", display:"flex", flexDirection:"column", justifyContent:"center", padding:"0 32px" }}>
-            <div style={{ fontSize:22, fontWeight:700, color:"#fff", letterSpacing:"-0.3px", marginBottom:6 }}>Automate your leads</div>
-            <div style={{ fontSize:13, color:"rgba(255,255,255,0.8)", marginBottom:16, maxWidth:320 }}>Set up your flows once and convert leads to booked calls on autopilot, 24/7.</div>
-            <button onClick={() => onSelect("lead-flow-preview")} style={{ display:"inline-flex", alignItems:"center", gap:6, padding:"10px 20px", borderRadius:9, background:"#FFFFFF", color:"#4F46E5", fontSize:13, fontWeight:700, border:"none", cursor:"pointer", width:"fit-content" }}>
-              Get Started <ChevronRight size={14} strokeWidth={2.5} />
-            </button>
+      {/* Banner */}
+      <div className="lf-animate-delay-1" style={{ borderRadius:20, overflow:"hidden", marginBottom:32, position:"relative", height:210, boxShadow:"0 8px 32px rgba(79,70,229,.18)" }}>
+        <img
+          src={`${BASE}banner6.png`}
+          alt="LeadFlow banner"
+          style={{ width:"100%", height:"100%", objectFit:"cover", objectPosition:"center", display:"block" }}
+        />
+        {/* Gradient overlay */}
+        <div style={{ position:"absolute", inset:0, background:"linear-gradient(100deg, rgba(30,27,75,0.82) 0%, rgba(79,70,229,0.55) 45%, transparent 75%)" }}/>
+        <div style={{ position:"absolute", inset:0, display:"flex", flexDirection:"column", justifyContent:"center", padding:"0 36px" }}>
+          <div style={{ fontSize:11, fontWeight:700, letterSpacing:"2px", textTransform:"uppercase", color:"#A5B4FC", marginBottom:10 }}>
+            ⚡ Automation
           </div>
+          <div style={{ fontSize:26, fontWeight:800, color:"#fff", letterSpacing:"-0.5px", lineHeight:1.2, marginBottom:8, maxWidth:380 }}>
+            Boost your business<br/>while you sleep
+          </div>
+          <div style={{ fontSize:13, color:"rgba(255,255,255,0.75)", marginBottom:20, maxWidth:300, lineHeight:1.6 }}>
+            Set up once. Convert leads to booked calls on autopilot, 24/7.
+          </div>
+          <button
+            onClick={() => onSelect("lead-flow-preview")}
+            style={{ display:"inline-flex", alignItems:"center", gap:7, padding:"11px 22px", borderRadius:12, background:"#FFFFFF", color:"#4F46E5", fontSize:13, fontWeight:800, border:"none", cursor:"pointer", width:"fit-content", boxShadow:"0 4px 14px rgba(0,0,0,.15)", transition:"transform 0.15s" }}
+            onMouseEnter={e => (e.currentTarget as HTMLElement).style.transform="translateY(-1px)"}
+            onMouseLeave={e => (e.currentTarget as HTMLElement).style.transform="translateY(0)"}
+          >
+            Get Started <ChevronRight size={15} strokeWidth={2.5} />
+          </button>
         </div>
+      </div>
 
-        {/* Flow cards */}
-        <div style={{ marginBottom:16 }}>
-          <div style={{ fontSize:15, fontWeight:700, color:"#111827", marginBottom:4, letterSpacing:"-0.2px" }}>Your Flows</div>
+      {/* Your Flows */}
+      <div className="lf-animate-delay-2">
+        <div style={{ marginBottom:18 }}>
+          <div style={{ fontSize:17, fontWeight:800, color:"#111827", letterSpacing:"-0.3px", marginBottom:3 }}>Your Flows</div>
           <div style={{ fontSize:12, color:"#9CA3AF" }}>Choose a flow to configure</div>
         </div>
-        <div className="lf-flow-grid">
-          <FlowCard
-            color="#4F46E5" accentBg="#EEF2FF" title="Lead Flow"
+
+        <div style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:20 }}>
+          {/* Lead Flow card */}
+          <FlowCardNew
+            bgColor="#EEE9FF"
+            title="Lead Flow"
             description="Greet every lead, deliver your lead magnet, and book calls — fully automated on WhatsApp."
-            bullets={["Greets every lead instantly, 24/7","Sends your lead magnet automatically","Books calls while you sleep"]}
-            agent={<BookingAgent />} tag="8 Steps" tagBg="#EEF2FF" tagColor="#4338CA"
+            bullets={[
+              "Responds to every lead instantly, 24/7",
+              "Sends your lead magnet automatically",
+              "Books calls while you sleep",
+            ]}
+            agentImg={<BookingAgent />}
+            accentColor="#4F46E5"
+            accentBg="#EEF2FF"
+            stepCount="8 Steps"
             onClick={() => onSelect("lead-flow-preview")}
           />
-          <FlowCard
-            color="#059669" accentBg="#ECFDF5" title="Follow-Up Flow"
+
+          {/* Follow-Up Flow card */}
+          <FlowCardNew
+            bgColor="#FFF3E0"
+            title="Follow-Up Flow"
             description="Re-engage leads after booking and confirm calls to maximise show-up rates with AI."
-            bullets={["Re-engages leads after booking","Confirms bookings to maximise show-ups","AI handles replies intelligently"]}
-            agent={<FollowUpFlow />} tag="2 Flows" tagBg="#ECFDF5" tagColor="#065F46"
+            bullets={[
+              "Re-engages no-shows automatically",
+              "AI confirms bookings to maximise show-ups",
+              "Handles replies intelligently around the clock",
+            ]}
+            agentImg={<FollowUpFlow />}
+            accentColor="#D97706"
+            accentBg="#FEF3C7"
+            stepCount="2 Flows"
             onClick={() => onSelect("followup-home")}
           />
         </div>
@@ -899,30 +883,44 @@ function HomeScreen({ onSelect }: { onSelect: (v: View) => void }) {
 // ─── Follow-Up Home ───────────────────────────────────────────────────────────
 function FollowUpHome({ onSelect, onBack }: { onSelect: (v: View) => void; onBack: () => void }) {
   return (
-    <div style={{ flex:1, display:"flex", flexDirection:"column", overflow:"hidden" }}>
-      <TopBar title="Follow-Up Flow" subtitle="Re-engage your leads automatically" />
-      <div style={{ flex:1, overflowY:"auto", padding:"28px 32px" }}>
-        <BackBtn label="Back to Dashboard" onClick={onBack} />
-        <div style={{ marginBottom:24 }}>
-          <div style={{ fontSize:15, fontWeight:700, color:"#111827", marginBottom:4, letterSpacing:"-0.2px" }}>Choose your follow-up strategy</div>
-          <div style={{ fontSize:12, color:"#9CA3AF" }}>Select how you want to re-engage leads</div>
-        </div>
-        <div className="lf-flow-grid">
-          <FlowCard
-            color="#D97706" accentBg="#FFFBEB" title="Follow-Up Automation"
-            description="Send scheduled follow-up messages at the perfect time. Choose your delay and let it run automatically."
-            bullets={["Fires automatically at the right time","Re-engages leads with personalised messages","Zero manual work required"]}
-            agent={<FollowUpAutomation />} tag="Scheduled" tagBg="#FFFBEB" tagColor="#92400E"
-            onClick={() => onSelect("followup-automation-preview")}
-          />
-          <FlowCard
-            color="#2563EB" accentBg="#EFF6FF" title="Follow-Up Agent"
-            description="AI agent takes over when a lead replies — responding intelligently to guide them toward booking."
-            bullets={["AI takes over when a lead replies","Responds intelligently every time","Guides leads toward booking automatically"]}
-            agent={<FollowUpAgent />} tag="AI Agent" tagBg="#EFF6FF" tagColor="#1D4ED8"
-            onClick={() => onSelect("followup-agent-preview")}
-          />
-        </div>
+    <div style={{ flex:1, overflowY:"auto", padding:"32px 32px 40px", background:"#EDEEF5" }}>
+      <div style={{ marginBottom:28 }}>
+        <button className="lf-back-btn" onClick={onBack}><ArrowLeft size={13} strokeWidth={1.8} /> Back to Lead Flow</button>
+        <div style={{ fontSize:24, fontWeight:800, color:"#111827", letterSpacing:"-0.5px", marginBottom:4 }}>Follow-Up Flow</div>
+        <div style={{ fontSize:13, color:"#9CA3AF" }}>Choose your follow-up strategy</div>
+      </div>
+
+      <div style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:20 }}>
+        <FlowCardNew
+          bgColor="#FFFBEB"
+          title="Follow-Up Automation"
+          description="Send scheduled follow-up messages at the perfect time. Set your delay and let it run automatically."
+          bullets={[
+            "Fires automatically at the right time",
+            "Re-engages leads with personalised messages",
+            "Zero manual work required",
+          ]}
+          agentImg={<FollowUpAutomation />}
+          accentColor="#D97706"
+          accentBg="#FEF3C7"
+          stepCount="Scheduled"
+          onClick={() => onSelect("followup-automation-preview")}
+        />
+        <FlowCardNew
+          bgColor="#EFF6FF"
+          title="Follow-Up Agent"
+          description="AI agent takes over when a lead replies — responding intelligently to guide them toward booking."
+          bullets={[
+            "AI takes over when a lead replies",
+            "Responds intelligently every time",
+            "Guides leads toward booking automatically",
+          ]}
+          agentImg={<FollowUpAgent />}
+          accentColor="#2563EB"
+          accentBg="#DBEAFE"
+          stepCount="AI Agent"
+          onClick={() => onSelect("followup-agent-preview")}
+        />
       </div>
     </div>
   );
@@ -999,105 +997,77 @@ export function LeadFlowScreen() {
     { icon:<MessageCircle size={15} strokeWidth={1.5}/>, label:"AI responds",       desc:"The agent replies intelligently based on the lead's message." },
   ];
 
-  const agentEl   = <div style={{ width:"100%", height:"100%" }}><BookingAgent /></div>;
-  const autoEl    = <div style={{ width:"100%", height:"100%" }}><FollowUpAutomation /></div>;
-  const agentFuEl = <div style={{ width:"100%", height:"100%" }}><FollowUpAgent /></div>;
-
-  const isFullPage = ["home","followup-home"].includes(view);
-  const isPreview  = view.endsWith("-preview");
-  const isEditor   = !isFullPage && !isPreview;
-
   return (
     <>
       <style>{GLOBAL_STYLES}</style>
-      <div className="lf-root" style={{ height:"100vh", overflow:"hidden" }}>
+      <div className="lf-root" style={{ flex:1, display:"flex", flexDirection:"column", height:"100%", overflow:"hidden" }}>
 
-        {/* Persistent sidebar */}
-        <Sidebar activeView={view} onSelect={setView} />
+        {view === "home" && <HomeScreen onSelect={setView} />}
+        {view === "followup-home" && <FollowUpHome onSelect={setView} onBack={() => setView("home")} />}
 
-        {/* Main content */}
-        <div style={{ flex:1, display:"flex", flexDirection:"column", overflow:"hidden" }}>
+        {view === "lead-flow-preview" && (
+          <div style={{ flex:1, display:"flex", flexDirection:"column", overflow:"hidden" }}>
+            <PreviewScreen
+              title="Lead Flow" subtitle="Your main lead automation sequence"
+              description="Set up the full sequence that greets every lead, qualifies them, delivers your lead magnet, and books the call — completely on autopilot."
+              accentColor="#4F46E5" accentBg="#EEF2FF"
+              stats={[{ label:"Steps", value:"8" }, { label:"Automated", value:"100%" }, { label:"Channel", value:"WA" }]}
+              howItWorks={leadHowItWorks}
+              agent={<div style={{ width:"100%", height:"100%" }}><BookingAgent /></div>}
+              steps={LEAD_FLOW_STEPS}
+              onStart={() => setView("lead-flow")} onBack={() => setView("home")} backLabel="Back to Lead Flow"
+            />
+          </div>
+        )}
 
-          {view === "home" && <HomeScreen onSelect={setView} />}
-          {view === "followup-home" && <FollowUpHome onSelect={setView} onBack={() => setView("home")} />}
+        {view === "lead-flow" && (
+          <div style={{ flex:1, display:"flex", flexDirection:"column", overflow:"hidden" }}>
+            <FlowEditor title="Lead Flow" subtitle="Your main lead automation sequence" steps={LEAD_FLOW_STEPS} onBack={() => setView("lead-flow-preview")} backLabel="Back to Preview" {...editorProps} />
+          </div>
+        )}
 
-          {/* Preview screens get topbar injected */}
-          {view === "lead-flow-preview" && (
-            <div style={{ flex:1, display:"flex", flexDirection:"column", overflow:"hidden" }}>
-              <TopBar title="Lead Flow" subtitle="Preview and configure your main automation" />
-              <div style={{ flex:1, overflow:"hidden" }}>
-                <PreviewScreen
-                  title="Lead Flow" subtitle="Your main lead automation sequence"
-                  description="Set up the full sequence that greets every lead, qualifies them, delivers your lead magnet, and books the call — completely on autopilot."
-                  accentColor="#4F46E5" accentBg="#EEF2FF"
-                  stats={[{ label:"Steps", value:"8" }, { label:"Automated", value:"100%" }, { label:"Channel", value:"WA" }]}
-                  howItWorks={leadHowItWorks} agent={agentEl} steps={LEAD_FLOW_STEPS}
-                  onStart={() => setView("lead-flow")} onBack={() => setView("home")} backLabel="Back to Dashboard"
-                />
-              </div>
-            </div>
-          )}
+        {view === "followup-automation-preview" && (
+          <div style={{ flex:1, display:"flex", flexDirection:"column", overflow:"hidden" }}>
+            <PreviewScreen
+              title="Follow-Up Automation" subtitle="Scheduled time-based follow-up"
+              description="Send perfectly timed follow-up messages to leads who haven't responded. Set your delay once and let the automation re-engage them."
+              accentColor="#D97706" accentBg="#FFFBEB"
+              stats={[{ label:"Steps", value:"2" }, { label:"Type", value:"Auto" }, { label:"Channel", value:"WA" }]}
+              howItWorks={followupAutoHowItWorks}
+              agent={<div style={{ width:"100%", height:"100%" }}><FollowUpAutomation /></div>}
+              steps={FOLLOWUP_AUTO_STEPS}
+              onStart={() => setView("followup-automation")} onBack={() => setView("followup-home")} backLabel="Back to Follow-Up"
+            />
+          </div>
+        )}
 
-          {view === "lead-flow" && (
-            <div style={{ flex:1, display:"flex", flexDirection:"column", overflow:"hidden" }}>
-              <TopBar title="Lead Flow Editor" subtitle="Configure each step of your automation" />
-              <div style={{ flex:1, overflow:"hidden" }}>
-                <FlowEditor title="Lead Flow" subtitle="Your main lead automation sequence" steps={LEAD_FLOW_STEPS} onBack={() => setView("lead-flow-preview")} backLabel="Back to Preview" {...editorProps} />
-              </div>
-            </div>
-          )}
+        {view === "followup-automation" && (
+          <div style={{ flex:1, display:"flex", flexDirection:"column", overflow:"hidden" }}>
+            <FlowEditor title="Follow-Up Automation" subtitle="Scheduled time-based messages" steps={FOLLOWUP_AUTO_STEPS} onBack={() => setView("followup-automation-preview")} backLabel="Back to Preview" {...editorProps} />
+          </div>
+        )}
 
-          {view === "followup-automation-preview" && (
-            <div style={{ flex:1, display:"flex", flexDirection:"column", overflow:"hidden" }}>
-              <TopBar title="Follow-Up Automation" subtitle="Scheduled time-based follow-up messages" />
-              <div style={{ flex:1, overflow:"hidden" }}>
-                <PreviewScreen
-                  title="Follow-Up Automation" subtitle="Scheduled time-based follow-up"
-                  description="Send perfectly timed follow-up messages to leads who haven't responded. Set your delay once and let the automation re-engage them."
-                  accentColor="#D97706" accentBg="#FFFBEB"
-                  stats={[{ label:"Steps", value:"2" }, { label:"Type", value:"Auto" }, { label:"Channel", value:"WA" }]}
-                  howItWorks={followupAutoHowItWorks} agent={autoEl} steps={FOLLOWUP_AUTO_STEPS}
-                  onStart={() => setView("followup-automation")} onBack={() => setView("followup-home")} backLabel="Back to Follow-Up"
-                />
-              </div>
-            </div>
-          )}
+        {view === "followup-agent-preview" && (
+          <div style={{ flex:1, display:"flex", flexDirection:"column", overflow:"hidden" }}>
+            <PreviewScreen
+              title="Follow-Up Agent" subtitle="AI agent re-engages your leads"
+              description="When a lead replies, your AI agent takes over instantly — responding intelligently to guide them toward booking a call with you."
+              accentColor="#2563EB" accentBg="#EFF6FF"
+              stats={[{ label:"Steps", value:"2" }, { label:"Type", value:"AI" }, { label:"Channel", value:"WA" }]}
+              howItWorks={followupAgentHowItWorks}
+              agent={<div style={{ width:"100%", height:"100%" }}><FollowUpAgent /></div>}
+              steps={FOLLOWUP_AGENT_STEPS}
+              onStart={() => setView("followup-agent")} onBack={() => setView("followup-home")} backLabel="Back to Follow-Up"
+            />
+          </div>
+        )}
 
-          {view === "followup-automation" && (
-            <div style={{ flex:1, display:"flex", flexDirection:"column", overflow:"hidden" }}>
-              <TopBar title="Follow-Up Automation" subtitle="Scheduled time-based follow-up" />
-              <div style={{ flex:1, overflow:"hidden" }}>
-                <FlowEditor title="Follow-Up Automation" subtitle="Scheduled time-based messages" steps={FOLLOWUP_AUTO_STEPS} onBack={() => setView("followup-automation-preview")} backLabel="Back to Preview" {...editorProps} />
-              </div>
-            </div>
-          )}
+        {view === "followup-agent" && (
+          <div style={{ flex:1, display:"flex", flexDirection:"column", overflow:"hidden" }}>
+            <FlowEditor title="Follow-Up Agent" subtitle="AI agent re-engages leads" steps={FOLLOWUP_AGENT_STEPS} onBack={() => setView("followup-agent-preview")} backLabel="Back to Preview" {...editorProps} />
+          </div>
+        )}
 
-          {view === "followup-agent-preview" && (
-            <div style={{ flex:1, display:"flex", flexDirection:"column", overflow:"hidden" }}>
-              <TopBar title="Follow-Up Agent" subtitle="AI agent replies to re-engage your leads" />
-              <div style={{ flex:1, overflow:"hidden" }}>
-                <PreviewScreen
-                  title="Follow-Up Agent" subtitle="AI agent re-engages your leads"
-                  description="When a lead replies, your AI agent takes over instantly — responding intelligently to guide them toward booking a call with you."
-                  accentColor="#2563EB" accentBg="#EFF6FF"
-                  stats={[{ label:"Steps", value:"2" }, { label:"Type", value:"AI" }, { label:"Channel", value:"WA" }]}
-                  howItWorks={followupAgentHowItWorks} agent={agentFuEl} steps={FOLLOWUP_AGENT_STEPS}
-                  onStart={() => setView("followup-agent")} onBack={() => setView("followup-home")} backLabel="Back to Follow-Up"
-                />
-              </div>
-            </div>
-          )}
-
-          {view === "followup-agent" && (
-            <div style={{ flex:1, display:"flex", flexDirection:"column", overflow:"hidden" }}>
-              <TopBar title="Follow-Up Agent" subtitle="AI agent replies to re-engage your leads" />
-              <div style={{ flex:1, overflow:"hidden" }}>
-                <FlowEditor title="Follow-Up Agent" subtitle="AI agent re-engages leads" steps={FOLLOWUP_AGENT_STEPS} onBack={() => setView("followup-agent-preview")} backLabel="Back to Preview" {...editorProps} />
-              </div>
-            </div>
-          )}
-
-        </div>
       </div>
     </>
   );
