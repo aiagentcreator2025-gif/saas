@@ -41,6 +41,8 @@ const YEARLY_DATA = [
   { leadsHandled:1400, magnetSent:935,  bookedCalls:336, showUp:201 },
 ];
 
+type DataRow = { leadsHandled: number; magnetSent: number; bookedCalls: number; showUp: number };
+
 const ACTIVITIES = [
   { init:"AK", name:"Ahmed Karimi",  action:"booked a call",        time:"2 min ago",   bg:"#EEF2FF", color:"#4F46E5" },
   { init:"SM", name:"Sara Moreira",  action:"received lead magnet", time:"15 min ago",  bg:"#DCFCE7", color:"#16A34A" },
@@ -84,6 +86,9 @@ const FLOWS = [
   },
 ];
 
+type FlowStep = typeof FLOWS[0]["steps"][0];
+type Flow = typeof FLOWS[0];
+
 // ─── Donut Chart ──────────────────────────────────────────────────────────────
 function DonutChart() {
   const segs = [
@@ -94,7 +99,8 @@ function DonutChart() {
   ];
   const cx=80, cy=80, r1=62, r2=38;
   let cum = -Math.PI/2;
-  function arc(pct) {
+  // FIX L97: typed pct parameter
+  function arc(pct: number) {
     const s=cum, e=cum+pct*2*Math.PI-0.03; cum=e+0.03;
     const x1s=cx+r1*Math.cos(s), y1s=cy+r1*Math.sin(s);
     const x1e=cx+r1*Math.cos(e), y1e=cy+r1*Math.sin(e);
@@ -129,14 +135,15 @@ function DonutChart() {
 }
 
 // ─── Bar Chart ────────────────────────────────────────────────────────────────
-function BubbleBarChart({ data, labels }) {
-  const [tooltip, setTooltip] = useState(null);
-  const maxVal = Math.max(...data.map(d=>d.leadsHandled));
+// FIX L132: typed props for BubbleBarChart
+function BubbleBarChart({ data, labels }: { data: DataRow[]; labels: string[] }) {
+  const [tooltip, setTooltip] = useState<number | null>(null);
+  const maxVal = Math.max(...data.map((d: DataRow) => d.leadsHandled)); // FIX L134
   const BAR_H = 140;
   return (
     <div style={{position:"relative"}}>
       <div style={{display:"flex",alignItems:"flex-end",gap:8,height:BAR_H+24}}>
-        {data.map((entry,i)=>{
+        {data.map((entry: DataRow, i: number) => { // FIX L139
           const h1=Math.max(8,Math.round((entry.leadsHandled/maxVal)*BAR_H));
           const h2=Math.max(8,Math.round((entry.magnetSent/maxVal)*BAR_H));
           const hov=tooltip===i;
@@ -178,7 +185,8 @@ function BubbleBarChart({ data, labels }) {
 }
 
 // ─── Avatar ───────────────────────────────────────────────────────────────────
-function Avatar({ init, bg="#EEF2FF", color="#4F46E5", size=30 }) {
+// FIX L181: typed Avatar props
+function Avatar({ init, bg="#EEF2FF", color="#4F46E5", size=30 }: { init: string; bg?: string; color?: string; size?: number }) {
   return (
     <div style={{width:size,height:size,borderRadius:"50%",background:bg,
       display:"flex",alignItems:"center",justifyContent:"center",
@@ -189,19 +197,21 @@ function Avatar({ init, bg="#EEF2FF", color="#4F46E5", size=30 }) {
 }
 
 // ─── Flow Step ────────────────────────────────────────────────────────────────
-function FlowStep({ step }) {
+// FIX L192: typed FlowStep props
+function FlowStepCard({ step }: { step: FlowStep }) {
   return (
     <div style={{textAlign:"center",background:"#FAFAFA",borderRadius:14,
       border:`1.5px solid ${step.color}22`,padding:"14px 10px",
       boxShadow:"0 2px 8px rgba(0,0,0,.04)",transition:"transform .15s",cursor:"pointer"}}
-      onMouseEnter={e=>e.currentTarget.style.transform="scale(1.04)"}
-      onMouseLeave={e=>e.currentTarget.style.transform="scale(1)"}>
+      // FIX L204: cast EventTarget to HTMLElement to access .style
+      onMouseEnter={e=>(e.currentTarget as HTMLElement).style.transform="scale(1.04)"}
+      onMouseLeave={e=>(e.currentTarget as HTMLElement).style.transform="scale(1)"}>
       <div style={{width:44,height:44,borderRadius:"50%",display:"flex",alignItems:"center",
         justifyContent:"center",margin:"0 auto 8px",overflow:"hidden",
         border:`2px solid ${step.color}33`,background:step.bg}}>
         <img src={step.img} alt={step.label}
           style={{width:"100%",height:"100%",objectFit:"cover"}}
-          onError={e=>{e.target.style.display="none";}}/>
+          onError={e=>{(e.target as HTMLImageElement).style.display="none";}}/>
       </div>
       <div style={{fontSize:11,fontWeight:700,color:"#111827",marginBottom:1}}>{step.label}</div>
       <div style={{fontSize:9,color:"#9CA3AF",marginBottom:8}}>{step.sub}</div>
@@ -211,7 +221,8 @@ function FlowStep({ step }) {
 }
 
 // ─── Flow Section ─────────────────────────────────────────────────────────────
-function FlowSection({ flow }) {
+// FIX L214: typed FlowSection props
+function FlowSection({ flow }: { flow: Flow }) {
   return (
     <div style={{background:"#fff",borderRadius:18,padding:"22px 24px",boxShadow:"0 1px 4px rgba(0,0,0,.06)"}}>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:18}}>
@@ -225,9 +236,9 @@ function FlowSection({ flow }) {
         </button>
       </div>
       <div style={{display:"flex",alignItems:"center"}}>
-        {flow.steps.map((step,i)=>(
+        {flow.steps.map((step: FlowStep, i: number) => ( // FIX L228
           <div key={i} style={{display:"flex",alignItems:"center",flex:1,minWidth:0}}>
-            <div style={{flex:1}}><FlowStep step={step}/></div>
+            <div style={{flex:1}}><FlowStepCard step={step}/></div>
             {i<flow.steps.length-1&&(
               <div style={{padding:"0 4px",flexShrink:0}}>
                 <svg width="14" height="8" viewBox="0 0 16 8">
@@ -285,7 +296,7 @@ export function DashboardScreen() {
       <div style={{flex:1,overflowY:"auto",padding:"28px 28px 28px 24px",display:"flex",
         flexDirection:"column",gap:20,background:"#EDEEF5",fontFamily:"'Plus Jakarta Sans',sans-serif"}}>
 
-        {/* ── Greeting — no icons ── */}
+        {/* ── Greeting ── */}
         <div>
           <h1 style={{fontSize:22,fontWeight:800,color:"#111827",letterSpacing:"-0.5px",marginBottom:2}}>
             Good {greeting} 👋
