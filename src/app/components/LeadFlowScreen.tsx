@@ -775,11 +775,12 @@ function HomeScreen({ onSelect }: { onSelect: (v: View) => void }) {
       </div>
 
       {/* ── BANNER — image fills 100%, gradient only on left 45% for text legibility ── */}
-      <div className="lf-animate-delay-1" style={{
+    <div className="lf-animate-delay-1" style={{
   borderRadius: 20,
   overflow: "hidden",
   marginBottom: 32,
   position: "relative",
+  maxHeight: 200,  // ← add this
 }}>
   <img
     src={`${BASE}banner7.png`}
@@ -788,6 +789,9 @@ function HomeScreen({ onSelect }: { onSelect: (v: View) => void }) {
       width: "100%",
       height: "auto",
       display: "block",
+      maxHeight: 200,  // ← add this
+      objectFit: "cover",
+      objectPosition: "center center",  // ← change this
     }}
   />
   <div style={{
