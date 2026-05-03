@@ -208,6 +208,23 @@ const GLOBAL_STYLES = `
   .lf-add-step { margin-top: 14px; display: flex; align-items: center; gap: 8px; padding: 11px 20px; border-radius: 10px; border: 1.5px dashed #D1D5DB; background: #FFFFFF; font-size: 12px; font-weight: 500; color: #9CA3AF; cursor: pointer; width: 100%; justify-content: center; font-family: 'Plus Jakarta Sans', sans-serif; transition: all 0.15s; }
   .lf-add-step:hover { background: #F9FAFB; color: #6B7280; border-color: #9CA3AF; }
 
+  /* ── Flow card ── */
+  .lf-flow-card {
+    background: #FFFFFF;
+    border-radius: 16px;
+    border: 1px solid #E8E6E0;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 1px 4px rgba(0,0,0,.05);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  .lf-flow-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 36px rgba(0,0,0,.10);
+  }
+
   /* ── Scrollbar ── */
   ::-webkit-scrollbar { width: 4px; }
   ::-webkit-scrollbar-track { background: transparent; }
@@ -234,7 +251,7 @@ export const FollowUpFlow = ({ style }: { style?: React.CSSProperties }) => (
   <div style={{ width:"100%", height:"100%", backgroundImage:`url(${BASE}followup6.png)`, backgroundSize:"cover", backgroundRepeat:"no-repeat", backgroundPosition:"center", ...style }} />
 );
 
-// ─── Flow Card — Marketplace horizontal style ─────────────────────────────────
+// ─── Flow Card — TRUE marketplace vertical style ──────────────────────────────
 function FlowCardNew({
   bgColor, title, description, agentImgUrl,
   accentColor, accentBg, stepCount, onClick,
@@ -245,77 +262,90 @@ function FlowCardNew({
   stepCount: string; onClick: () => void;
 }) {
   return (
-    <div
-      onClick={onClick}
-      style={{
-        background:"#fff", borderRadius:16, border:"1px solid #E8E6E0",
-        overflow:"hidden", cursor:"pointer",
-        transition:"transform 0.2s, box-shadow 0.2s",
-        display:"flex", flexDirection:"row",
-        boxShadow:"0 1px 4px rgba(0,0,0,.05)",
-        minHeight:160, padding:"20px 20px 20px 24px",
-        gap:16, alignItems:"stretch",
-      }}
-      onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform="translateY(-3px)"; (e.currentTarget as HTMLElement).style.boxShadow="0 12px 36px rgba(0,0,0,.10)"; }}
-      onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform="translateY(0)"; (e.currentTarget as HTMLElement).style.boxShadow="0 1px 4px rgba(0,0,0,.05)"; }}
-    >
-      {/* Left: text */}
-      <div style={{ flex:1, display:"flex", flexDirection:"column", justifyContent:"space-between" }}>
-        <div>
-          {/* Icon + badge row */}
-          <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:10 }}>
-            <div style={{
-              width:36, height:36, borderRadius:10, overflow:"hidden",
-              border:"1px solid #F3F4F6", flexShrink:0,
-              background: bgColor,
-            }}>
-              <img src={agentImgUrl} alt={title} style={{ width:"100%", height:"100%", objectFit:"cover", objectPosition:"top center" }} />
-            </div>
-            <div style={{
-              display:"inline-flex", alignItems:"center", gap:5,
-              fontSize:9, fontWeight:700, color:accentColor,
-              background:accentBg, padding:"3px 9px", borderRadius:20,
-              letterSpacing:"0.5px", textTransform:"uppercase",
-            }}>
-              ⚡ {stepCount}
-            </div>
-          </div>
+    <div className="lf-flow-card" onClick={onClick}>
 
-          {/* Title */}
-          <div style={{ fontSize:16, fontWeight:800, color:"#111827", letterSpacing:"-0.3px", lineHeight:1.2, marginBottom:6 }}>
-            {title}
-          </div>
-
-          {/* Description */}
-          <div style={{ fontSize:12, color:"#6B7280", lineHeight:1.7 }}>
-            {description}
-          </div>
-        </div>
-
-        {/* Footer CTA */}
-        <div style={{
-          display:"inline-flex", alignItems:"center", gap:4,
-          fontSize:12, fontWeight:700, color:accentColor,
-          paddingTop:12, marginTop:10,
-          borderTop:"1px solid #F3F4F6",
-        }}>
-          Configure Flow <ChevronRight size={13} strokeWidth={2.5}/>
-        </div>
-      </div>
-
-      {/* Right: image — no container, just rounded image */}
+      {/* TOP: image banner — no colored box, just the image */}
       <div style={{
-        width:140, flexShrink:0,
-        borderRadius:12,
-        overflow:"hidden",
+        width: "100%",
+        height: 160,
+        overflow: "hidden",
+        position: "relative",
         background: bgColor,
-        alignSelf:"stretch",
       }}>
         <img
           src={agentImgUrl}
           alt={title}
-          style={{ width:"100%", height:"100%", objectFit:"cover", objectPosition:"center top" }}
+          style={{
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+            objectPosition: "center top",
+            display: "block",
+          }}
         />
+      </div>
+
+      {/* BOTTOM: card content */}
+      <div style={{ padding: "16px 18px 18px", display: "flex", flexDirection: "column", flex: 1 }}>
+
+        {/* Icon + badge row — like marketplace top-left icon */}
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
+          <div style={{
+            width: 38, height: 38, borderRadius: 10,
+            overflow: "hidden", border: "1px solid #F3F4F6",
+            flexShrink: 0, background: bgColor,
+          }}>
+            <img
+              src={agentImgUrl}
+              alt={title}
+              style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "top center" }}
+            />
+          </div>
+          <div style={{
+            display: "inline-flex", alignItems: "center", gap: 4,
+            fontSize: 9, fontWeight: 700, color: accentColor,
+            background: accentBg, padding: "3px 9px", borderRadius: 20,
+            letterSpacing: "0.5px", textTransform: "uppercase" as const,
+          }}>
+            ⚡ {stepCount}
+          </div>
+        </div>
+
+        {/* Title */}
+        <div style={{
+          fontSize: 15, fontWeight: 800, color: "#111827",
+          letterSpacing: "-0.3px", lineHeight: 1.2, marginBottom: 6,
+        }}>
+          {title}
+        </div>
+
+        {/* Description */}
+        <div style={{ fontSize: 12, color: "#6B7280", lineHeight: 1.7, marginBottom: 14, flex: 1 }}>
+          {description}
+        </div>
+
+        {/* Footer — configure CTA like marketplace "Free" / price row */}
+        <div style={{
+          display: "flex", alignItems: "center", justifyContent: "space-between",
+          paddingTop: 12, borderTop: "1px solid #F3F4F6",
+        }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            <div style={{
+              width: 22, height: 22, borderRadius: "50%",
+              background: accentBg, display: "flex", alignItems: "center",
+              justifyContent: "center",
+            }}>
+              <Zap size={11} color={accentColor} strokeWidth={2.5} />
+            </div>
+            <span style={{ fontSize: 11, fontWeight: 600, color: "#6B7280" }}>LeadFlow</span>
+          </div>
+          <div style={{
+            display: "inline-flex", alignItems: "center", gap: 4,
+            fontSize: 12, fontWeight: 700, color: accentColor,
+          }}>
+            Configure Flow <ChevronRight size={13} strokeWidth={2.5} />
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -765,27 +795,48 @@ function HomeScreen({ onSelect }: { onSelect: (v: View) => void }) {
         <div style={{ fontSize:13, color:"#9CA3AF" }}>Build and manage your automation flows</div>
       </div>
 
-      {/* Banner */}
+      {/* ── BANNER — image fills 100%, gradient only on left 45% for text legibility ── */}
       <div className="lf-animate-delay-1" style={{
-        borderRadius:20, overflow:"hidden", marginBottom:32,
-        position:"relative", height:200,
-        background:"#3730A3",
+        borderRadius: 20,
+        overflow: "hidden",
+        marginBottom: 32,
+        position: "relative",
+        height: 200,
       }}>
+        {/* The image — no wrapper container, fills the full banner */}
         <img
           src={`${BASE}banner7.png`}
           alt="banner"
           style={{
-            position:"absolute", right:0, top:0,
-            height: "100%", width: "100%",
-            objectFit:"cover", objectPosition:"left center",
+            position: "absolute",
+            inset: 0,
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+            objectPosition: "left center",
+            display: "block",
           }}
         />
-        <div style={{ position:"absolute", inset:0, background:"linear-gradient(90deg, rgba(55,48,163,0.5) 0%, rgba(55,48,163,0.3) 30%, rgba(55,48,163,0.05) 50%, transparent 10%)" }}/>
-        <div style={{ position:"absolute", inset:0, display:"flex", flexDirection:"column", justifyContent:"center", padding:"0 44px" }}>
+        {/* Gradient only on left side so right-side image is fully visible */}
+        <div style={{
+          position: "absolute",
+          inset: 0,
+          background: "linear-gradient(90deg, rgba(30,27,90,0.92) 0%, rgba(30,27,90,0.80) 25%, rgba(30,27,90,0.45) 45%, transparent 65%)",
+        }} />
+        {/* Text content */}
+        <div style={{
+          position: "absolute",
+          inset: 0,
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          padding: "0 44px",
+          maxWidth: 440,
+        }}>
           <div style={{ fontSize:30, fontWeight:800, color:"#fff", letterSpacing:"-0.5px", lineHeight:1.2, marginBottom:10 }}>
             Automate your leads
           </div>
-          <div style={{ fontSize:13, color:"rgba(255,255,255,0.85)", marginBottom:22, maxWidth:300, lineHeight:1.65 }}>
+          <div style={{ fontSize:13, color:"rgba(255,255,255,0.85)", marginBottom:22, maxWidth:280, lineHeight:1.65 }}>
             Set up your flows once and convert leads to booked calls on autopilot, 24/7.
           </div>
           <button
