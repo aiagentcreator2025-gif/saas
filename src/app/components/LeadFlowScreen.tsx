@@ -785,7 +785,7 @@ function HomeScreen({ onSelect }: { onSelect: (v: View) => void }) {
   <img
     src={`${BASE}banner7.png`}
     alt="banner"
-    style={{ width: 1046, height:"auto", display:"block" }}
+    style={{ width: 1046, height:"auto", display:"block", borderRadius: 20 }}
   />
   <div style={{
     position: "absolute",
