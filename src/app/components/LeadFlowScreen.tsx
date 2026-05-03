@@ -780,7 +780,7 @@ function HomeScreen({ onSelect }: { onSelect: (v: View) => void }) {
   marginBottom: 32,
   position: "relative",
   maxHeight: 240,
-  // no overflow: "hidden" here
+  overflow: "hidden",
 }}>
   <img
     src={`${BASE}banner7.png`}
