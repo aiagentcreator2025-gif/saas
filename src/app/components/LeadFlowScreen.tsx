@@ -761,7 +761,7 @@ function HomeScreen({ onSelect }: { onSelect: (v: View) => void }) {
             objectFit:"cover", objectPosition:"center center",
           }}
         />
-        <div style={{ position:"absolute", inset:0, background:"linear-gradient(90deg, #3730A3 20%, rgba(55,48,163,0.7) 40%, rgba(55,48,163,0.1) 65%, transparent 6f5%)" }}/>
+        <div style={{ position:"absolute", inset:0, background:"linear-gradient(90deg, #3730A3 20%, rgba(55,48,163,0.7) 40%, rgba(55,48,163,0.1) 65%, transparent 45%)" }}/>
         <div style={{ position:"absolute", inset:0, display:"flex", flexDirection:"column", justifyContent:"center", padding:"0 44px" }}>
           <div style={{ fontSize:30, fontWeight:800, color:"#fff", letterSpacing:"-0.5px", lineHeight:1.2, marginBottom:10 }}>
             Automate your leads
