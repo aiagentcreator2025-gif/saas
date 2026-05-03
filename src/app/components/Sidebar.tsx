@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { LayoutDashboard, GitBranch, Calendar, Users, Settings, LogOut, FileText, MessageSquare, Bot } from "lucide-react";
+import { LayoutDashboard, GitBranch, Calendar, Users, Settings, LogOut, MessageSquare, Bot } from "lucide-react";
 import { Screen } from "../App";
 import { supabase } from "../supabaseClient";
 
@@ -92,7 +92,6 @@ export function Sidebar({ active, onNav }: Props) {
             <NavItem icon={<LayoutDashboard size={15} strokeWidth={1.6} />} label="Dashboard"     active={active === "dashboard"}     onClick={() => onNav("dashboard")} />
             <NavItem icon={<GitBranch       size={15} strokeWidth={1.6} />} label="Lead Flow"     active={active === "leadflow"}      onClick={() => onNav("leadflow")} />
             <NavItem icon={<Calendar        size={15} strokeWidth={1.6} />} label="Calendar"      active={active === "calendar"}      onClick={() => onNav("calendar")} />
-            <NavItem icon={<FileText        size={15} strokeWidth={1.6} />} label="Booking Form"  active={active === "booking-form"}  onClick={() => onNav("booking-form")} />
             <NavItem icon={<Users           size={15} strokeWidth={1.6} />} label="Lead List"     active={active === "leadlist"}      onClick={() => onNav("leadlist")} />
             <NavItem icon={<MessageSquare   size={15} strokeWidth={1.6} />} label="Conversations" active={active === "conversations"} onClick={() => onNav("conversations")} />
             <NavItem icon={<Bot             size={15} strokeWidth={1.6} />} label="My Agent"      active={active === "my-agent"}     onClick={() => onNav("my-agent")} />
