@@ -236,7 +236,7 @@ export const FollowUpFlow = ({ style }: { style?: React.CSSProperties }) => (
 
 // ─── Flow Card — Marketplace horizontal style ─────────────────────────────────
 function FlowCardNew({
-  bgColor, title, description, bullets, agentImgUrl,
+  bgColor, title, description, agentImgUrl,
   accentColor, accentBg, stepCount, onClick,
 }: {
   bgColor: string; title: string; description: string;
@@ -253,49 +253,68 @@ function FlowCardNew({
         transition:"transform 0.2s, box-shadow 0.2s",
         display:"flex", flexDirection:"row",
         boxShadow:"0 1px 4px rgba(0,0,0,.05)",
-        minHeight:180,
+        minHeight:160, padding:"20px 20px 20px 24px",
+        gap:16, alignItems:"stretch",
       }}
       onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform="translateY(-3px)"; (e.currentTarget as HTMLElement).style.boxShadow="0 12px 36px rgba(0,0,0,.10)"; }}
       onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform="translateY(0)"; (e.currentTarget as HTMLElement).style.boxShadow="0 1px 4px rgba(0,0,0,.05)"; }}
     >
       {/* Left: text */}
-      <div style={{ flex:1, padding:"24px 24px 20px", display:"flex", flexDirection:"column", justifyContent:"space-between" }}>
+      <div style={{ flex:1, display:"flex", flexDirection:"column", justifyContent:"space-between" }}>
         <div>
-          <div style={{
-            display:"inline-flex", alignItems:"center", gap:5,
-            fontSize:10, fontWeight:700, color:accentColor,
-            background:accentBg, padding:"3px 10px", borderRadius:20,
-            marginBottom:12, letterSpacing:"0.5px", textTransform:"uppercase",
-          }}>
-            ⚡ {stepCount}
+          {/* Icon + badge row */}
+          <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:10 }}>
+            <div style={{
+              width:36, height:36, borderRadius:10, overflow:"hidden",
+              border:"1px solid #F3F4F6", flexShrink:0,
+              background: bgColor,
+            }}>
+              <img src={agentImgUrl} alt={title} style={{ width:"100%", height:"100%", objectFit:"cover", objectPosition:"top center" }} />
+            </div>
+            <div style={{
+              display:"inline-flex", alignItems:"center", gap:5,
+              fontSize:9, fontWeight:700, color:accentColor,
+              background:accentBg, padding:"3px 9px", borderRadius:20,
+              letterSpacing:"0.5px", textTransform:"uppercase",
+            }}>
+              ⚡ {stepCount}
+            </div>
           </div>
-          <div style={{ fontSize:18, fontWeight:800, color:"#111827", letterSpacing:"-0.4px", lineHeight:1.2, marginBottom:8 }}>
+
+          {/* Title */}
+          <div style={{ fontSize:16, fontWeight:800, color:"#111827", letterSpacing:"-0.3px", lineHeight:1.2, marginBottom:6 }}>
             {title}
           </div>
+
+          {/* Description */}
           <div style={{ fontSize:12, color:"#6B7280", lineHeight:1.7 }}>
             {description}
           </div>
         </div>
+
+        {/* Footer CTA */}
         <div style={{
           display:"inline-flex", alignItems:"center", gap:4,
-          fontSize:13, fontWeight:700, color:accentColor,
-          paddingTop:12, borderTop:"1px solid #F3F4F6", marginTop:12,
+          fontSize:12, fontWeight:700, color:accentColor,
+          paddingTop:12, marginTop:10,
+          borderTop:"1px solid #F3F4F6",
         }}>
-          Configure Flow <ChevronRight size={14} strokeWidth={2.5}/>
+          Configure Flow <ChevronRight size={13} strokeWidth={2.5}/>
         </div>
       </div>
 
-      {/* Right: image */}
+      {/* Right: image — no container, just rounded image */}
       <div style={{
-        width:180, flexShrink:0,
-        background:bgColor,
-        display:"flex", alignItems:"flex-end", justifyContent:"center",
+        width:140, flexShrink:0,
+        borderRadius:12,
         overflow:"hidden",
+        background: bgColor,
+        alignSelf:"stretch",
       }}>
         <img
           src={agentImgUrl}
           alt={title}
-          style={{ width:"100%", height:"100%", objectFit:"cover", objectPosition:"center center" }}
+          style={{ width:"100%", height:"100%", objectFit:"cover", objectPosition:"center top" }}
         />
       </div>
     </div>
