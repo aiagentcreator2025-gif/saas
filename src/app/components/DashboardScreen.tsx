@@ -53,29 +53,25 @@ const ACTIVITIES = [
 
 const BASE = "https://raw.githubusercontent.com/aiagentcreator2025-gif/saas/main/public/";
 
-// ─── Agent profile images per flow ───────────────────────────────────────────
 const AGENT_IMAGES: Record<string, string> = {
   "Booking Flow":         `${BASE}facebooking1.png`,
   "Follow-Up Automation": `${BASE}facefollowupautomation.png`,
   "Follow-Up Agent":      `${BASE}facefollowupagent.png`,
 };
 
-// ─── Modern SVG step illustrations ───────────────────────────────────────────
+// ─── SVG Step Icons (unchanged) ───────────────────────────────────────────────
 function IconTrigger({ color }: { color: string }) {
   return (
     <svg width="44" height="44" viewBox="0 0 44 44" fill="none">
       <circle cx="22" cy="22" r="22" fill={color + "18"}/>
-      {/* Lightning bolt */}
       <polygon points="25,8 15,24 22,24 19,36 29,20 22,20" fill={color} opacity="0.9"/>
     </svg>
   );
 }
-
 function IconScript({ color }: { color: string }) {
   return (
     <svg width="44" height="44" viewBox="0 0 44 44" fill="none">
       <circle cx="22" cy="22" r="22" fill={color + "18"}/>
-      {/* Chat bubble */}
       <rect x="9" y="12" width="24" height="16" rx="4" fill={color} opacity="0.85"/>
       <polygon points="13,28 9,35 20,28" fill={color} opacity="0.85"/>
       <rect x="13" y="17" width="14" height="2" rx="1" fill="white" opacity="0.8"/>
@@ -83,111 +79,87 @@ function IconScript({ color }: { color: string }) {
     </svg>
   );
 }
-
 function IconLeadMagnet({ color }: { color: string }) {
   return (
     <svg width="44" height="44" viewBox="0 0 44 44" fill="none">
       <circle cx="22" cy="22" r="22" fill={color + "18"}/>
-      {/* Document */}
       <rect x="11" y="8" width="18" height="24" rx="3" fill={color} opacity="0.85"/>
       <path d="M23 8 L29 14 L23 14 Z" fill="white" opacity="0.45"/>
       <rect x="14" y="18" width="10" height="1.5" rx="0.75" fill="white" opacity="0.7"/>
       <rect x="14" y="21" width="8"  height="1.5" rx="0.75" fill="white" opacity="0.5"/>
       <rect x="14" y="24" width="10" height="1.5" rx="0.75" fill="white" opacity="0.4"/>
-      {/* Download arrow badge */}
       <circle cx="30" cy="32" r="7" fill={color}/>
       <path d="M30 28.5 L30 33 M27.5 31 L30 33.5 L32.5 31" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
     </svg>
   );
 }
-
 function IconFollowUp({ color }: { color: string }) {
   return (
     <svg width="44" height="44" viewBox="0 0 44 44" fill="none">
       <circle cx="22" cy="22" r="22" fill={color + "18"}/>
-      {/* Circular arrow */}
       <path d="M13 22 A9 9 0 1 1 22 31" stroke={color} strokeWidth="2.5" strokeLinecap="round" fill="none"/>
       <polygon points="13,17.5 13,25.5 19.5,22" fill={color}/>
-      {/* Clock */}
       <circle cx="30" cy="14" r="6" fill={color} opacity="0.9"/>
       <path d="M30 11 L30 14 L33 14" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
     </svg>
   );
 }
-
 function IconBooking({ color }: { color: string }) {
   return (
     <svg width="44" height="44" viewBox="0 0 44 44" fill="none">
       <circle cx="22" cy="22" r="22" fill={color + "18"}/>
-      {/* Calendar body */}
       <rect x="9" y="13" width="26" height="22" rx="3" fill={color} opacity="0.85"/>
       <rect x="9" y="13" width="26" height="8"  rx="3" fill={color}/>
-      {/* Pins */}
       <rect x="15" y="9" width="2.5" height="7" rx="1.25" fill={color}/>
       <rect x="27" y="9" width="2.5" height="7" rx="1.25" fill={color}/>
-      {/* Checkmark */}
       <path d="M16 27 L21 32 L28 22" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/>
     </svg>
   );
 }
-
 function IconScheduledTrigger({ color }: { color: string }) {
   return (
     <svg width="44" height="44" viewBox="0 0 44 44" fill="none">
       <circle cx="22" cy="22" r="22" fill={color + "18"}/>
-      {/* Clock face */}
       <circle cx="22" cy="22" r="13" fill={color} opacity="0.85"/>
       <path d="M22 14 L22 22 L28 22" stroke="white" strokeWidth="2" strokeLinecap="round"/>
       <circle cx="22" cy="22" r="1.8" fill="white"/>
     </svg>
   );
 }
-
 function IconFollowUpMsg({ color }: { color: string }) {
   return (
     <svg width="44" height="44" viewBox="0 0 44 44" fill="none">
       <circle cx="22" cy="22" r="22" fill={color + "18"}/>
-      {/* Envelope */}
       <rect x="8" y="14" width="22" height="15" rx="3" fill={color} opacity="0.85"/>
       <path d="M8 17 L19 24 L30 17" stroke="white" strokeWidth="1.5" strokeLinecap="round" fill="none"/>
-      {/* Arrow badge */}
       <circle cx="33" cy="30" r="6" fill={color}/>
       <path d="M30 30 L35 30 M33 27.5 L35 30 L33 32.5" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
     </svg>
   );
 }
-
 function IconIngestAgent({ color }: { color: string }) {
   return (
     <svg width="44" height="44" viewBox="0 0 44 44" fill="none">
       <circle cx="22" cy="22" r="22" fill={color + "18"}/>
-      {/* Robot head */}
       <rect x="12" y="15" width="20" height="15" rx="5" fill={color} opacity="0.9"/>
-      {/* Eyes */}
       <circle cx="18" cy="21" r="2.2" fill="white"/>
       <circle cx="26" cy="21" r="2.2" fill="white"/>
       <circle cx="18.9" cy="21" r="1" fill={color}/>
       <circle cx="26.9" cy="21" r="1" fill={color}/>
-      {/* Antenna */}
       <line x1="22" y1="15" x2="22" y2="9" stroke={color} strokeWidth="2" strokeLinecap="round"/>
       <circle cx="22" cy="8" r="2.5" fill={color}/>
-      {/* Mouth */}
       <path d="M17.5 26.5 Q22 30 26.5 26.5" stroke="white" strokeWidth="1.5" strokeLinecap="round" fill="none"/>
     </svg>
   );
 }
-
 function IconAgentReply({ color }: { color: string }) {
   return (
     <svg width="44" height="44" viewBox="0 0 44 44" fill="none">
       <circle cx="22" cy="22" r="22" fill={color + "18"}/>
-      {/* Incoming bubble */}
       <rect x="7" y="11" width="18" height="11" rx="3" fill={color} opacity="0.5"/>
       <polygon points="11,22 7,28 17,22" fill={color} opacity="0.5"/>
-      {/* Reply bubble */}
       <rect x="17" y="23" width="20" height="11" rx="3" fill={color} opacity="0.95"/>
       <polygon points="33,34 37,40 23,34" fill={color} opacity="0.95"/>
-      {/* Typing dots */}
       <circle cx="22" cy="28.5" r="1.3" fill="white"/>
       <circle cx="27" cy="28.5" r="1.3" fill="white"/>
       <circle cx="32" cy="28.5" r="1.3" fill="white"/>
@@ -247,21 +219,37 @@ const FLOWS = [
 type FlowStep = typeof FLOWS[0]["steps"][0];
 type Flow = typeof FLOWS[0];
 
+// ─── Glass card helper ────────────────────────────────────────────────────────
+const glass = {
+  background: "rgba(255,255,255,0.72)",
+  backdropFilter: "blur(20px)",
+  WebkitBackdropFilter: "blur(20px)",
+  border: "1px solid rgba(255,255,255,0.9)",
+  boxShadow: "0 4px 24px rgba(99,102,241,0.08), 0 1px 2px rgba(255,255,255,0.9) inset",
+};
+
+const glassDark = {
+  background: "rgba(255,255,255,0.55)",
+  backdropFilter: "blur(16px)",
+  WebkitBackdropFilter: "blur(16px)",
+  border: "1px solid rgba(255,255,255,0.75)",
+  boxShadow: "0 8px 32px rgba(99,102,241,0.12), 0 1px 2px rgba(255,255,255,0.8) inset",
+};
+
 // ─── Agent Avatar ─────────────────────────────────────────────────────────────
 function AgentAvatar({ flowTitle }: { flowTitle: string }) {
   const src = AGENT_IMAGES[flowTitle];
   return (
     <div style={{
-      width: 52, height: 52, borderRadius: "50%", overflow: "hidden",
-      border: "3px solid #fff", boxShadow: "0 4px 14px rgba(79,70,229,.22)",
-      background: "#EEF2FF", flexShrink: 0,
-      display: "flex", alignItems: "center", justifyContent: "center",
+      width:52, height:52, borderRadius:"50%", overflow:"hidden",
+      border:"2.5px solid rgba(255,255,255,0.9)",
+      boxShadow:"0 4px 14px rgba(79,70,229,.22), 0 0 0 4px rgba(79,70,229,.08)",
+      background:"#EEF2FF", flexShrink:0,
+      display:"flex", alignItems:"center", justifyContent:"center",
     }}>
-      <img
-        src={src}
-        alt={flowTitle}
-        style={{ width: "100%", height: "100%", objectFit: "cover" }}
-        onError={e => { (e.target as HTMLImageElement).style.display = "none"; }}
+      <img src={src} alt={flowTitle}
+        style={{ width:"100%", height:"100%", objectFit:"cover" }}
+        onError={e => { (e.target as HTMLImageElement).style.display="none"; }}
       />
     </div>
   );
@@ -272,38 +260,45 @@ function DonutChart() {
   const segs = [
     { label:"Leads Handled",    value:142, color:"#4F46E5", pct:0.52 },
     { label:"Lead Magnet Sent", value:98,  color:"#818CF8", pct:0.20 },
-    { label:"Booked Calls",     value:34,  color:"#E0E7FF", pct:0.16 },
-    { label:"Show Up Rate",     value:27,  color:"#C7D2FE", pct:0.12 },
+    { label:"Booked Calls",     value:34,  color:"#C7D2FE", pct:0.16 },
+    { label:"Show Up Rate",     value:27,  color:"#E0E7FF", pct:0.12 },
   ];
-  const cx=80, cy=80, r1=62, r2=38;
-  let cum = -Math.PI/2;
+  const cx=80, cy=80, r1=62, r2=40;
+  let cum=-Math.PI/2;
   function arc(pct: number) {
     const s=cum, e=cum+pct*2*Math.PI-0.03; cum=e+0.03;
     const x1s=cx+r1*Math.cos(s), y1s=cy+r1*Math.sin(s);
     const x1e=cx+r1*Math.cos(e), y1e=cy+r1*Math.sin(e);
     const x2s=cx+r2*Math.cos(e), y2s=cy+r2*Math.sin(e);
     const x2e=cx+r2*Math.cos(s), y2e=cy+r2*Math.sin(s);
-    const lg = pct>0.5?1:0;
+    const lg=pct>0.5?1:0;
     return `M${x1s} ${y1s}A${r1} ${r1} 0 ${lg} 1 ${x1e} ${y1e}L${x2s} ${y2s}A${r2} ${r2} 0 ${lg} 0 ${x2e} ${y2e}Z`;
   }
   return (
     <div style={{display:"flex",alignItems:"center",gap:20}}>
-      <div style={{flexShrink:0}}>
+      <div style={{flexShrink:0,filter:"drop-shadow(0 4px 12px rgba(79,70,229,0.2))"}}>
         <svg width={160} height={160} viewBox="0 0 160 160">
+          <defs>
+            <radialGradient id="donutGlow" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stopColor="rgba(99,102,241,0.15)"/>
+              <stop offset="100%" stopColor="rgba(99,102,241,0)"/>
+            </radialGradient>
+          </defs>
+          <circle cx={cx} cy={cy} r={75} fill="url(#donutGlow)"/>
           {segs.map((s,i)=><path key={i} d={arc(s.pct)} fill={s.color}/>)}
-          <circle cx={cx} cy={cy} r={30} fill="white"/>
-          <text x={cx} y={cy-5} textAnchor="middle" fontSize={13} fontWeight={800} fill="#111827">301</text>
-          <text x={cx} y={cy+10} textAnchor="middle" fontSize={8} fill="#9CA3AF">Total</text>
+          <circle cx={cx} cy={cy} r={32} fill="rgba(255,255,255,0.95)" style={{filter:"blur(0.5px)"}}/>
+          <text x={cx} y={cy-6} textAnchor="middle" fontSize={14} fontWeight={800} fill="#111827" fontFamily="'Plus Jakarta Sans',sans-serif">301</text>
+          <text x={cx} y={cy+9} textAnchor="middle" fontSize={9} fill="#9CA3AF" fontFamily="'Plus Jakarta Sans',sans-serif">Total</text>
         </svg>
       </div>
       <div style={{flex:1}}>
         {segs.map((s,i)=>(
-          <div key={i} style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
-            <div style={{display:"flex",alignItems:"center",gap:7}}>
-              <div style={{width:8,height:8,borderRadius:"50%",background:s.color}}/>
-              <span style={{fontSize:11,color:"#6B7280"}}>{s.label}</span>
+          <div key={i} style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:11}}>
+            <div style={{display:"flex",alignItems:"center",gap:8}}>
+              <div style={{width:8,height:8,borderRadius:"50%",background:s.color,boxShadow:`0 0 6px ${s.color}88`}}/>
+              <span style={{fontSize:11,color:"#6B7280",fontWeight:500}}>{s.label}</span>
             </div>
-            <span style={{fontSize:12,fontWeight:700,color:"#111827"}}>{s.value}</span>
+            <span style={{fontSize:12,fontWeight:800,color:"#111827"}}>{s.value}</span>
           </div>
         ))}
       </div>
@@ -313,47 +308,62 @@ function DonutChart() {
 
 // ─── Bar Chart ────────────────────────────────────────────────────────────────
 function BubbleBarChart({ data, labels }: { data: DataRow[]; labels: string[] }) {
-  const [tooltip, setTooltip] = useState<number | null>(null);
-  const maxVal = Math.max(...data.map((d: DataRow) => d.leadsHandled));
+  const [tooltip, setTooltip] = useState<number|null>(null);
+  const maxVal = Math.max(...data.map((d:DataRow) => d.leadsHandled));
   const BAR_H = 140;
   return (
     <div style={{position:"relative"}}>
       <div style={{display:"flex",alignItems:"flex-end",gap:8,height:BAR_H+24}}>
-        {data.map((entry: DataRow, i: number) => {
+        {data.map((entry:DataRow, i:number) => {
           const h1=Math.max(8,Math.round((entry.leadsHandled/maxVal)*BAR_H));
           const h2=Math.max(8,Math.round((entry.magnetSent/maxVal)*BAR_H));
           const hov=tooltip===i;
           return (
             <div key={i} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:4,cursor:"pointer",position:"relative"}}
               onMouseEnter={()=>setTooltip(i)} onMouseLeave={()=>setTooltip(null)}>
-              {hov&&(
-                <div style={{position:"absolute",bottom:h1+14,left:"50%",transform:"translateX(-50%)",
-                  background:"#111827",color:"#fff",borderRadius:10,padding:"8px 12px",
-                  fontSize:11,fontWeight:600,whiteSpace:"nowrap",zIndex:10,
-                  boxShadow:"0 8px 24px rgba(0,0,0,.25)",display:"flex",flexDirection:"column",gap:3}}>
+              {hov && (
+                <div style={{
+                  position:"absolute", bottom:h1+18, left:"50%", transform:"translateX(-50%)",
+                  background:"rgba(17,24,39,0.92)", backdropFilter:"blur(12px)",
+                  WebkitBackdropFilter:"blur(12px)",
+                  color:"#fff", borderRadius:12, padding:"10px 14px",
+                  fontSize:11, fontWeight:600, whiteSpace:"nowrap", zIndex:10,
+                  boxShadow:"0 12px 32px rgba(0,0,0,.3), 0 1px 0 rgba(255,255,255,0.1) inset",
+                  border:"1px solid rgba(255,255,255,0.12)",
+                  display:"flex", flexDirection:"column", gap:4,
+                }}>
                   <span style={{color:"#818CF8"}}>● {entry.leadsHandled} Leads</span>
                   <span style={{color:"#C7D2FE"}}>● {entry.magnetSent} Magnets</span>
                   <div style={{position:"absolute",bottom:-5,left:"50%",transform:"translateX(-50%)",width:0,height:0,
-                    borderLeft:"5px solid transparent",borderRight:"5px solid transparent",borderTop:"5px solid #111827"}}/>
+                    borderLeft:"5px solid transparent",borderRight:"5px solid transparent",borderTop:"5px solid rgba(17,24,39,0.92)"}}/>
                 </div>
               )}
               <div style={{display:"flex",gap:3,alignItems:"flex-end",width:"100%"}}>
-                <div style={{flex:1,height:h1,background:hov?"#4F46E5":"#818CF8",borderRadius:"6px 6px 0 0",transition:"all .2s"}}/>
-                <div style={{flex:1,height:h2,background:hov?"#818CF8":"#E0E7FF",borderRadius:"6px 6px 0 0",transition:"all .2s"}}/>
+                <div style={{
+                  flex:1, height:h1,
+                  background: hov ? "linear-gradient(180deg,#6366F1,#4F46E5)" : "linear-gradient(180deg,#818CF8,#6366F1)",
+                  borderRadius:"6px 6px 0 0", transition:"all .25s ease",
+                  boxShadow: hov ? "0 4px 16px rgba(79,70,229,0.4)" : "none",
+                }}/>
+                <div style={{
+                  flex:1, height:h2,
+                  background: hov ? "linear-gradient(180deg,#C7D2FE,#A5B4FC)" : "linear-gradient(180deg,#E0E7FF,#C7D2FE)",
+                  borderRadius:"6px 6px 0 0", transition:"all .25s ease",
+                }}/>
               </div>
-              <span style={{fontSize:9,color:"#9CA3AF"}}>{labels[i]}</span>
+              <span style={{fontSize:9,color:"#9CA3AF",fontWeight:600}}>{labels[i]}</span>
             </div>
           );
         })}
       </div>
-      <div style={{display:"flex",justifyContent:"space-between",marginTop:8}}>
-        <div style={{display:"flex",alignItems:"center",gap:5}}>
-          <div style={{width:8,height:8,borderRadius:2,background:"#818CF8"}}/>
-          <span style={{fontSize:10,color:"#9CA3AF"}}>Leads Handled</span>
+      <div style={{display:"flex",justifyContent:"space-between",marginTop:10}}>
+        <div style={{display:"flex",alignItems:"center",gap:6}}>
+          <div style={{width:8,height:8,borderRadius:2,background:"linear-gradient(135deg,#6366F1,#4F46E5)"}}/>
+          <span style={{fontSize:10,color:"#9CA3AF",fontWeight:500}}>Leads Handled</span>
         </div>
-        <div style={{display:"flex",alignItems:"center",gap:5}}>
-          <div style={{width:8,height:8,borderRadius:2,background:"#E0E7FF"}}/>
-          <span style={{fontSize:10,color:"#9CA3AF"}}>Lead Magnet Sent</span>
+        <div style={{display:"flex",alignItems:"center",gap:6}}>
+          <div style={{width:8,height:8,borderRadius:2,background:"linear-gradient(135deg,#E0E7FF,#C7D2FE)"}}/>
+          <span style={{fontSize:10,color:"#9CA3AF",fontWeight:500}}>Lead Magnet Sent</span>
         </div>
       </div>
     </div>
@@ -361,11 +371,12 @@ function BubbleBarChart({ data, labels }: { data: DataRow[]; labels: string[] })
 }
 
 // ─── Avatar ───────────────────────────────────────────────────────────────────
-function Avatar({ init, bg="#EEF2FF", color="#4F46E5", size=30 }: { init: string; bg?: string; color?: string; size?: number }) {
+function Avatar({ init, bg="#EEF2FF", color="#4F46E5", size=30 }: { init:string; bg?:string; color?:string; size?:number }) {
   return (
     <div style={{width:size,height:size,borderRadius:"50%",background:bg,
       display:"flex",alignItems:"center",justifyContent:"center",
-      fontSize:size*0.33,fontWeight:700,color,flexShrink:0}}>
+      fontSize:size*0.33,fontWeight:700,color,flexShrink:0,
+      boxShadow:`0 2px 8px ${bg}88`}}>
       {init}
     </div>
   );
@@ -375,17 +386,32 @@ function Avatar({ init, bg="#EEF2FF", color="#4F46E5", size=30 }: { init: string
 function FlowStepCard({ step }: { step: FlowStep }) {
   return (
     <div
-      style={{textAlign:"center",background:"#FAFAFA",borderRadius:14,
-        border:`1.5px solid ${step.color}22`,padding:"14px 10px",
-        boxShadow:"0 2px 8px rgba(0,0,0,.04)",transition:"transform .15s",cursor:"pointer"}}
-      onMouseEnter={e=>(e.currentTarget as HTMLElement).style.transform="scale(1.04)"}
-      onMouseLeave={e=>(e.currentTarget as HTMLElement).style.transform="scale(1)"}
+      style={{
+        textAlign:"center",
+        background:"rgba(255,255,255,0.8)",
+        backdropFilter:"blur(12px)",
+        WebkitBackdropFilter:"blur(12px)",
+        borderRadius:16,
+        border:`1px solid ${step.color}22`,
+        padding:"14px 10px",
+        boxShadow:`0 4px 16px ${step.color}14, 0 1px 0 rgba(255,255,255,0.9) inset`,
+        transition:"transform .2s ease, box-shadow .2s ease",
+        cursor:"pointer",
+      }}
+      onMouseEnter={e=>{
+        (e.currentTarget as HTMLElement).style.transform="translateY(-4px) scale(1.03)";
+        (e.currentTarget as HTMLElement).style.boxShadow=`0 12px 32px ${step.color}28, 0 1px 0 rgba(255,255,255,0.9) inset`;
+      }}
+      onMouseLeave={e=>{
+        (e.currentTarget as HTMLElement).style.transform="translateY(0) scale(1)";
+        (e.currentTarget as HTMLElement).style.boxShadow=`0 4px 16px ${step.color}14, 0 1px 0 rgba(255,255,255,0.9) inset`;
+      }}
     >
       <div style={{display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 8px"}}>
         <StepIllustration label={step.label} color={step.color}/>
       </div>
       <div style={{fontSize:11,fontWeight:700,color:"#111827",marginBottom:1}}>{step.label}</div>
-      <div style={{fontSize:9,color:"#9CA3AF",marginBottom:8}}>{step.sub}</div>
+      <div style={{fontSize:9,color:"#9CA3AF",marginBottom:8,fontWeight:500}}>{step.sub}</div>
       <div style={{fontSize:22,fontWeight:800,color:step.color,letterSpacing:"-0.5px"}}>{step.count}</div>
     </div>
   );
@@ -394,31 +420,47 @@ function FlowStepCard({ step }: { step: FlowStep }) {
 // ─── Flow Section ─────────────────────────────────────────────────────────────
 function FlowSection({ flow }: { flow: Flow }) {
   return (
-    <div style={{background:"#fff",borderRadius:18,padding:"22px 24px",boxShadow:"0 1px 4px rgba(0,0,0,.06)"}}>
-      {/* Header: agent avatar + title + button */}
+    <div style={{
+      ...glassDark,
+      borderRadius:20,
+      padding:"22px 24px",
+    }}>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:18}}>
         <div style={{display:"flex",alignItems:"center",gap:12}}>
           <AgentAvatar flowTitle={flow.title}/>
           <div>
             <div style={{fontSize:15,fontWeight:800,color:"#111827",letterSpacing:"-0.3px",marginBottom:2}}>{flow.title}</div>
-            <div style={{fontSize:11,color:"#9CA3AF"}}>{flow.subtitle}</div>
+            <div style={{fontSize:11,color:"#6B7280",fontWeight:500}}>{flow.subtitle}</div>
           </div>
         </div>
-        <button style={{padding:"7px 16px",borderRadius:10,border:"none",background:"#111827",
-          color:"#fff",fontSize:11,fontWeight:600,cursor:"pointer",fontFamily:"'Plus Jakarta Sans',sans-serif"}}>
-          Edit Flow
-        </button>
+        <button style={{
+          padding:"8px 18px", borderRadius:10,
+          border:"1.5px solid rgba(79,70,229,0.2)",
+          background:"rgba(79,70,229,0.08)",
+          backdropFilter:"blur(8px)",
+          color:"#4F46E5", fontSize:11, fontWeight:700,
+          cursor:"pointer", fontFamily:"'Plus Jakarta Sans',sans-serif",
+          transition:"all .2s ease",
+        }}
+          onMouseEnter={e=>{
+            (e.currentTarget as HTMLElement).style.background="rgba(79,70,229,0.15)";
+            (e.currentTarget as HTMLElement).style.transform="translateY(-1px)";
+          }}
+          onMouseLeave={e=>{
+            (e.currentTarget as HTMLElement).style.background="rgba(79,70,229,0.08)";
+            (e.currentTarget as HTMLElement).style.transform="translateY(0)";
+          }}
+        >Edit Flow</button>
       </div>
 
-      {/* Steps */}
       <div style={{display:"flex",alignItems:"center"}}>
-        {flow.steps.map((step: FlowStep, i: number) => (
+        {flow.steps.map((step:FlowStep, i:number) => (
           <div key={i} style={{display:"flex",alignItems:"center",flex:1,minWidth:0}}>
             <div style={{flex:1}}><FlowStepCard step={step}/></div>
-            {i<flow.steps.length-1&&(
+            {i < flow.steps.length-1 && (
               <div style={{padding:"0 4px",flexShrink:0}}>
                 <svg width="14" height="8" viewBox="0 0 16 8">
-                  <path d="M0 4h12M9 1l3 3-3 3" stroke="#D1D5DB" strokeWidth="1.5" strokeLinecap="round" fill="none"/>
+                  <path d="M0 4h12M9 1l3 3-3 3" stroke="#C7D2FE" strokeWidth="1.5" strokeLinecap="round" fill="none"/>
                 </svg>
               </div>
             )}
@@ -426,15 +468,23 @@ function FlowSection({ flow }: { flow: Flow }) {
         ))}
       </div>
 
-      {/* Conversion */}
-      <div style={{marginTop:14,display:"flex",alignItems:"center",gap:12,
-        background:"#F9FAFB",borderRadius:10,padding:"10px 14px",border:"1px solid #F3F4F6"}}>
-        <span style={{fontSize:11,color:"#9CA3AF",flexShrink:0}}>Conversion rate</span>
-        <div style={{flex:1,height:5,background:"#E5E7EB",borderRadius:10,overflow:"hidden"}}>
-          <div style={{height:"100%",width:`${flow.conversion.pct}%`,
-            background:"linear-gradient(90deg,#4F46E5,#818CF8)",borderRadius:10}}/>
+      <div style={{
+        marginTop:14, display:"flex", alignItems:"center", gap:12,
+        background:"rgba(255,255,255,0.5)",
+        backdropFilter:"blur(8px)",
+        borderRadius:12, padding:"10px 14px",
+        border:"1px solid rgba(255,255,255,0.8)",
+      }}>
+        <span style={{fontSize:11,color:"#9CA3AF",flexShrink:0,fontWeight:500}}>Conversion rate</span>
+        <div style={{flex:1,height:5,background:"rgba(229,231,235,0.8)",borderRadius:10,overflow:"hidden"}}>
+          <div style={{
+            height:"100%", width:`${flow.conversion.pct}%`,
+            background:"linear-gradient(90deg,#4F46E5,#818CF8)",
+            borderRadius:10,
+            boxShadow:"0 0 8px rgba(79,70,229,0.4)",
+          }}/>
         </div>
-        <span style={{fontSize:12,fontWeight:700,color:"#111827",flexShrink:0}}>{flow.conversion.label}</span>
+        <span style={{fontSize:12,fontWeight:800,color:"#111827",flexShrink:0}}>{flow.conversion.label}</span>
       </div>
     </div>
   );
@@ -451,90 +501,149 @@ export function DashboardScreen() {
   const today = new Date().toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric",year:"numeric"});
 
   const stats = [
-    { label:"Leads Handled",    sub:"vs last month", value:"142", change:"+18%", up:true,  color:"#4F46E5", lightBg:"linear-gradient(135deg,#4F46E5,#6366F1)", Icon:Users        },
-    { label:"Lead Magnet Sent", sub:"vs last month", value:"98",  change:"+12%", up:true,  color:"#2563EB", lightBg:"#fff",                                    Icon:Mail          },
-    { label:"Booked Calls",     sub:"vs last month", value:"34",  change:"-3%",  up:false, color:"#111827", lightBg:"#fff",                                    Icon:CalendarCheck },
-    { label:"Show Up Rate",     sub:"vs last month", value:"76%", change:"+5%",  up:true,  color:"#111827", lightBg:"#fff",                                    Icon:CheckSquare   },
+    { label:"Leads Handled",    sub:"vs last month", value:"142", change:"+18%", up:true,  color:"#4F46E5", Icon:Users        },
+    { label:"Lead Magnet Sent", sub:"vs last month", value:"98",  change:"+12%", up:true,  color:"#2563EB", Icon:Mail          },
+    { label:"Booked Calls",     sub:"vs last month", value:"34",  change:"-3%",  up:false, color:"#111827", Icon:CalendarCheck },
+    { label:"Show Up Rate",     sub:"vs last month", value:"76%", change:"+5%",  up:true,  color:"#111827", Icon:CheckSquare   },
   ];
 
   return (
     <>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
-        *{box-sizing:border-box;margin:0;padding:0;}
-        body{font-family:'Plus Jakarta Sans',sans-serif;}
-        .stat-card{transition:transform .2s,box-shadow .2s;cursor:pointer;}
-        .stat-card:hover{transform:translateY(-4px);box-shadow:0 20px 48px rgba(0,0,0,.12)!important;}
-        .per-btn{transition:all .15s;cursor:pointer;}
-        ::-webkit-scrollbar{width:4px;}
-        ::-webkit-scrollbar-track{background:transparent;}
-        ::-webkit-scrollbar-thumb{background:#E5E7EB;border-radius:4px;}
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+
+        .stat-card { transition: transform .25s ease, box-shadow .25s ease; cursor: pointer; }
+        .stat-card:hover { transform: translateY(-6px); }
+
+        .per-btn { transition: all .15s; cursor: pointer; border: none; }
+
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #C7D2FE; border-radius: 4px; }
+
+        @keyframes float {
+          0%, 100% { transform: translateY(0px); }
+          50%       { transform: translateY(-8px); }
+        }
+        @keyframes fadeUp {
+          from { opacity: 0; transform: translateY(16px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        .fade-up { animation: fadeUp 0.5s ease forwards; }
+        .fade-up-1 { animation: fadeUp 0.5s ease 0.05s forwards; opacity: 0; }
+        .fade-up-2 { animation: fadeUp 0.5s ease 0.1s  forwards; opacity: 0; }
+        .fade-up-3 { animation: fadeUp 0.5s ease 0.15s forwards; opacity: 0; }
+        .fade-up-4 { animation: fadeUp 0.5s ease 0.2s  forwards; opacity: 0; }
       `}</style>
 
-      <div style={{flex:1,overflowY:"auto",padding:"28px 28px 28px 24px",display:"flex",
-        flexDirection:"column",gap:20,background:"#EDEEF5",fontFamily:"'Plus Jakarta Sans',sans-serif"}}>
+      {/* ── MESH BACKGROUND ── */}
+      <div style={{
+        flex:1, overflowY:"auto", padding:"28px 28px 40px 24px",
+        display:"flex", flexDirection:"column", gap:20,
+        fontFamily:"'Plus Jakarta Sans',sans-serif",
+        position:"relative",
+        background:`
+          radial-gradient(ellipse 80% 50% at 20% -10%, rgba(99,102,241,0.12) 0%, transparent 60%),
+          radial-gradient(ellipse 60% 40% at 80% 10%,  rgba(139,92,246,0.08) 0%, transparent 55%),
+          radial-gradient(ellipse 50% 60% at 90% 80%,  rgba(59,130,246,0.07) 0%, transparent 60%),
+          radial-gradient(ellipse 40% 40% at 10% 90%,  rgba(99,102,241,0.06) 0%, transparent 55%),
+          #EDEEF5
+        `,
+      }}>
 
         {/* ── Greeting ── */}
-        <div>
-          <h1 style={{fontSize:22,fontWeight:800,color:"#111827",letterSpacing:"-0.5px",marginBottom:2}}>
+        <div className="fade-up">
+          <h1 style={{fontSize:24,fontWeight:800,color:"#111827",letterSpacing:"-0.5px",marginBottom:3}}>
             Good {greeting} 👋
           </h1>
-          <div style={{display:"flex",alignItems:"center",gap:5,fontSize:12,color:"#9CA3AF"}}>
+          <div style={{display:"flex",alignItems:"center",gap:5,fontSize:12,color:"#9CA3AF",fontWeight:500}}>
             <CalendarDays size={12} strokeWidth={1.8}/>
             {today}
           </div>
         </div>
 
         {/* ── Stat Cards ── */}
-        <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:14}}>
-          {stats.map((s,i)=>{
-            const isDark=i===0;
+        <div className="fade-up-1" style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:14}}>
+          {stats.map((s,i) => {
+            const isDark = i===0;
             return (
-              <div key={i} className="stat-card" style={{borderRadius:18,padding:"20px",
-                background:isDark?s.lightBg:"#fff",
-                boxShadow:isDark?"0 12px 40px rgba(79,70,229,.35)":"0 1px 4px rgba(0,0,0,.06)",
-                position:"relative",overflow:"hidden"}}>
-                {isDark&&(
+              <div key={i} className="stat-card" style={{
+                borderRadius:20, padding:"22px",
+                background: isDark
+                  ? "linear-gradient(135deg,#4F46E5 0%,#6366F1 50%,#818CF8 100%)"
+                  : "rgba(255,255,255,0.75)",
+                backdropFilter: isDark ? "none" : "blur(20px)",
+                WebkitBackdropFilter: isDark ? "none" : "blur(20px)",
+                border: isDark ? "1px solid rgba(255,255,255,0.2)" : "1px solid rgba(255,255,255,0.95)",
+                boxShadow: isDark
+                  ? "0 16px 48px rgba(79,70,229,0.45), 0 1px 0 rgba(255,255,255,0.2) inset"
+                  : "0 4px 24px rgba(99,102,241,0.08), 0 1px 2px rgba(255,255,255,0.95) inset",
+                position:"relative", overflow:"hidden",
+              }}>
+                {isDark && (
                   <>
-                    <div style={{position:"absolute",top:-20,right:-20,width:90,height:90,borderRadius:"50%",background:"rgba(255,255,255,.12)"}}/>
-                    <div style={{position:"absolute",bottom:-30,right:20,width:60,height:60,borderRadius:"50%",background:"rgba(255,255,255,.08)"}}/>
+                    <div style={{position:"absolute",top:-24,right:-24,width:100,height:100,borderRadius:"50%",background:"rgba(255,255,255,0.1)"}}/>
+                    <div style={{position:"absolute",bottom:-32,right:16,width:70,height:70,borderRadius:"50%",background:"rgba(255,255,255,0.07)"}}/>
+                    <div style={{position:"absolute",top:"50%",left:-20,width:60,height:60,borderRadius:"50%",background:"rgba(255,255,255,0.05)"}}/>
                   </>
                 )}
-                <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:14,position:"relative"}}>
-                  <div style={{width:36,height:36,borderRadius:10,background:isDark?"rgba(255,255,255,.2)":"#EEF2FF",display:"flex",alignItems:"center",justifyContent:"center"}}>
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:16,position:"relative"}}>
+                  <div style={{
+                    width:38,height:38,borderRadius:11,
+                    background: isDark ? "rgba(255,255,255,0.18)" : "linear-gradient(135deg,#EEF2FF,#E0E7FF)",
+                    display:"flex",alignItems:"center",justifyContent:"center",
+                    boxShadow: isDark ? "0 2px 8px rgba(0,0,0,0.1)" : "0 2px 8px rgba(99,102,241,0.12)",
+                  }}>
                     <s.Icon size={16} strokeWidth={1.8} color={isDark?"#fff":s.color}/>
                   </div>
-                  <span style={{fontSize:10,fontWeight:700,padding:"3px 8px",borderRadius:20,
-                    color:s.up?(isDark?"#fff":"#16A34A"):"#DC2626",
-                    background:s.up?(isDark?"rgba(255,255,255,.2)":"#DCFCE7"):"#FEE2E2",
-                    display:"flex",alignItems:"center",gap:3}}>
-                    {s.up?<TrendingUp size={9} strokeWidth={2}/>:<TrendingDown size={9} strokeWidth={2}/>} {s.change}
+                  <span style={{
+                    fontSize:10,fontWeight:700,padding:"4px 9px",borderRadius:20,
+                    color: s.up ? (isDark?"#fff":"#16A34A") : "#DC2626",
+                    background: s.up ? (isDark?"rgba(255,255,255,0.18)":"#DCFCE7") : "#FEE2E2",
+                    display:"flex",alignItems:"center",gap:3,
+                    boxShadow: isDark ? "none" : "0 1px 4px rgba(0,0,0,0.06)",
+                  }}>
+                    {s.up?<TrendingUp size={9} strokeWidth={2.5}/>:<TrendingDown size={9} strokeWidth={2.5}/>}
+                    {s.change}
                   </span>
                 </div>
-                <div style={{fontSize:11,color:isDark?"rgba(255,255,255,.7)":"#6B7280",fontWeight:500,marginBottom:4,position:"relative"}}>{s.label}</div>
-                <div style={{fontSize:30,fontWeight:800,color:isDark?"#fff":"#111827",letterSpacing:"-1px",lineHeight:1,marginBottom:4,position:"relative"}}>{s.value}</div>
-                <div style={{fontSize:10,color:isDark?"rgba(255,255,255,.5)":"#9CA3AF",position:"relative"}}>{s.sub}</div>
+                <div style={{fontSize:11,color:isDark?"rgba(255,255,255,0.7)":"#6B7280",fontWeight:600,marginBottom:5,position:"relative",letterSpacing:"0.2px"}}>{s.label}</div>
+                <div style={{fontSize:32,fontWeight:800,color:isDark?"#fff":"#111827",letterSpacing:"-1.5px",lineHeight:1,marginBottom:5,position:"relative"}}>{s.value}</div>
+                <div style={{fontSize:10,color:isDark?"rgba(255,255,255,0.45)":"#9CA3AF",position:"relative",fontWeight:500}}>{s.sub}</div>
               </div>
             );
           })}
         </div>
 
         {/* ── Chart + Donut ── */}
-        <div style={{display:"grid",gridTemplateColumns:"1.7fr 1fr",gap:16}}>
-          <div style={{background:"#fff",borderRadius:18,padding:"22px 24px",boxShadow:"0 1px 4px rgba(0,0,0,.06)"}}>
+        <div className="fade-up-2" style={{display:"grid",gridTemplateColumns:"1.7fr 1fr",gap:16}}>
+
+          <div style={{
+            ...glass, borderRadius:20, padding:"22px 24px",
+          }}>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:20}}>
               <div>
                 <div style={{fontSize:15,fontWeight:800,color:"#111827",letterSpacing:"-0.3px",marginBottom:2}}>Lead Habits</div>
-                <div style={{fontSize:11,color:"#9CA3AF"}}>Track your lead flow performance</div>
+                <div style={{fontSize:11,color:"#9CA3AF",fontWeight:500}}>Track your lead flow performance</div>
               </div>
-              <div style={{display:"flex",background:"#F3F4F6",borderRadius:10,padding:3,gap:1}}>
+              <div style={{
+                display:"flex",
+                background:"rgba(243,244,246,0.8)",
+                backdropFilter:"blur(8px)",
+                borderRadius:10,padding:3,gap:1,
+                border:"1px solid rgba(255,255,255,0.9)",
+              }}>
                 {["weekly","monthly","yearly"].map(p=>(
                   <button key={p} className="per-btn" onClick={()=>setPeriod(p)} style={{
-                    padding:"5px 12px",borderRadius:8,border:"none",fontSize:10,cursor:"pointer",
-                    fontFamily:"'Plus Jakarta Sans',sans-serif",fontWeight:600,
-                    background:period===p?"#fff":"transparent",
-                    color:period===p?"#111827":"#9CA3AF",
-                    boxShadow:period===p?"0 1px 4px rgba(0,0,0,.1)":"none"}}>
+                    padding:"5px 12px",borderRadius:8,fontSize:10,
+                    fontFamily:"'Plus Jakarta Sans',sans-serif",fontWeight:700,
+                    background: period===p ? "#fff" : "transparent",
+                    color: period===p ? "#111827" : "#9CA3AF",
+                    boxShadow: period===p ? "0 2px 8px rgba(0,0,0,0.1)" : "none",
+                    transition:"all .2s ease",
+                  }}>
                     {p.charAt(0).toUpperCase()+p.slice(1)}
                   </button>
                 ))}
@@ -543,68 +652,103 @@ export function DashboardScreen() {
             <BubbleBarChart data={chartData} labels={labels}/>
           </div>
 
-          <div style={{background:"#fff",borderRadius:18,padding:"22px 24px",boxShadow:"0 1px 4px rgba(0,0,0,.06)"}}>
+          <div style={{...glass, borderRadius:20, padding:"22px 24px"}}>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:16}}>
               <div>
                 <div style={{fontSize:15,fontWeight:800,color:"#111827",letterSpacing:"-0.3px",marginBottom:2}}>Flow Stats</div>
-                <div style={{fontSize:11,color:"#9CA3AF"}}>Track your flow metrics</div>
+                <div style={{fontSize:11,color:"#9CA3AF",fontWeight:500}}>Track your flow metrics</div>
               </div>
-              <div style={{display:"flex",alignItems:"center",gap:5,fontSize:11,color:"#9CA3AF",
-                background:"#F9FAFB",border:"1px solid #F3F4F6",borderRadius:8,padding:"5px 10px",cursor:"pointer"}}>
+              <div style={{
+                display:"flex",alignItems:"center",gap:5,fontSize:11,color:"#9CA3AF",fontWeight:600,
+                background:"rgba(249,250,251,0.8)",
+                backdropFilter:"blur(8px)",
+                border:"1px solid rgba(255,255,255,0.9)",
+                borderRadius:8,padding:"5px 10px",cursor:"pointer",
+              }}>
                 Today <ChevronDown size={10} strokeWidth={2}/>
               </div>
             </div>
             <DonutChart/>
-            <div style={{marginTop:16,background:"#F9FAFB",borderRadius:12,padding:"12px 14px",border:"1px solid #F3F4F6"}}>
+            <div style={{
+              marginTop:16,
+              background:"rgba(249,250,251,0.7)",
+              backdropFilter:"blur(8px)",
+              borderRadius:12,padding:"12px 14px",
+              border:"1px solid rgba(255,255,255,0.9)",
+            }}>
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
-                <span style={{fontSize:11,color:"#9CA3AF"}}>Conversion rate</span>
-                <span style={{fontSize:12,fontWeight:700,color:"#4F46E5"}}>24%</span>
+                <span style={{fontSize:11,color:"#9CA3AF",fontWeight:500}}>Conversion rate</span>
+                <span style={{fontSize:12,fontWeight:800,color:"#4F46E5"}}>24%</span>
               </div>
-              <div style={{height:5,background:"#E5E7EB",borderRadius:10,overflow:"hidden"}}>
-                <div style={{height:"100%",width:"24%",background:"linear-gradient(90deg,#4F46E5,#818CF8)",borderRadius:10}}/>
+              <div style={{height:5,background:"rgba(229,231,235,0.8)",borderRadius:10,overflow:"hidden"}}>
+                <div style={{height:"100%",width:"24%",background:"linear-gradient(90deg,#4F46E5,#818CF8)",borderRadius:10,boxShadow:"0 0 8px rgba(79,70,229,0.4)"}}/>
               </div>
             </div>
           </div>
         </div>
 
         {/* ── Booking Flow + Recent Activity ── */}
-        <div style={{display:"grid",gridTemplateColumns:"1.7fr 1fr",gap:16}}>
+        <div className="fade-up-3" style={{display:"grid",gridTemplateColumns:"1.7fr 1fr",gap:16}}>
           <FlowSection flow={FLOWS[0]}/>
-          <div style={{background:"#fff",borderRadius:18,padding:"22px 20px",boxShadow:"0 1px 4px rgba(0,0,0,.06)",display:"flex",flexDirection:"column"}}>
+
+          <div style={{...glass, borderRadius:20, padding:"22px 20px", display:"flex", flexDirection:"column"}}>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:2}}>
               <div style={{fontSize:15,fontWeight:800,color:"#111827",letterSpacing:"-0.3px"}}>Recent Activity</div>
-              <div style={{display:"flex",alignItems:"center",gap:5,fontSize:11,color:"#9CA3AF",
-                background:"#F9FAFB",border:"1px solid #F3F4F6",borderRadius:8,padding:"5px 10px",cursor:"pointer"}}>
+              <div style={{
+                display:"flex",alignItems:"center",gap:5,fontSize:11,color:"#9CA3AF",fontWeight:600,
+                background:"rgba(249,250,251,0.8)", backdropFilter:"blur(8px)",
+                border:"1px solid rgba(255,255,255,0.9)",
+                borderRadius:8,padding:"5px 10px",cursor:"pointer",
+              }}>
                 Today <ChevronDown size={10} strokeWidth={2}/>
               </div>
             </div>
-            <div style={{fontSize:11,color:"#9CA3AF",marginBottom:16}}>All latest events</div>
+            <div style={{fontSize:11,color:"#9CA3AF",marginBottom:16,fontWeight:500}}>All latest events</div>
             <div style={{flex:1}}>
               {ACTIVITIES.map((a,i)=>(
-                <div key={i} style={{display:"flex",alignItems:"flex-start",gap:10,padding:"9px 0",
-                  borderBottom:i<ACTIVITIES.length-1?"1px solid #F9FAFB":"none"}}>
+                <div key={i} style={{
+                  display:"flex",alignItems:"flex-start",gap:10,padding:"10px 0",
+                  borderBottom:i<ACTIVITIES.length-1?"1px solid rgba(243,244,246,0.8)":"none",
+                  transition:"background .15s",
+                }}>
                   <Avatar init={a.init} bg={a.bg} color={a.color} size={32}/>
                   <div style={{flex:1}}>
                     <div style={{fontSize:12,color:"#111827",lineHeight:1.5}}>
                       <span style={{fontWeight:700}}>{a.name}</span>{" "}
                       <span style={{color:"#6B7280"}}>{a.action}</span>
                     </div>
-                    <div style={{fontSize:10,color:"#9CA3AF",marginTop:1}}>{a.time}</div>
+                    <div style={{fontSize:10,color:"#9CA3AF",marginTop:1,fontWeight:500}}>{a.time}</div>
                   </div>
                   <ArrowUpRight size={12} color="#D1D5DB" strokeWidth={2}/>
                 </div>
               ))}
             </div>
-            <button style={{width:"100%",marginTop:14,padding:"9px",borderRadius:10,
-              border:"1px solid #E5E7EB",background:"transparent",fontSize:11,fontWeight:600,
-              color:"#4F46E5",cursor:"pointer",fontFamily:"'Plus Jakarta Sans',sans-serif"}}>
+            <button style={{
+              width:"100%", marginTop:14, padding:"10px",
+              borderRadius:12,
+              background:"rgba(79,70,229,0.06)",
+              backdropFilter:"blur(8px)",
+              border:"1px solid rgba(79,70,229,0.15)",
+              fontSize:11, fontWeight:700, color:"#4F46E5",
+              cursor:"pointer", fontFamily:"'Plus Jakarta Sans',sans-serif",
+              transition:"all .2s ease",
+            }}
+              onMouseEnter={e=>{
+                (e.currentTarget as HTMLElement).style.background="rgba(79,70,229,0.1)";
+                (e.currentTarget as HTMLElement).style.transform="translateY(-1px)";
+              }}
+              onMouseLeave={e=>{
+                (e.currentTarget as HTMLElement).style.background="rgba(79,70,229,0.06)";
+                (e.currentTarget as HTMLElement).style.transform="translateY(0)";
+              }}
+            >
               View all activity
             </button>
           </div>
         </div>
 
-        {/* ── Follow-Up Automation + Follow-Up Agent ── */}
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16}}>
+        {/* ── Follow-Up flows ── */}
+        <div className="fade-up-4" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16}}>
           <FlowSection flow={FLOWS[1]}/>
           <FlowSection flow={FLOWS[2]}/>
         </div>
