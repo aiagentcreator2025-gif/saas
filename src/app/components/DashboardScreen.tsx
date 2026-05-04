@@ -57,24 +57,12 @@ const AGENT_IMAGES: Record<string,string> = {
   "Follow-Up Agent":      `${BASE}facefollowupagent.png`,
 };
 
-// ─── THE APPLE TRICK ──────────────────────────────────────────────────────────
-//
-//  HOW IT WORKS:
-//  1. .dash-bg  — fixed layer with raw colour blobs. Never scrolls.
-//  2. .dash-blur — fixed layer with ONE backdrop-filter: blur(80px).
-//                  Blurs the blob layer ONCE. Cost: a single GPU pass.
-//  3. .dash-root — scrollable content. Cards are rgba(255,255,255,0.72).
-//                  They look like glass because the blurred scene shows
-//                  through — but we pay ZERO extra blur cost per card.
-//
-//  Result: real frosted-glass aesthetic, buttery smooth scroll.
-// ─────────────────────────────────────────────────────────────────────────────
-
+// ─── Card style (NO backdrop-filter) ─────────────────────────────────────────
 const card: React.CSSProperties = {
-  background: "rgba(255,255,255,0.72)",
+  background: "#FFFFFF",
   borderRadius: 20,
-  border: "1px solid rgba(255,255,255,0.9)",
-  boxShadow: "0 2px 12px rgba(79,70,229,0.07), 0 1px 2px rgba(0,0,0,0.04)",
+  border: "1px solid #F0F1F8",
+  boxShadow: "0 2px 12px rgba(99,102,241,0.06), 0 1px 3px rgba(0,0,0,0.04)",
 };
 
 // ─── SVG Icons ────────────────────────────────────────────────────────────────
@@ -108,15 +96,11 @@ function IconAgentReply({ color }: { color:string }) {
 
 function StepIllustration({ label, color }: { label:string; color:string }) {
   const map: Record<string,JSX.Element> = {
-    "Trigger":             <IconTrigger color={color}/>,
-    "Script 1":            <IconScript color={color}/>,
-    "Script 2":            <IconFollowUp color={color}/>,
-    "Lead Magnet":         <IconLeadMagnet color={color}/>,
-    "Booking":             <IconBooking color={color}/>,
-    "Scheduled Trigger":   <IconScheduledTrigger color={color}/>,
-    "Follow-Up Message":   <IconFollowUpMsg color={color}/>,
-    "Ingest Agent":        <IconIngestAgent color={color}/>,
-    "Agent Reply":         <IconAgentReply color={color}/>,
+    "Trigger": <IconTrigger color={color}/>, "Script 1": <IconScript color={color}/>,
+    "Script 2": <IconFollowUp color={color}/>, "Lead Magnet": <IconLeadMagnet color={color}/>,
+    "Booking": <IconBooking color={color}/>, "Scheduled Trigger": <IconScheduledTrigger color={color}/>,
+    "Follow-Up Message": <IconFollowUpMsg color={color}/>, "Ingest Agent": <IconIngestAgent color={color}/>,
+    "Agent Reply": <IconAgentReply color={color}/>,
   };
   return map[label] ?? <IconTrigger color={color}/>;
 }
@@ -156,7 +140,7 @@ type Flow     = typeof FLOWS[0];
 
 function AgentAvatar({ flowTitle }: { flowTitle:string }) {
   return (
-    <div style={{ width:48, height:48, borderRadius:"50%", overflow:"hidden", border:"2px solid rgba(255,255,255,0.9)", boxShadow:"0 2px 8px rgba(79,70,229,0.12)", background:"#EEF2FF", flexShrink:0 }}>
+    <div style={{ width:48, height:48, borderRadius:"50%", overflow:"hidden", border:"2px solid #EEF2FF", boxShadow:"0 4px 12px rgba(79,70,229,0.15)", background:"#EEF2FF", flexShrink:0 }}>
       <img src={AGENT_IMAGES[flowTitle]} alt={flowTitle}
         style={{ width:"100%", height:"100%", objectFit:"cover" }}
         onError={e=>{ (e.target as HTMLImageElement).style.display="none"; }}
@@ -184,9 +168,9 @@ function DonutChart() {
   }
   return (
     <div style={{ display:"flex", alignItems:"center", gap:20 }}>
-      <svg width={160} height={160} viewBox="0 0 160 160" style={{ flexShrink:0, filter:"drop-shadow(0 4px 12px rgba(79,70,229,0.15))" }}>
+      <svg width={160} height={160} viewBox="0 0 160 160" style={{ flexShrink:0, filter:"drop-shadow(0 4px 16px rgba(79,70,229,0.18))" }}>
         {segs.map((s,i)=><path key={i} d={arc(s.pct)} fill={s.color}/>)}
-        <circle cx={cx} cy={cy} r={32} fill="rgba(255,255,255,0.95)"/>
+        <circle cx={cx} cy={cy} r={32} fill="#fff"/>
         <text x={cx} y={cy-5} textAnchor="middle" fontSize={14} fontWeight={800} fill="#111827" fontFamily="'Plus Jakarta Sans',sans-serif">301</text>
         <text x={cx} y={cy+10} textAnchor="middle" fontSize={9} fill="#9CA3AF" fontFamily="'Plus Jakarta Sans',sans-serif">Total</text>
       </svg>
@@ -220,15 +204,15 @@ function BubbleBarChart({ data, labels }: { data:DataRow[]; labels:string[] }) {
             <div key={i} style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", gap:4, cursor:"pointer", position:"relative" }}
               onMouseEnter={()=>setTooltip(i)} onMouseLeave={()=>setTooltip(null)}>
               {hov && (
-                <div style={{ position:"absolute", bottom:h1+18, left:"50%", transform:"translateX(-50%)", background:"rgba(17,24,39,0.92)", color:"#fff", borderRadius:12, padding:"10px 14px", fontSize:11, fontWeight:600, whiteSpace:"nowrap", zIndex:10, boxShadow:"0 8px 24px rgba(0,0,0,0.15)", display:"flex", flexDirection:"column", gap:4 }}>
+                <div style={{ position:"absolute", bottom:h1+18, left:"50%", transform:"translateX(-50%)", background:"#111827", color:"#fff", borderRadius:12, padding:"10px 14px", fontSize:11, fontWeight:600, whiteSpace:"nowrap", zIndex:10, boxShadow:"0 8px 24px rgba(0,0,0,0.2)", display:"flex", flexDirection:"column", gap:4 }}>
                   <span style={{ color:"#818CF8" }}>● {entry.leadsHandled} Leads</span>
                   <span style={{ color:"#C7D2FE" }}>● {entry.magnetSent} Magnets</span>
-                  <div style={{ position:"absolute", bottom:-5, left:"50%", transform:"translateX(-50%)", width:0, height:0, borderLeft:"5px solid transparent", borderRight:"5px solid transparent", borderTop:"5px solid rgba(17,24,39,0.92)" }}/>
+                  <div style={{ position:"absolute", bottom:-5, left:"50%", transform:"translateX(-50%)", width:0, height:0, borderLeft:"5px solid transparent", borderRight:"5px solid transparent", borderTop:"5px solid #111827" }}/>
                 </div>
               )}
               <div style={{ display:"flex", gap:3, alignItems:"flex-end", width:"100%" }}>
-                <div style={{ flex:1, height:h1, background: hov ? "linear-gradient(180deg,#6366F1,#4F46E5)" : "linear-gradient(180deg,#A5B4FC,#818CF8)", borderRadius:"8px 8px 0 0", transition:"all .2s ease", boxShadow: hov ? "0 4px 12px rgba(79,70,229,0.25)" : "none" }}/>
-                <div style={{ flex:1, height:h2, background: hov ? "linear-gradient(180deg,#C7D2FE,#A5B4FC)" : "linear-gradient(180deg,#EEF2FF,#C7D2FE)", borderRadius:"8px 8px 0 0", transition:"all .2s ease" }}/>
+                <div style={{ flex:1, height:h1, background: hov ? "linear-gradient(180deg,#6366F1,#4F46E5)" : "linear-gradient(180deg,#A5B4FC,#818CF8)", borderRadius:"8px 8px 0 0", transition:"all .2s ease", boxShadow: hov ? "0 4px 12px rgba(79,70,229,0.35)" : "none" }}/>
+                <div style={{ flex:1, height:h2, background: hov ? "linear-gradient(180deg,#C7D2FE,#A5B4FC)" : "linear-gradient(180deg,#E0E7FF,#C7D2FE)", borderRadius:"8px 8px 0 0", transition:"all .2s ease" }}/>
               </div>
               <span style={{ fontSize:9, color:"#9CA3AF", fontWeight:600 }}>{labels[i]}</span>
             </div>
@@ -241,7 +225,7 @@ function BubbleBarChart({ data, labels }: { data:DataRow[]; labels:string[] }) {
           <span style={{ fontSize:10, color:"#9CA3AF", fontWeight:500 }}>Leads Handled</span>
         </div>
         <div style={{ display:"flex", alignItems:"center", gap:6 }}>
-          <div style={{ width:10, height:10, borderRadius:3, background:"linear-gradient(135deg,#EEF2FF,#C7D2FE)" }}/>
+          <div style={{ width:10, height:10, borderRadius:3, background:"linear-gradient(135deg,#E0E7FF,#C7D2FE)" }}/>
           <span style={{ fontSize:10, color:"#9CA3AF", fontWeight:500 }}>Lead Magnet Sent</span>
         </div>
       </div>
@@ -259,7 +243,10 @@ function Avatar({ init, bg="#EEF2FF", color="#4F46E5", size=30 }: { init:string;
 
 function FlowStepCard({ step }: { step:FlowStep }) {
   return (
-    <div className="step-card" style={{ textAlign:"center", ...card, padding:"14px 10px", cursor:"pointer", transition:"transform .2s ease, box-shadow .2s ease" }}>
+    <div style={{ textAlign:"center", background:"#FAFBFF", borderRadius:16, border:`1.5px solid ${step.color}18`, padding:"14px 10px", boxShadow:`0 2px 8px ${step.color}10`, transition:"transform .2s ease, box-shadow .2s ease", cursor:"pointer" }}
+      onMouseEnter={e=>{ (e.currentTarget as HTMLElement).style.transform="translateY(-4px)"; (e.currentTarget as HTMLElement).style.boxShadow=`0 10px 24px ${step.color}22`; }}
+      onMouseLeave={e=>{ (e.currentTarget as HTMLElement).style.transform="translateY(0)"; (e.currentTarget as HTMLElement).style.boxShadow=`0 2px 8px ${step.color}10`; }}
+    >
       <div style={{ display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 8px" }}>
         <StepIllustration label={step.label} color={step.color}/>
       </div>
@@ -277,13 +264,14 @@ function FlowSection({ flow }: { flow:Flow }) {
         <div style={{ display:"flex", alignItems:"center", gap:12 }}>
           <AgentAvatar flowTitle={flow.title}/>
           <div>
-            <div style={{ fontSize:15, fontWeight:800, color:"#1e1b4b", letterSpacing:"-0.3px", marginBottom:2 }}>{flow.title}</div>
+            <div style={{ fontSize:15, fontWeight:800, color:"#111827", letterSpacing:"-0.3px", marginBottom:2 }}>{flow.title}</div>
             <div style={{ fontSize:11, color:"#9CA3AF", fontWeight:500 }}>{flow.subtitle}</div>
           </div>
         </div>
-        <button className="edit-btn" style={{ padding:"8px 18px", borderRadius:20, border:"none", background:"#111827", color:"#fff", fontSize:11, fontWeight:700, cursor:"pointer", fontFamily:"'Plus Jakarta Sans',sans-serif", transition:"all .2s ease" }}>
-          Edit Flow
-        </button>
+        <button style={{ padding:"8px 18px", borderRadius:20, border:"none", background:"#111827", color:"#fff", fontSize:11, fontWeight:700, cursor:"pointer", fontFamily:"'Plus Jakarta Sans',sans-serif", transition:"all .2s ease" }}
+          onMouseEnter={e=>{ (e.currentTarget as HTMLElement).style.background="#374151"; (e.currentTarget as HTMLElement).style.transform="translateY(-1px)"; }}
+          onMouseLeave={e=>{ (e.currentTarget as HTMLElement).style.background="#111827"; (e.currentTarget as HTMLElement).style.transform="translateY(0)"; }}
+        >Edit Flow</button>
       </div>
       <div style={{ display:"flex", alignItems:"center" }}>
         {flow.steps.map((step, i) => (
@@ -299,9 +287,9 @@ function FlowSection({ flow }: { flow:Flow }) {
           </div>
         ))}
       </div>
-      <div style={{ marginTop:14, display:"flex", alignItems:"center", gap:12, background:"rgba(238,242,255,0.6)", borderRadius:12, border:"1px solid rgba(199,210,254,0.5)", padding:"10px 14px" }}>
+      <div style={{ marginTop:14, display:"flex", alignItems:"center", gap:12, background:"#F8F9FF", borderRadius:12, padding:"10px 14px", border:"1px solid #EEF2FF" }}>
         <span style={{ fontSize:11, color:"#9CA3AF", flexShrink:0, fontWeight:500 }}>Conversion rate</span>
-        <div style={{ flex:1, height:5, background:"rgba(199,210,254,0.4)", borderRadius:10, overflow:"hidden" }}>
+        <div style={{ flex:1, height:5, background:"#E0E7FF", borderRadius:10, overflow:"hidden" }}>
           <div style={{ height:"100%", width:`${flow.conversion.pct}%`, background:"linear-gradient(90deg,#4F46E5,#818CF8)", borderRadius:10 }}/>
         </div>
         <span style={{ fontSize:12, fontWeight:800, color:"#4F46E5", flexShrink:0 }}>{flow.conversion.label}</span>
@@ -320,230 +308,167 @@ export function DashboardScreen() {
   const today = new Date().toLocaleDateString("en-US",{ weekday:"long", month:"long", day:"numeric", year:"numeric" });
 
   const stats = [
-    { label:"Leads Handled",    sub:"vs last month", value:"142", change:"+18%", up:true,  Icon:Users        },
-    { label:"Lead Magnet Sent", sub:"vs last month", value:"98",  change:"+12%", up:true,  Icon:Mail          },
-    { label:"Booked Calls",     sub:"vs last month", value:"34",  change:"-3%",  up:false, Icon:CalendarCheck },
-    { label:"Show Up Rate",     sub:"vs last month", value:"76%", change:"+5%",  up:true,  Icon:CheckSquare   },
+    { label:"Leads Handled",    sub:"vs last month", value:"142", change:"+18%", up:true,  color:"#4F46E5", Icon:Users        },
+    { label:"Lead Magnet Sent", sub:"vs last month", value:"98",  change:"+12%", up:true,  color:"#2563EB", Icon:Mail          },
+    { label:"Booked Calls",     sub:"vs last month", value:"34",  change:"-3%",  up:false, color:"#111827", Icon:CalendarCheck },
+    { label:"Show Up Rate",     sub:"vs last month", value:"76%", change:"+5%",  up:true,  color:"#111827", Icon:CheckSquare   },
   ];
 
   return (
     <>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-
-        /* ── Layer 1: raw colour blobs — fixed, never scrolls ── */
-        .dash-bg {
-          position: fixed;
-          inset: 0;
-          z-index: 0;
-          pointer-events: none;
-          background:
-            radial-gradient(ellipse 55% 45% at 12%  8%,  rgba(165,180,252,0.60) 0%, transparent 70%),
-            radial-gradient(ellipse 40% 38% at 88% 12%,  rgba(196,181,253,0.45) 0%, transparent 65%),
-            radial-gradient(ellipse 50% 45% at 50% 92%,  rgba(147,197,253,0.40) 0%, transparent 70%),
-            radial-gradient(ellipse 35% 30% at 82% 72%,  rgba(167,243,208,0.28) 0%, transparent 60%),
-            radial-gradient(ellipse 30% 28% at 18% 68%,  rgba(253,186,116,0.18) 0%, transparent 60%),
-            #eef2ff;
-        }
-
-        /* ── Layer 2: ONE global blur — the entire cost budget ── */
-        .dash-blur {
-          position: fixed;
-          inset: 0;
-          z-index: 1;
-          pointer-events: none;
-          backdrop-filter: blur(72px) saturate(1.6) brightness(1.05);
-          -webkit-backdrop-filter: blur(72px) saturate(1.6) brightness(1.05);
-        }
-
-        /* ── Layer 3: scrollable content ── */
-        .dash-root {
-          position: relative;
-          z-index: 2;
-          flex: 1;
-          overflow-y: auto;
-          min-height: 100vh;
-          font-family: 'Plus Jakarta Sans', sans-serif;
-        }
-        .dash-content {
-          padding: 28px 28px 40px 24px;
-          display: flex;
-          flex-direction: column;
-          gap: 18px;
-        }
-
-        /* ── Card interactions ── */
-        .stat-card { transition: transform .2s ease, box-shadow .2s ease; cursor: pointer; }
-        .stat-card:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(79,70,229,0.16) !important; }
-        .step-card { transition: transform .2s ease, box-shadow .2s ease; }
-        .step-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(79,70,229,0.13) !important; }
-        .per-btn { transition: all .15s; cursor: pointer; border: none; }
-        .edit-btn { transition: all .2s ease; }
-        .edit-btn:hover { background: #374151 !important; transform: translateY(-1px); }
-
-        ::-webkit-scrollbar { width: 4px; }
-        ::-webkit-scrollbar-thumb { background: rgba(165,180,252,0.5); border-radius: 4px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-
-        @keyframes fadeUp {
-          from { opacity: 0; transform: translateY(12px); }
-          to   { opacity: 1; transform: translateY(0); }
-        }
-        .fu  { animation: fadeUp 0.4s ease forwards; }
-        .fu1 { animation: fadeUp 0.4s ease 0.05s forwards; opacity: 0; }
-        .fu2 { animation: fadeUp 0.4s ease 0.10s forwards; opacity: 0; }
-        .fu3 { animation: fadeUp 0.4s ease 0.15s forwards; opacity: 0; }
-        .fu4 { animation: fadeUp 0.4s ease 0.20s forwards; opacity: 0; }
+        * { box-sizing:border-box; margin:0; padding:0; }
+        .stat-card { transition: transform .2s ease, box-shadow .2s ease; cursor:pointer; }
+        .stat-card:hover { transform: translateY(-5px); box-shadow: 0 16px 40px rgba(99,102,241,0.14) !important; }
+        .per-btn { transition:all .15s; cursor:pointer; border:none; }
+        ::-webkit-scrollbar { width:4px; }
+        ::-webkit-scrollbar-thumb { background:#C7D2FE; border-radius:4px; }
+        @keyframes fadeUp { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:translateY(0); } }
+        .fu  { animation: fadeUp 0.45s ease forwards; }
+        .fu1 { animation: fadeUp 0.45s ease 0.06s forwards; opacity:0; }
+        .fu2 { animation: fadeUp 0.45s ease 0.12s forwards; opacity:0; }
+        .fu3 { animation: fadeUp 0.45s ease 0.18s forwards; opacity:0; }
+        .fu4 { animation: fadeUp 0.45s ease 0.24s forwards; opacity:0; }
       `}</style>
 
-      {/* Layer 1 — colour blobs */}
-      <div className="dash-bg" aria-hidden="true"/>
-      {/* Layer 2 — ONE blur pass over the blobs */}
-      <div className="dash-blur" aria-hidden="true"/>
+      <div style={{
+        flex:1, overflowY:"auto", padding:"28px 28px 40px 24px",
+        display:"flex", flexDirection:"column", gap:18,
+        fontFamily:"'Plus Jakarta Sans',sans-serif",
+        background:"linear-gradient(135deg, #EEF0FA 0%, #F0F1F8 40%, #EBF0FF 100%)",
+        minHeight:"100vh",
+      }}>
 
-      {/* Layer 3 — all content, scrollable */}
-      <div className="dash-root">
-        <div className="dash-content">
-
-          {/* ── Greeting ── */}
-          <div className="fu">
-            <h1 style={{ fontSize:24, fontWeight:800, color:"#1e1b4b", letterSpacing:"-0.5px", marginBottom:3 }}>
-              Good {greeting} 👋
-            </h1>
-            <div style={{ display:"flex", alignItems:"center", gap:5, fontSize:12, color:"#6B7280", fontWeight:500 }}>
-              <CalendarDays size={12} strokeWidth={1.8}/> {today}
-            </div>
+        {/* ── Greeting ── */}
+        <div className="fu">
+          <h1 style={{ fontSize:24, fontWeight:800, color:"#111827", letterSpacing:"-0.5px", marginBottom:3 }}>
+            Good {greeting} 👋
+          </h1>
+          <div style={{ display:"flex", alignItems:"center", gap:5, fontSize:12, color:"#9CA3AF", fontWeight:500 }}>
+            <CalendarDays size={12} strokeWidth={1.8}/> {today}
           </div>
+        </div>
 
-          {/* ── Stat Cards ── */}
-          <div className="fu1" style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:14 }}>
-            {stats.map((s,i) => {
-              const isDark = i===0;
-              return (
-                <div key={i} className="stat-card" style={{
-                  borderRadius:20, padding:"22px",
-                  background: isDark
-                    ? "linear-gradient(135deg,#4F46E5 0%,#6366F1 55%,#818CF8 100%)"
-                    : "rgba(255,255,255,0.72)",
-                  border: isDark ? "none" : "1px solid rgba(255,255,255,0.9)",
-                  boxShadow: isDark
-                    ? "0 8px 32px rgba(79,70,229,0.32)"
-                    : "0 2px 12px rgba(79,70,229,0.07), 0 1px 2px rgba(0,0,0,0.04)",
-                  position:"relative", overflow:"hidden",
-                }}>
-                  {isDark && (
-                    <>
-                      <div style={{ position:"absolute", top:-40, right:-40, width:120, height:120, borderRadius:"50%", background:"rgba(255,255,255,0.1)" }}/>
-                      <div style={{ position:"absolute", bottom:-20, left:-20, width:80, height:80, borderRadius:"50%", background:"rgba(255,255,255,0.07)" }}/>
-                    </>
-                  )}
-                  <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:16, position:"relative" }}>
-                    <div style={{ width:38, height:38, borderRadius:11, background: isDark?"rgba(255,255,255,0.18)":"rgba(238,242,255,0.9)", display:"flex", alignItems:"center", justifyContent:"center" }}>
-                      <s.Icon size={16} strokeWidth={1.8} color={isDark?"#fff":"#4F46E5"}/>
-                    </div>
-                    <span style={{ fontSize:10, fontWeight:700, padding:"4px 9px", borderRadius:20,
-                      color: s.up?(isDark?"#fff":"#16A34A"):"#DC2626",
-                      background: s.up?(isDark?"rgba(255,255,255,0.2)":"rgba(220,252,231,0.85)"):"rgba(254,226,226,0.85)",
-                      display:"flex", alignItems:"center", gap:3 }}>
-                      {s.up?<TrendingUp size={9} strokeWidth={2.5}/>:<TrendingDown size={9} strokeWidth={2.5}/>} {s.change}
-                    </span>
+        {/* ── Stat Cards ── */}
+        <div className="fu1" style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:14 }}>
+          {stats.map((s,i) => {
+            const isDark = i===0;
+            return (
+              <div key={i} className="stat-card" style={{
+                borderRadius:20, padding:"22px",
+                background: isDark
+                  ? "linear-gradient(135deg,#4F46E5 0%,#6366F1 55%,#818CF8 100%)"
+                  : "#FFFFFF",
+                border: isDark ? "none" : "1px solid #F0F1F8",
+                boxShadow: isDark
+                  ? "0 12px 40px rgba(79,70,229,0.38)"
+                  : "0 2px 12px rgba(99,102,241,0.06)",
+                position:"relative", overflow:"hidden",
+              }}>
+                {isDark && (
+                  <>
+                    <div style={{ position:"absolute", top:-28, right:-28, width:110, height:110, borderRadius:"50%", background:"rgba(255,255,255,0.08)" }}/>
+                    <div style={{ position:"absolute", bottom:-36, right:12,  width:80,  height:80,  borderRadius:"50%", background:"rgba(255,255,255,0.06)" }}/>
+                  </>
+                )}
+                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:16, position:"relative" }}>
+                  <div style={{ width:38, height:38, borderRadius:11, background: isDark?"rgba(255,255,255,0.16)":"#EEF2FF", display:"flex", alignItems:"center", justifyContent:"center" }}>
+                    <s.Icon size={16} strokeWidth={1.8} color={isDark?"#fff":s.color}/>
                   </div>
-                  <div style={{ fontSize:11, color:isDark?"rgba(255,255,255,0.7)":"#6B7280", fontWeight:600, marginBottom:5 }}>{s.label}</div>
-                  <div style={{ fontSize:32, fontWeight:800, color:isDark?"#fff":"#1e1b4b", letterSpacing:"-1.5px", lineHeight:1, marginBottom:5 }}>{s.value}</div>
-                  <div style={{ fontSize:10, color:isDark?"rgba(255,255,255,0.45)":"#9CA3AF", fontWeight:500 }}>{s.sub}</div>
+                  <span style={{ fontSize:10, fontWeight:700, padding:"4px 9px", borderRadius:20, color: s.up?(isDark?"#fff":"#16A34A"):"#DC2626", background: s.up?(isDark?"rgba(255,255,255,0.18)":"#DCFCE7"):"#FEE2E2", display:"flex", alignItems:"center", gap:3 }}>
+                    {s.up?<TrendingUp size={9} strokeWidth={2.5}/>:<TrendingDown size={9} strokeWidth={2.5}/>} {s.change}
+                  </span>
                 </div>
-              );
-            })}
-          </div>
+                <div style={{ fontSize:11, color:isDark?"rgba(255,255,255,0.7)":"#6B7280", fontWeight:600, marginBottom:5, position:"relative" }}>{s.label}</div>
+                <div style={{ fontSize:32, fontWeight:800, color:isDark?"#fff":"#111827", letterSpacing:"-1.5px", lineHeight:1, marginBottom:5, position:"relative" }}>{s.value}</div>
+                <div style={{ fontSize:10, color:isDark?"rgba(255,255,255,0.45)":"#9CA3AF", position:"relative", fontWeight:500 }}>{s.sub}</div>
+              </div>
+            );
+          })}
+        </div>
 
-          {/* ── Chart + Donut ── */}
-          <div className="fu2" style={{ display:"grid", gridTemplateColumns:"1.7fr 1fr", gap:16 }}>
-            <div style={{ ...card, padding:"22px 24px" }}>
-              <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:20 }}>
-                <div>
-                  <div style={{ fontSize:15, fontWeight:800, color:"#1e1b4b", letterSpacing:"-0.3px", marginBottom:2 }}>Lead Habits</div>
-                  <div style={{ fontSize:11, color:"#6B7280", fontWeight:500 }}>Track your lead flow performance</div>
-                </div>
-                <div style={{ display:"flex", background:"rgba(243,244,246,0.85)", borderRadius:10, padding:3, gap:1 }}>
-                  {["weekly","monthly","yearly"].map(p=>(
-                    <button key={p} className="per-btn" onClick={()=>setPeriod(p)} style={{
-                      padding:"5px 12px", borderRadius:8, fontSize:10,
-                      fontFamily:"'Plus Jakarta Sans',sans-serif", fontWeight:700,
-                      background:period===p?"rgba(255,255,255,0.95)":"transparent",
-                      color:period===p?"#111827":"#6B7280",
-                      boxShadow:period===p?"0 1px 4px rgba(0,0,0,0.08)":"none",
-                    }}>
-                      {p.charAt(0).toUpperCase()+p.slice(1)}
-                    </button>
-                  ))}
-                </div>
+        {/* ── Chart + Donut ── */}
+        <div className="fu2" style={{ display:"grid", gridTemplateColumns:"1.7fr 1fr", gap:16 }}>
+          <div style={{ ...card, padding:"22px 24px" }}>
+            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:20 }}>
+              <div>
+                <div style={{ fontSize:15, fontWeight:800, color:"#111827", letterSpacing:"-0.3px", marginBottom:2 }}>Lead Habits</div>
+                <div style={{ fontSize:11, color:"#9CA3AF", fontWeight:500 }}>Track your lead flow performance</div>
               </div>
-              <BubbleBarChart data={chartData} labels={labels}/>
-            </div>
-
-            <div style={{ ...card, padding:"22px 24px" }}>
-              <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:16 }}>
-                <div>
-                  <div style={{ fontSize:15, fontWeight:800, color:"#1e1b4b", letterSpacing:"-0.3px", marginBottom:2 }}>Flow Stats</div>
-                  <div style={{ fontSize:11, color:"#6B7280", fontWeight:500 }}>Track your flow metrics</div>
-                </div>
-                <div style={{ display:"flex", alignItems:"center", gap:5, fontSize:11, color:"#6B7280", fontWeight:600, background:"rgba(243,244,246,0.85)", border:"1px solid rgba(229,231,235,0.8)", borderRadius:8, padding:"5px 10px", cursor:"pointer" }}>
-                  Today <ChevronDown size={10} strokeWidth={2}/>
-                </div>
-              </div>
-              <DonutChart/>
-              <div style={{ marginTop:16, background:"rgba(238,242,255,0.65)", borderRadius:12, border:"1px solid rgba(199,210,254,0.5)", padding:"12px 14px" }}>
-                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:8 }}>
-                  <span style={{ fontSize:11, color:"#6B7280", fontWeight:500 }}>Conversion rate</span>
-                  <span style={{ fontSize:12, fontWeight:800, color:"#4F46E5" }}>24%</span>
-                </div>
-                <div style={{ height:5, background:"rgba(199,210,254,0.4)", borderRadius:10, overflow:"hidden" }}>
-                  <div style={{ height:"100%", width:"24%", background:"linear-gradient(90deg,#4F46E5,#818CF8)", borderRadius:10 }}/>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* ── Booking Flow + Recent Activity ── */}
-          <div className="fu3" style={{ display:"grid", gridTemplateColumns:"1.7fr 1fr", gap:16 }}>
-            <FlowSection flow={FLOWS[0]}/>
-            <div style={{ ...card, padding:"22px 20px", display:"flex", flexDirection:"column" }}>
-              <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:2 }}>
-                <div style={{ fontSize:15, fontWeight:800, color:"#1e1b4b", letterSpacing:"-0.3px" }}>Recent Activity</div>
-                <div style={{ display:"flex", alignItems:"center", gap:5, fontSize:11, color:"#6B7280", fontWeight:600, background:"rgba(243,244,246,0.85)", border:"1px solid rgba(229,231,235,0.8)", borderRadius:8, padding:"5px 10px", cursor:"pointer" }}>
-                  Today <ChevronDown size={10} strokeWidth={2}/>
-                </div>
-              </div>
-              <div style={{ fontSize:11, color:"#6B7280", marginBottom:16, fontWeight:500 }}>All latest events</div>
-              <div style={{ flex:1 }}>
-                {ACTIVITIES.map((a,i)=>(
-                  <div key={i} style={{ display:"flex", alignItems:"flex-start", gap:10, padding:"10px 0", borderBottom:i<ACTIVITIES.length-1?"1px solid rgba(243,244,246,0.9)":"none" }}>
-                    <Avatar init={a.init} bg={a.bg} color={a.color} size={32}/>
-                    <div style={{ flex:1 }}>
-                      <div style={{ fontSize:12, color:"#111827", lineHeight:1.5 }}>
-                        <span style={{ fontWeight:700 }}>{a.name}</span>{" "}
-                        <span style={{ color:"#6B7280" }}>{a.action}</span>
-                      </div>
-                      <div style={{ fontSize:10, color:"#9CA3AF", marginTop:1, fontWeight:500 }}>{a.time}</div>
-                    </div>
-                    <ArrowUpRight size={12} color="#D1D5DB" strokeWidth={2}/>
-                  </div>
+              <div style={{ display:"flex", background:"#F3F4F6", borderRadius:10, padding:3, gap:1 }}>
+                {["weekly","monthly","yearly"].map(p=>(
+                  <button key={p} className="per-btn" onClick={()=>setPeriod(p)} style={{ padding:"5px 12px", borderRadius:8, fontSize:10, fontFamily:"'Plus Jakarta Sans',sans-serif", fontWeight:700, background:period===p?"#fff":"transparent", color:period===p?"#111827":"#9CA3AF", boxShadow:period===p?"0 2px 6px rgba(0,0,0,0.08)":"none" }}>
+                    {p.charAt(0).toUpperCase()+p.slice(1)}
+                  </button>
                 ))}
               </div>
-              <button className="edit-btn" style={{ width:"100%", marginTop:14, padding:"10px", borderRadius:20, border:"none", background:"#111827", fontSize:11, fontWeight:700, color:"#fff", cursor:"pointer", fontFamily:"'Plus Jakarta Sans',sans-serif" }}>
-                View all activity
-              </button>
+            </div>
+            <BubbleBarChart data={chartData} labels={labels}/>
+          </div>
+
+          <div style={{ ...card, padding:"22px 24px" }}>
+            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:16 }}>
+              <div>
+                <div style={{ fontSize:15, fontWeight:800, color:"#111827", letterSpacing:"-0.3px", marginBottom:2 }}>Flow Stats</div>
+                <div style={{ fontSize:11, color:"#9CA3AF", fontWeight:500 }}>Track your flow metrics</div>
+              </div>
+              <div style={{ display:"flex", alignItems:"center", gap:5, fontSize:11, color:"#9CA3AF", fontWeight:600, background:"#F9FAFB", border:"1px solid #F0F1F8", borderRadius:8, padding:"5px 10px", cursor:"pointer" }}>
+                Today <ChevronDown size={10} strokeWidth={2}/>
+              </div>
+            </div>
+            <DonutChart/>
+            <div style={{ marginTop:16, background:"#F8F9FF", borderRadius:12, padding:"12px 14px", border:"1px solid #EEF2FF" }}>
+              <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:8 }}>
+                <span style={{ fontSize:11, color:"#9CA3AF", fontWeight:500 }}>Conversion rate</span>
+                <span style={{ fontSize:12, fontWeight:800, color:"#4F46E5" }}>24%</span>
+              </div>
+              <div style={{ height:5, background:"#E0E7FF", borderRadius:10, overflow:"hidden" }}>
+                <div style={{ height:"100%", width:"24%", background:"linear-gradient(90deg,#4F46E5,#818CF8)", borderRadius:10 }}/>
+              </div>
             </div>
           </div>
-
-          {/* ── Follow-Up flows ── */}
-          <div className="fu4" style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16 }}>
-            <FlowSection flow={FLOWS[1]}/>
-            <FlowSection flow={FLOWS[2]}/>
-          </div>
-
         </div>
+
+        {/* ── Booking Flow + Recent Activity ── */}
+        <div className="fu3" style={{ display:"grid", gridTemplateColumns:"1.7fr 1fr", gap:16 }}>
+          <FlowSection flow={FLOWS[0]}/>
+          <div style={{ ...card, padding:"22px 20px", display:"flex", flexDirection:"column" }}>
+            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:2 }}>
+              <div style={{ fontSize:15, fontWeight:800, color:"#111827", letterSpacing:"-0.3px" }}>Recent Activity</div>
+              <div style={{ display:"flex", alignItems:"center", gap:5, fontSize:11, color:"#9CA3AF", fontWeight:600, background:"#F9FAFB", border:"1px solid #F0F1F8", borderRadius:8, padding:"5px 10px", cursor:"pointer" }}>
+                Today <ChevronDown size={10} strokeWidth={2}/>
+              </div>
+            </div>
+            <div style={{ fontSize:11, color:"#9CA3AF", marginBottom:16, fontWeight:500 }}>All latest events</div>
+            <div style={{ flex:1 }}>
+              {ACTIVITIES.map((a,i)=>(
+                <div key={i} style={{ display:"flex", alignItems:"flex-start", gap:10, padding:"10px 0", borderBottom:i<ACTIVITIES.length-1?"1px solid #F9FAFB":"none" }}>
+                  <Avatar init={a.init} bg={a.bg} color={a.color} size={32}/>
+                  <div style={{ flex:1 }}>
+                    <div style={{ fontSize:12, color:"#111827", lineHeight:1.5 }}>
+                      <span style={{ fontWeight:700 }}>{a.name}</span>{" "}
+                      <span style={{ color:"#6B7280" }}>{a.action}</span>
+                    </div>
+                    <div style={{ fontSize:10, color:"#9CA3AF", marginTop:1, fontWeight:500 }}>{a.time}</div>
+                  </div>
+                  <ArrowUpRight size={12} color="#D1D5DB" strokeWidth={2}/>
+                </div>
+              ))}
+            </div>
+            <button style={{ width:"100%", marginTop:14, padding:"10px", borderRadius:20, border:"none", background:"#111827", fontSize:11, fontWeight:700, color:"#fff", cursor:"pointer", fontFamily:"'Plus Jakarta Sans',sans-serif", transition:"all .2s ease" }}
+              onMouseEnter={e=>{ (e.currentTarget as HTMLElement).style.background="#374151"; (e.currentTarget as HTMLElement).style.transform="translateY(-1px)"; }}
+              onMouseLeave={e=>{ (e.currentTarget as HTMLElement).style.background="#111827"; (e.currentTarget as HTMLElement).style.transform="translateY(0)"; }}
+            >View all activity</button>
+          </div>
+        </div>
+
+        {/* ── Follow-Up flows ── */}
+        <div className="fu4" style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16 }}>
+          <FlowSection flow={FLOWS[1]}/>
+          <FlowSection flow={FLOWS[2]}/>
+        </div>
+
       </div>
     </>
   );
