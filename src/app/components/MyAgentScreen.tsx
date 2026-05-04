@@ -223,10 +223,10 @@ function FullReport({ prompt }: { prompt: AgentPrompt }) {
     { label: "Levels", value: report?.summary?.levels ?? "—" },
   ];
   const sections = [
-    { title: "Pitfalls Check", icon: "🛡️", data: report?.pitfalls_check?.results, score: report?.pitfalls_check?.score, max: 25 },
-    { title: "IOE Structure", icon: "🏗️", data: report?.ioe_check?.results, score: report?.ioe_check?.score, max: 25 },
-    { title: "Principles", icon: "✨", data: report?.principles_check?.results, score: report?.principles_check?.score, max: 25 },
-    { title: "Levels", icon: "📊", data: report?.levels_check?.results, score: report?.levels_check?.score, max: 25 },
+    { title: "Pitfalls Check", data: report?.pitfalls_check?.results, score: report?.pitfalls_check?.score, max: 25 },
+    { title: "IOE Structure", data: report?.ioe_check?.results, score: report?.ioe_check?.score, max: 25 },
+    { title: "Principles", data: report?.principles_check?.results, score: report?.principles_check?.score, max: 25 },
+    { title: "Levels", data: report?.levels_check?.results, score: report?.levels_check?.score, max: 25 },
   ];
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
