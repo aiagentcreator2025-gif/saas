@@ -352,82 +352,53 @@ export function DashboardScreen() {
 
        {/* ── Stat Cards ── */}
 <div className="fu1" style={{ position: "relative", display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 14 }}>
-
-  {/* Orbs clipped strictly to cards area */}
-  <div style={{ 
-    position: "absolute", 
-    inset: 0,           // ← was -20, now 0 so it doesn't stick out at all
-    zIndex: 0, 
-    overflow: "hidden", // ← this clips the blurred orbs
-    borderRadius: 24, 
-    pointerEvents: "none" 
-  }}>
-    <div style={{ position: "absolute", top: -60, left: -40, width: 260, height: 260, borderRadius: "50%", background: "radial-gradient(circle, rgba(99,102,241,0.55), transparent 70%)", filter: "blur(50px)" }}/>
-    <div style={{ position: "absolute", top: -40, left: "20%", width: 220, height: 220, borderRadius: "50%", background: "radial-gradient(circle, rgba(139,92,246,0.45), transparent 70%)", filter: "blur(45px)" }}/>
-    <div style={{ position: "absolute", top: -50, left: "45%", width: 200, height: 200, borderRadius: "50%", background: "radial-gradient(circle, rgba(56,189,248,0.4), transparent 70%)", filter: "blur(50px)" }}/>
-    <div style={{ position: "absolute", top: -30, right: -40, width: 240, height: 240, borderRadius: "50%", background: "radial-gradient(circle, rgba(244,114,182,0.45), transparent 70%)", filter: "blur(45px)" }}/>
-    <div style={{ position: "absolute", bottom: -60, left: "30%", width: 180, height: 180, borderRadius: "50%", background: "radial-gradient(circle, rgba(167,139,250,0.35), transparent 70%)", filter: "blur(40px)" }}/>
-  </div>
-
-
   {stats.map((s, i) => {
-  const orbColors = [
-    "rgba(99,102,241,0.6)",   // purple — Leads
-    "rgba(56,189,248,0.55)",  // blue — Lead Magnet  
-    "rgba(99,102,241,0.45)",  // indigo — Booked Calls
-    "rgba(244,114,182,0.55)", // pink — Show Up Rate
-  ];
-
-  return (
-    <div key={i} className="stat-card" style={{
-      position: "relative",
-      zIndex: 1,
-      borderRadius: 20,
-      padding: "22px",
-      backdropFilter: "blur(24px) saturate(180%) brightness(1.08)",
-      WebkitBackdropFilter: "blur(24px) saturate(180%) brightness(1.08)",
-      background: "linear-gradient(145deg, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.2) 50%, rgba(255,255,255,0.3) 100%)",
-      border: "1px solid rgba(255,255,255,0.7)",
-      boxShadow: `
-        inset 0 1.5px 0 rgba(255,255,255,0.9),
-        inset 0 -1px 0 rgba(255,255,255,0.15),
-        inset 1px 0 0 rgba(255,255,255,0.5),
-        inset -1px 0 0 rgba(255,255,255,0.2),
-        0 8px 32px rgba(99,102,241,0.12),
-        0 2px 8px rgba(99,102,241,0.06)
-      `,
-      overflow: "hidden",
-    }}>
-      {/* Orb lives INSIDE each card — gaps stay clean */}
-      <div style={{
-        position: "absolute", inset: 0, zIndex: 0, pointerEvents: "none",
-        background: `radial-gradient(ellipse at 60% 40%, ${orbColors[i]} 0%, transparent 70%)`,
-        filter: "blur(28px)",
-        opacity: 0.85,
-      }}/>
-
-      {/* Specular sweep */}
-      <div style={{ position: "absolute", inset: 0, borderRadius: 20, background: "linear-gradient(155deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0.05) 40%, transparent 60%)", pointerEvents: "none", zIndex: 1 }}/>
-      {/* Top rim */}
-      <div style={{ position: "absolute", top: 1, left: "15%", right: "15%", height: 1, background: "linear-gradient(90deg, transparent, rgba(255,255,255,1) 40%, rgba(255,255,255,1) 60%, transparent)", borderRadius: "50%", pointerEvents: "none", zIndex: 1 }}/>
-
-      {/* All content — zIndex 2 so it's above orb + specular */}
-      <div style={{ position: "relative", zIndex: 2 }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16 }}>
-          <div style={{ width: 38, height: 38, borderRadius: 11, background: "rgba(255,255,255,0.5)", border: "1px solid rgba(255,255,255,0.7)", boxShadow: "inset 0 1px 0 rgba(255,255,255,0.8)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <s.Icon size={16} strokeWidth={1.8} color={s.color}/>
+    const orbColors = [
+      "rgba(99,102,241,0.6)",
+      "rgba(56,189,248,0.55)",
+      "rgba(99,102,241,0.45)",
+      "rgba(244,114,182,0.55)",
+    ];
+    return (
+      <div key={i} className="stat-card" style={{
+        position: "relative",
+        zIndex: 1,
+        borderRadius: 20,
+        padding: "22px",
+        backdropFilter: "blur(24px) saturate(180%) brightness(1.08)",
+        WebkitBackdropFilter: "blur(24px) saturate(180%) brightness(1.08)",
+        background: "linear-gradient(145deg, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.2) 50%, rgba(255,255,255,0.3) 100%)",
+        border: "1px solid rgba(255,255,255,0.7)",
+        boxShadow: `
+          inset 0 1.5px 0 rgba(255,255,255,0.9),
+          inset 0 -1px 0 rgba(255,255,255,0.15),
+          inset 1px 0 0 rgba(255,255,255,0.5),
+          inset -1px 0 0 rgba(255,255,255,0.2),
+          0 8px 32px rgba(99,102,241,0.12),
+          0 2px 8px rgba(99,102,241,0.06)
+        `,
+        overflow: "hidden",
+      }}>
+        <div style={{ position: "absolute", inset: 0, zIndex: 0, pointerEvents: "none", background: `radial-gradient(ellipse at 60% 40%, ${orbColors[i]} 0%, transparent 70%)`, filter: "blur(28px)", opacity: 0.85 }}/>
+        <div style={{ position: "absolute", inset: 0, borderRadius: 20, background: "linear-gradient(155deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0.05) 40%, transparent 60%)", pointerEvents: "none", zIndex: 1 }}/>
+        <div style={{ position: "absolute", top: 1, left: "15%", right: "15%", height: 1, background: "linear-gradient(90deg, transparent, rgba(255,255,255,1) 40%, rgba(255,255,255,1) 60%, transparent)", borderRadius: "50%", pointerEvents: "none", zIndex: 1 }}/>
+        <div style={{ position: "relative", zIndex: 2 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16 }}>
+            <div style={{ width: 38, height: 38, borderRadius: 11, background: "rgba(255,255,255,0.5)", border: "1px solid rgba(255,255,255,0.7)", boxShadow: "inset 0 1px 0 rgba(255,255,255,0.8)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <s.Icon size={16} strokeWidth={1.8} color={s.color}/>
+            </div>
+            <span style={{ fontSize: 10, fontWeight: 700, padding: "4px 9px", borderRadius: 20, color: s.up ? "#15803d" : "#DC2626", background: s.up ? "rgba(220,252,231,0.8)" : "rgba(254,226,226,0.8)", display: "flex", alignItems: "center", gap: 3, backdropFilter: "blur(8px)", border: "1px solid rgba(255,255,255,0.5)" }}>
+              {s.up ? <TrendingUp size={9} strokeWidth={2.5}/> : <TrendingDown size={9} strokeWidth={2.5}/>} {s.change}
+            </span>
           </div>
-          <span style={{ fontSize: 10, fontWeight: 700, padding: "4px 9px", borderRadius: 20, color: s.up ? "#15803d" : "#DC2626", background: s.up ? "rgba(220,252,231,0.8)" : "rgba(254,226,226,0.8)", display: "flex", alignItems: "center", gap: 3, backdropFilter: "blur(8px)", border: "1px solid rgba(255,255,255,0.5)" }}>
-            {s.up ? <TrendingUp size={9} strokeWidth={2.5}/> : <TrendingDown size={9} strokeWidth={2.5}/>} {s.change}
-          </span>
+          <div style={{ fontSize: 11, color: "rgba(55,65,81,0.85)", fontWeight: 600, marginBottom: 5 }}>{s.label}</div>
+          <div style={{ fontSize: 32, fontWeight: 800, color: "#111827", letterSpacing: "-1.5px", lineHeight: 1, marginBottom: 5 }}>{s.value}</div>
+          <div style={{ fontSize: 10, color: "rgba(107,114,128,0.75)", fontWeight: 500 }}>{s.sub}</div>
         </div>
-        <div style={{ fontSize: 11, color: "rgba(55,65,81,0.85)", fontWeight: 600, marginBottom: 5 }}>{s.label}</div>
-        <div style={{ fontSize: 32, fontWeight: 800, color: "#111827", letterSpacing: "-1.5px", lineHeight: 1, marginBottom: 5 }}>{s.value}</div>
-        <div style={{ fontSize: 10, color: "rgba(107,114,128,0.75)", fontWeight: 500 }}>{s.sub}</div>
       </div>
-    </div>
-  );
-})}
+    );
+  })}
+</div>
 
         {/* ── Chart + Donut ── */}
         <div className="fu2" style={{ display:"grid", gridTemplateColumns:"1.7fr 1fr", gap:16 }}>
