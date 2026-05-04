@@ -353,14 +353,22 @@ export function DashboardScreen() {
        {/* ── Stat Cards ── */}
 <div className="fu1" style={{ position: "relative", display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 14 }}>
 
-  {/* Floating orbs ONLY behind the cards */}
-  <div style={{ position: "absolute", inset: -20, zIndex: 0, overflow: "hidden", borderRadius: 28, pointerEvents: "none" }}>
-    <div style={{ position: "absolute", top: -40, left: -30, width: 260, height: 260, borderRadius: "50%", background: "radial-gradient(circle, rgba(99,102,241,0.55), transparent 70%)", filter: "blur(50px)" }}/>
-    <div style={{ position: "absolute", top: -20, left: "20%", width: 220, height: 220, borderRadius: "50%", background: "radial-gradient(circle, rgba(139,92,246,0.45), transparent 70%)", filter: "blur(45px)" }}/>
-    <div style={{ position: "absolute", top: -30, left: "45%", width: 200, height: 200, borderRadius: "50%", background: "radial-gradient(circle, rgba(56,189,248,0.4), transparent 70%)", filter: "blur(50px)" }}/>
-    <div style={{ position: "absolute", top: -10, right: -20, width: 240, height: 240, borderRadius: "50%", background: "radial-gradient(circle, rgba(244,114,182,0.45), transparent 70%)", filter: "blur(45px)" }}/>
-    <div style={{ position: "absolute", bottom: -40, left: "30%", width: 180, height: 180, borderRadius: "50%", background: "radial-gradient(circle, rgba(167,139,250,0.35), transparent 70%)", filter: "blur(40px)" }}/>
+  {/* Orbs clipped strictly to cards area */}
+  <div style={{ 
+    position: "absolute", 
+    inset: 0,           // ← was -20, now 0 so it doesn't stick out at all
+    zIndex: 0, 
+    overflow: "hidden", // ← this clips the blurred orbs
+    borderRadius: 24, 
+    pointerEvents: "none" 
+  }}>
+    <div style={{ position: "absolute", top: -60, left: -40, width: 260, height: 260, borderRadius: "50%", background: "radial-gradient(circle, rgba(99,102,241,0.55), transparent 70%)", filter: "blur(50px)" }}/>
+    <div style={{ position: "absolute", top: -40, left: "20%", width: 220, height: 220, borderRadius: "50%", background: "radial-gradient(circle, rgba(139,92,246,0.45), transparent 70%)", filter: "blur(45px)" }}/>
+    <div style={{ position: "absolute", top: -50, left: "45%", width: 200, height: 200, borderRadius: "50%", background: "radial-gradient(circle, rgba(56,189,248,0.4), transparent 70%)", filter: "blur(50px)" }}/>
+    <div style={{ position: "absolute", top: -30, right: -40, width: 240, height: 240, borderRadius: "50%", background: "radial-gradient(circle, rgba(244,114,182,0.45), transparent 70%)", filter: "blur(45px)" }}/>
+    <div style={{ position: "absolute", bottom: -60, left: "30%", width: 180, height: 180, borderRadius: "50%", background: "radial-gradient(circle, rgba(167,139,250,0.35), transparent 70%)", filter: "blur(40px)" }}/>
   </div>
+
 
   {stats.map((s, i) => (
     <div key={i} className="stat-card" style={{
