@@ -370,13 +370,20 @@ export function DashboardScreen() {
   </div>
 
 
-  {stats.map((s, i) => (
+  {stats.map((s, i) => {
+  const orbColors = [
+    "rgba(99,102,241,0.6)",   // purple — Leads
+    "rgba(56,189,248,0.55)",  // blue — Lead Magnet  
+    "rgba(99,102,241,0.45)",  // indigo — Booked Calls
+    "rgba(244,114,182,0.55)", // pink — Show Up Rate
+  ];
+
+  return (
     <div key={i} className="stat-card" style={{
       position: "relative",
       zIndex: 1,
       borderRadius: 20,
       padding: "22px",
-      // Glass body
       backdropFilter: "blur(24px) saturate(180%) brightness(1.08)",
       WebkitBackdropFilter: "blur(24px) saturate(180%) brightness(1.08)",
       background: "linear-gradient(145deg, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.2) 50%, rgba(255,255,255,0.3) 100%)",
@@ -386,33 +393,41 @@ export function DashboardScreen() {
         inset 0 -1px 0 rgba(255,255,255,0.15),
         inset 1px 0 0 rgba(255,255,255,0.5),
         inset -1px 0 0 rgba(255,255,255,0.2),
-        0 8px 32px rgba(99,102,241,0.15),
-        0 2px 8px rgba(99,102,241,0.08)
+        0 8px 32px rgba(99,102,241,0.12),
+        0 2px 8px rgba(99,102,241,0.06)
       `,
       overflow: "hidden",
     }}>
-      {/* Specular sweep — the #1 thing that makes it look like glass */}
-      <div style={{ position: "absolute", inset: 0, borderRadius: 20, background: "linear-gradient(155deg, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0.05) 40%, transparent 60%)", pointerEvents: "none" }}/>
-      {/* Top specular rim */}
-      <div style={{ position: "absolute", top: 1, left: "15%", right: "15%", height: 1, background: "linear-gradient(90deg, transparent, rgba(255,255,255,1) 40%, rgba(255,255,255,1) 60%, transparent)", borderRadius: "50%", pointerEvents: "none" }}/>
-      {/* Caustic light */}
-      <div style={{ position: "absolute", top: "-15%", right: "-5%", width: "65%", height: "75%", background: "radial-gradient(ellipse at 40% 30%, rgba(255,255,255,0.2) 0%, transparent 65%)", filter: "blur(10px)", pointerEvents: "none" }}/>
+      {/* Orb lives INSIDE each card — gaps stay clean */}
+      <div style={{
+        position: "absolute", inset: 0, zIndex: 0, pointerEvents: "none",
+        background: `radial-gradient(ellipse at 60% 40%, ${orbColors[i]} 0%, transparent 70%)`,
+        filter: "blur(28px)",
+        opacity: 0.85,
+      }}/>
 
-      {/* Content — same as your original */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16, position: "relative", zIndex: 1 }}>
-        <div style={{ width: 38, height: 38, borderRadius: 11, background: "rgba(255,255,255,0.5)", border: "1px solid rgba(255,255,255,0.7)", boxShadow: "inset 0 1px 0 rgba(255,255,255,0.8)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <s.Icon size={16} strokeWidth={1.8} color={s.color}/>
+      {/* Specular sweep */}
+      <div style={{ position: "absolute", inset: 0, borderRadius: 20, background: "linear-gradient(155deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0.05) 40%, transparent 60%)", pointerEvents: "none", zIndex: 1 }}/>
+      {/* Top rim */}
+      <div style={{ position: "absolute", top: 1, left: "15%", right: "15%", height: 1, background: "linear-gradient(90deg, transparent, rgba(255,255,255,1) 40%, rgba(255,255,255,1) 60%, transparent)", borderRadius: "50%", pointerEvents: "none", zIndex: 1 }}/>
+
+      {/* All content — zIndex 2 so it's above orb + specular */}
+      <div style={{ position: "relative", zIndex: 2 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16 }}>
+          <div style={{ width: 38, height: 38, borderRadius: 11, background: "rgba(255,255,255,0.5)", border: "1px solid rgba(255,255,255,0.7)", boxShadow: "inset 0 1px 0 rgba(255,255,255,0.8)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <s.Icon size={16} strokeWidth={1.8} color={s.color}/>
+          </div>
+          <span style={{ fontSize: 10, fontWeight: 700, padding: "4px 9px", borderRadius: 20, color: s.up ? "#15803d" : "#DC2626", background: s.up ? "rgba(220,252,231,0.8)" : "rgba(254,226,226,0.8)", display: "flex", alignItems: "center", gap: 3, backdropFilter: "blur(8px)", border: "1px solid rgba(255,255,255,0.5)" }}>
+            {s.up ? <TrendingUp size={9} strokeWidth={2.5}/> : <TrendingDown size={9} strokeWidth={2.5}/>} {s.change}
+          </span>
         </div>
-        <span style={{ fontSize: 10, fontWeight: 700, padding: "4px 9px", borderRadius: 20, color: s.up ? "#15803d" : "#DC2626", background: s.up ? "rgba(220,252,231,0.8)" : "rgba(254,226,226,0.8)", display: "flex", alignItems: "center", gap: 3, backdropFilter: "blur(8px)", border: "1px solid rgba(255,255,255,0.5)" }}>
-          {s.up ? <TrendingUp size={9} strokeWidth={2.5}/> : <TrendingDown size={9} strokeWidth={2.5}/>} {s.change}
-        </span>
+        <div style={{ fontSize: 11, color: "rgba(55,65,81,0.85)", fontWeight: 600, marginBottom: 5 }}>{s.label}</div>
+        <div style={{ fontSize: 32, fontWeight: 800, color: "#111827", letterSpacing: "-1.5px", lineHeight: 1, marginBottom: 5 }}>{s.value}</div>
+        <div style={{ fontSize: 10, color: "rgba(107,114,128,0.75)", fontWeight: 500 }}>{s.sub}</div>
       </div>
-      <div style={{ fontSize: 11, color: "rgba(55,65,81,0.8)", fontWeight: 600, marginBottom: 5, position: "relative", zIndex: 1 }}>{s.label}</div>
-      <div style={{ fontSize: 32, fontWeight: 800, color: "#111827", letterSpacing: "-1.5px", lineHeight: 1, marginBottom: 5, position: "relative", zIndex: 1 }}>{s.value}</div>
-      <div style={{ fontSize: 10, color: "rgba(107,114,128,0.7)", position: "relative", zIndex: 1, fontWeight: 500 }}>{s.sub}</div>
     </div>
-  ))}
-</div>
+  );
+})}
 
         {/* ── Chart + Donut ── */}
         <div className="fu2" style={{ display:"grid", gridTemplateColumns:"1.7fr 1fr", gap:16 }}>
