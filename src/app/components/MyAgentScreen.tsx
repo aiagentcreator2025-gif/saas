@@ -295,6 +295,11 @@ function Bubble({ msg }: { msg: Message }) {
   );
 }
 
+const AGENT_TYPES = [
+  { id: "booking", label: "Booking Agent" },
+  { id: "followup", label: "Follow Up Agent" },
+] as const;
+
 // ─── Test Agent tab ───
 function TestAgent({ prompt, userId, messages, setMessages }: {
   prompt: AgentPrompt; userId: string;
@@ -302,7 +307,9 @@ function TestAgent({ prompt, userId, messages, setMessages }: {
 }) {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [activeAgent, setActiveAgent] = useState<"booking" | "followup">("booking");
   const bottomRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -319,7 +326,7 @@ function TestAgent({ prompt, userId, messages, setMessages }: {
       const history = [...messages, userMsg].map(m => ({ role: m.role === "user" ? "user" : "assistant", content: m.content }));
       const res = await fetch(CHAT_WEBHOOK, {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ user_id: userId, message: text, history }),
+        body: JSON.stringify({ user_id: userId, message: text, history, agent_type: activeAgent }),
       });
       const data = await res.json();
       const reply = data?.message ?? data?.output ?? "...";
@@ -332,55 +339,39 @@ function TestAgent({ prompt, userId, messages, setMessages }: {
   }
 
   return (
-    <GlassCard style={{ overflow: "hidden", display: "flex", flexDirection: "column", height: 580 }}>
-      {/* Header */}
-      <div style={{
-        padding: "14px 20px", borderBottom: "1px solid rgba(255,255,255,0.5)",
-        display: "flex", alignItems: "center", justifyContent: "space-between",
-        background: "rgba(255,255,255,0.3)",
-      }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <div style={{
-            width: 34, height: 34, borderRadius: "50%",
-            background: "linear-gradient(135deg, rgba(139,92,246,0.2), rgba(99,102,241,0.1))",
-            border: "1px solid rgba(139,92,246,0.25)",
-            display: "flex", alignItems: "center", justifyContent: "center",
-          }}>
-            <Bot size={15} color="#7C3AED" />
-          </div>
-          <div>
-            <div style={{ fontSize: 13, fontWeight: 700, color: "#111827" }}>Your AI Agent</div>
-            <div style={{ fontSize: 10, color: "#059669", fontWeight: 600 }}>● Live — Score {prompt.score}/100</div>
-          </div>
-        </div>
-        <button onClick={() => { setMessages([]); setInput(""); }} style={{
-          display: "flex", alignItems: "center", gap: 5,
-          fontSize: 11, fontWeight: 600, color: "rgba(60,40,120,0.7)",
-          background: "rgba(255,255,255,0.5)", backdropFilter: "blur(12px)",
-          border: "1px solid rgba(255,255,255,0.7)", borderRadius: 8,
-          padding: "6px 12px", cursor: "pointer", fontFamily: "'DM Sans',sans-serif",
-        }}>
-          <RotateCcw size={11} /> Reset
-        </button>
-      </div>
+    <div style={{ display: "flex", flexDirection: "column", height: 580, position: "relative" }}>
 
-      {/* Messages */}
-      <div style={{ flex: 1, overflowY: "auto" as const, padding: "20px 16px", background: "rgba(255,255,255,0.1)" }}>
+      {/* Messages area — no card, floats on bg */}
+      <div style={{ flex: 1, overflowY: "auto" as const, padding: "10px 0 20px" }}>
         {messages.length === 0 && (
-          <div style={{ textAlign: "center" as const, padding: "40px 20px" }}>
-            <div style={{ fontSize: 13, color: "rgba(99,102,241,0.6)", lineHeight: 1.7 }}>
-              Send a message to start testing your agent.<br />
-              Try: <span style={{ color: "#4F46E5", fontWeight: 600 }}>"Hey I saw your post"</span>
+          <div style={{ textAlign: "center" as const, padding: "80px 20px 0" }}>
+            <div style={{
+              width: 48, height: 48, borderRadius: "50%", margin: "0 auto 16px",
+              background: "linear-gradient(135deg, rgba(139,92,246,0.15), rgba(99,102,241,0.08))",
+              border: "1px solid rgba(139,92,246,0.2)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+            }}>
+              <Bot size={20} color="#7C3AED" />
+            </div>
+            <div style={{ fontSize: 14, fontWeight: 600, color: "#1A1916", marginBottom: 6 }}>
+              {activeAgent === "booking" ? "Booking Agent" : "Follow Up Agent"} ready
+            </div>
+            <div style={{ fontSize: 13, color: "rgba(99,102,241,0.55)", lineHeight: 1.7 }}>
+              Send a message to start testing.<br />
+              Try: <span style={{ color: "#4F46E5", fontWeight: 600, cursor: "pointer" }}
+                onClick={() => { setInput("Hey I saw your post"); inputRef.current?.focus(); }}>
+                "Hey I saw your post"
+              </span>
             </div>
           </div>
         )}
         {messages.map((msg, i) => <Bubble key={i} msg={msg} />)}
         {loading && (
-          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12, paddingLeft: 4 }}>
             <div style={{
               width: 28, height: 28, borderRadius: "50%",
-              background: "linear-gradient(135deg, rgba(139,92,246,0.2), rgba(99,102,241,0.1))",
-              border: "1px solid rgba(139,92,246,0.25)",
+              background: "linear-gradient(135deg, rgba(139,92,246,0.18), rgba(99,102,241,0.1))",
+              border: "1px solid rgba(139,92,246,0.22)",
               display: "flex", alignItems: "center", justifyContent: "center",
             }}>
               <Bot size={13} color="#7C3AED" />
@@ -388,12 +379,13 @@ function TestAgent({ prompt, userId, messages, setMessages }: {
             <div style={{
               padding: "10px 14px",
               background: "rgba(255,255,255,0.75)", backdropFilter: "blur(20px)",
-              border: "1px solid rgba(255,255,255,0.8)",
+              border: "1px solid rgba(255,255,255,0.85)",
               borderRadius: "16px 16px 16px 4px",
+              boxShadow: "inset 0 1px 0 rgba(255,255,255,0.9)",
             }}>
               <div style={{ display: "flex", gap: 4 }}>
                 {[0, 1, 2].map(i => (
-                  <div key={i} style={{ width: 6, height: 6, borderRadius: "50%", background: "rgba(99,102,241,0.4)", animation: `agentbounce 1.2s ease-in-out ${i * 0.2}s infinite` }} />
+                  <div key={i} style={{ width: 6, height: 6, borderRadius: "50%", background: "rgba(99,102,241,0.35)", animation: `agentbounce 1.2s ease-in-out ${i * 0.2}s infinite` }} />
                 ))}
               </div>
             </div>
@@ -402,38 +394,112 @@ function TestAgent({ prompt, userId, messages, setMessages }: {
         <div ref={bottomRef} />
       </div>
 
-      {/* Input */}
-      <div style={{ padding: "12px 16px", borderTop: "1px solid rgba(255,255,255,0.5)", display: "flex", gap: 10, background: "rgba(255,255,255,0.3)" }}>
-        <input
-          value={input}
-          onChange={e => setInput(e.target.value)}
-          onKeyDown={e => e.key === "Enter" && !e.shiftKey && send()}
-          placeholder="Type a message..."
-          style={{
-            flex: 1, border: "1.5px solid rgba(255,255,255,0.7)",
-            borderRadius: 10, padding: "10px 14px", fontSize: 13, color: "#111827",
-            outline: "none", fontFamily: "'DM Sans',sans-serif",
-            background: "rgba(255,255,255,0.6)", backdropFilter: "blur(12px)",
-          }}
-        />
-        <button
-          onClick={send}
-          disabled={!input.trim() || loading}
-          style={{
-            width: 40, height: 40, borderRadius: 10,
-            background: input.trim() && !loading
-              ? "linear-gradient(135deg, #6D28D9, #4F46E5)"
-              : "rgba(255,255,255,0.4)",
-            border: "1px solid rgba(255,255,255,0.7)",
-            cursor: input.trim() && !loading ? "pointer" : "default",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            transition: "all .15s", flexShrink: 0,
-          }}
-        >
-          <Send size={15} color={input.trim() && !loading ? "#fff" : "rgba(99,102,241,0.4)"} />
-        </button>
+      {/* Floating glass input bar + agent pills */}
+      <div style={{ paddingBottom: 8, display: "flex", flexDirection: "column", alignItems: "center", gap: 12 }}>
+
+        {/* The floating glass bar — image 2 style */}
+        <div style={{
+          width: "100%",
+          background: "rgba(255,255,255,0.58)",
+          backdropFilter: "blur(40px) saturate(200%)",
+          WebkitBackdropFilter: "blur(40px) saturate(200%)",
+          border: "1px solid rgba(255,255,255,0.85)",
+          borderRadius: 18,
+          boxShadow: `
+            inset 0 1.5px 0 rgba(255,255,255,0.98),
+            inset 0 -1px 0 rgba(255,255,255,0.1),
+            0 8px 32px rgba(99,102,241,0.08),
+            0 2px 8px rgba(0,0,0,0.04)
+          `,
+          display: "flex", alignItems: "center", gap: 10,
+          padding: "10px 14px",
+        }}>
+          <input
+            ref={inputRef}
+            value={input}
+            onChange={e => setInput(e.target.value)}
+            onKeyDown={e => e.key === "Enter" && !e.shiftKey && send()}
+            placeholder="Type a message..."
+            style={{
+              flex: 1, border: "none", background: "transparent",
+              fontSize: 13, color: "#1A1916", outline: "none",
+              fontFamily: "'DM Sans',sans-serif", fontWeight: 400,
+            }}
+          />
+          <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
+            {messages.length > 0 && (
+              <button onClick={() => { setMessages([]); setInput(""); }} style={{
+                display: "flex", alignItems: "center", gap: 4,
+                fontSize: 11, fontWeight: 600, color: "rgba(99,102,241,0.5)",
+                background: "transparent", border: "none", cursor: "pointer",
+                fontFamily: "'DM Sans',sans-serif", padding: "4px 6px",
+              }}>
+                <RotateCcw size={10} /> Reset
+              </button>
+            )}
+            <button
+              onClick={send}
+              disabled={!input.trim() || loading}
+              style={{
+                width: 32, height: 32, borderRadius: 10,
+                background: input.trim() && !loading
+                  ? "linear-gradient(135deg, #6D28D9, #4F46E5)"
+                  : "rgba(99,102,241,0.08)",
+                border: `1px solid ${input.trim() && !loading ? "transparent" : "rgba(99,102,241,0.15)"}`,
+                cursor: input.trim() && !loading ? "pointer" : "default",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                transition: "all .2s", flexShrink: 0,
+                boxShadow: input.trim() && !loading ? "0 4px 12px rgba(99,102,241,0.3)" : "none",
+              }}
+            >
+              <Send size={13} color={input.trim() && !loading ? "#fff" : "rgba(99,102,241,0.3)"} />
+            </button>
+          </div>
+        </div>
+
+        {/* Agent selector pills — below the bar, centered */}
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          {AGENT_TYPES.map(agent => {
+            const isActive = activeAgent === agent.id;
+            return (
+              <button
+                key={agent.id}
+                onClick={() => { setActiveAgent(agent.id as "booking" | "followup"); setMessages([]); }}
+                style={{
+                  display: "flex", alignItems: "center", gap: 6,
+                  padding: "7px 16px", borderRadius: 20, cursor: "pointer",
+                  fontFamily: "'DM Sans',sans-serif", fontSize: 12, fontWeight: 600,
+                  transition: "all 0.2s", border: "1px solid",
+                  background: isActive
+                    ? "rgba(255,255,255,0.72)"
+                    : "rgba(255,255,255,0.25)",
+                  backdropFilter: "blur(20px)",
+                  WebkitBackdropFilter: "blur(20px)",
+                  borderColor: isActive
+                    ? "rgba(139,92,246,0.3)"
+                    : "rgba(255,255,255,0.5)",
+                  color: isActive ? "#4F46E5" : "rgba(60,40,120,0.45)",
+                  boxShadow: isActive
+                    ? "inset 0 1px 0 rgba(255,255,255,0.95), 0 4px 14px rgba(99,102,241,0.12)"
+                    : "inset 0 1px 0 rgba(255,255,255,0.7)",
+                }}
+              >
+                <div style={{
+                  width: 6, height: 6, borderRadius: "50%",
+                  background: isActive ? "#4F46E5" : "rgba(99,102,241,0.25)",
+                  transition: "background 0.2s",
+                }} />
+                {agent.label}
+              </button>
+            );
+          })}
+          <div style={{ fontSize: 10, color: "rgba(99,102,241,0.35)", marginLeft: 4 }}>
+            Score {prompt.score}/100
+          </div>
+        </div>
+
       </div>
-    </GlassCard>
+    </div>
   );
 }
 
