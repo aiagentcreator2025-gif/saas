@@ -64,16 +64,16 @@ export function Sidebar({ active, onNav }: Props) {
   display: "flex",
   flexDirection: "column",
   fontFamily: "'DM Sans', sans-serif",
-  background: "linear-gradient(160deg, #e8e6f8 0%, #edeef5 40%, #e8eaf8 70%, #ede8f5 100%)",
+  background: "#EDEEF5",
   overflow: "hidden",
 }}>
 
         {/* Background texture orbs for depth */}
         <div style={{ position: "absolute", inset: 0, pointerEvents: "none", zIndex: 0 }}>
-          <div style={{ position: "absolute", top: -60, left: -40, width: 220, height: 220, borderRadius: "50%", background: "radial-gradient(circle, rgba(139,92,246,0.25), transparent 70%)", filter: "blur(40px)" }}/>
-<div style={{ position: "absolute", top: "30%", right: -60, width: 180, height: 180, borderRadius: "50%", background: "radial-gradient(circle, rgba(99,102,241,0.2), transparent 70%)", filter: "blur(35px)" }}/>
-<div style={{ position: "absolute", bottom: 60, left: -30, width: 200, height: 200, borderRadius: "50%", background: "radial-gradient(circle, rgba(167,139,250,0.2), transparent 70%)", filter: "blur(40px)" }}/>
-<div style={{ position: "absolute", bottom: -40, right: -20, width: 160, height: 160, borderRadius: "50%", background: "radial-gradient(circle, rgba(196,181,253,0.18), transparent 70%)", filter: "blur(35px)" }}/>
+          <div style={{ position: "absolute", top: -60, left: -40, width: 220, height: 220, borderRadius: "50%", background: "radial-gradient(circle, rgba(139,92,246,0.3), transparent 70%)", filter: "blur(50px)" }}/>
+<div style={{ position: "absolute", top: "30%", right: -60, width: 180, height: 180, borderRadius: "50%", background: "radial-gradient(circle, rgba(99,102,241,0.25), transparent 70%)", filter: "blur(45px)" }}/>
+<div style={{ position: "absolute", bottom: 60, left: -30, width: 200, height: 200, borderRadius: "50%", background: "radial-gradient(circle, rgba(167,139,250,0.25), transparent 70%)", filter: "blur(45px)" }}/>
+<div style={{ position: "absolute", bottom: -40, right: -20, width: 160, height: 160, borderRadius: "50%", background: "radial-gradient(circle, rgba(196,181,253,0.22), transparent 70%)", filter: "blur(40px)" }}/>
         </div>
 
         {/* The glass card */}
