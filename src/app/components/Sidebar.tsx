@@ -64,7 +64,7 @@ export function Sidebar({ active, onNav }: Props) {
   display: "flex",
   flexDirection: "column",
   fontFamily: "'DM Sans', sans-serif",
-  background: "linear-gradient(135deg, #EEF0FA 0%, #F0F1F8 40%, #EBF0FF 100%)",
+  background: "#F5F6FA",
   overflow: "hidden",
 }}>
 
