@@ -77,28 +77,27 @@ export function Sidebar({ active, onNav }: Props) {
         </div>
 
         {/* The glass card */}
-        <div style={{
-          flex: 1,
-          position: "relative",
-          zIndex: 1,
-          borderRadius: 24,
-          display: "flex",
-          flexDirection: "column",
-          overflow: "hidden",
-          // Glass body
-          backdropFilter: "blur(28px) saturate(180%) brightness(1.06)",
-          WebkitBackdropFilter: "blur(28px) saturate(180%) brightness(1.06)",
-          background: "linear-gradient(145deg, rgba(255,255,255,0.45) 0%, rgba(255,255,255,0.18) 50%, rgba(255,255,255,0.25) 100%)",
-          border: "1px solid rgba(255,255,255,0.65)",
-          boxShadow: `
-            inset 0 1.5px 0 rgba(255,255,255,0.9),
-            inset 0 -1px 0 rgba(255,255,255,0.1),
-            inset 1px 0 0 rgba(255,255,255,0.5),
-            inset -1px 0 0 rgba(255,255,255,0.15),
-            0 8px 32px rgba(99,102,241,0.18),
-            0 2px 8px rgba(0,0,0,0.08)
-          `,
-        }}>
+<div style={{
+  flex: 1,
+  position: "relative",
+  zIndex: 1,
+  borderRadius: 24,
+  display: "flex",
+  flexDirection: "column",
+  overflow: "hidden",
+  backdropFilter: "blur(40px) saturate(160%) brightness(1.04)",
+  WebkitBackdropFilter: "blur(40px) saturate(160%) brightness(1.04)",
+  background: "linear-gradient(145deg, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.12) 100%)",
+  border: "1px solid rgba(255,255,255,0.55)",
+  boxShadow: `
+    inset 0 1.5px 0 rgba(255,255,255,0.8),
+    inset 0 -1px 0 rgba(255,255,255,0.06),
+    inset 1px 0 0 rgba(255,255,255,0.4),
+    inset -1px 0 0 rgba(255,255,255,0.1),
+    0 8px 32px rgba(0,0,0,0.06),
+    0 2px 8px rgba(0,0,0,0.04)
+  `,
+}}>
 
           {/* Specular sweep — top-left light hit */}
           <div style={{ position: "absolute", inset: 0, borderRadius: 24, background: "linear-gradient(145deg, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0.05) 35%, transparent 55%)", pointerEvents: "none", zIndex: 0 }}/>
