@@ -267,7 +267,6 @@ function FullReport({ prompt }: { prompt: AgentPrompt }) {
         <GlassCard key={i} style={{ overflow: "hidden" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "14px 20px", borderBottom: "1px solid rgba(255,255,255,0.5)" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <span style={{ fontSize: 14 }}>{section.icon}</span>
               <div style={{ fontSize: 14, fontWeight: 700, color: "#111827" }}>{section.title}</div>
             </div>
             <span style={{
