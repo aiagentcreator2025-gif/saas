@@ -350,43 +350,61 @@ export function DashboardScreen() {
           </div>
         </div>
 
-        {/* ── Stat Cards ── */}
-        <div className="fu1" style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:14 }}>
-          {stats.map((s,i) => {
-            const isDark = i===0;
-            return (
-              <div key={i} className="stat-card" style={{
-                borderRadius:20, padding:"22px",
-                background: isDark
-                  ? "linear-gradient(135deg,#4F46E5 0%,#6366F1 55%,#818CF8 100%)"
-                  : "#FFFFFF",
-                border: isDark ? "none" : "1px solid #F0F1F8",
-                boxShadow: isDark
-                  ? "0 12px 40px rgba(79,70,229,0.38)"
-                  : "0 2px 12px rgba(99,102,241,0.06)",
-                position:"relative", overflow:"hidden",
-              }}>
-                {isDark && (
-                  <>
-                    <div style={{ position:"absolute", top:-28, right:-28, width:110, height:110, borderRadius:"50%", background:"rgba(255,255,255,0.08)" }}/>
-                    <div style={{ position:"absolute", bottom:-36, right:12,  width:80,  height:80,  borderRadius:"50%", background:"rgba(255,255,255,0.06)" }}/>
-                  </>
-                )}
-                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:16, position:"relative" }}>
-                  <div style={{ width:38, height:38, borderRadius:11, background: isDark?"rgba(255,255,255,0.16)":"#EEF2FF", display:"flex", alignItems:"center", justifyContent:"center" }}>
-                    <s.Icon size={16} strokeWidth={1.8} color={isDark?"#fff":s.color}/>
-                  </div>
-                  <span style={{ fontSize:10, fontWeight:700, padding:"4px 9px", borderRadius:20, color: s.up?(isDark?"#fff":"#16A34A"):"#DC2626", background: s.up?(isDark?"rgba(255,255,255,0.18)":"#DCFCE7"):"#FEE2E2", display:"flex", alignItems:"center", gap:3 }}>
-                    {s.up?<TrendingUp size={9} strokeWidth={2.5}/>:<TrendingDown size={9} strokeWidth={2.5}/>} {s.change}
-                  </span>
-                </div>
-                <div style={{ fontSize:11, color:isDark?"rgba(255,255,255,0.7)":"#6B7280", fontWeight:600, marginBottom:5, position:"relative" }}>{s.label}</div>
-                <div style={{ fontSize:32, fontWeight:800, color:isDark?"#fff":"#111827", letterSpacing:"-1.5px", lineHeight:1, marginBottom:5, position:"relative" }}>{s.value}</div>
-                <div style={{ fontSize:10, color:isDark?"rgba(255,255,255,0.45)":"#9CA3AF", position:"relative", fontWeight:500 }}>{s.sub}</div>
-              </div>
-            );
-          })}
+       {/* ── Stat Cards ── */}
+<div className="fu1" style={{ position: "relative", display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 14 }}>
+
+  {/* Floating orbs ONLY behind the cards */}
+  <div style={{ position: "absolute", inset: -20, zIndex: 0, overflow: "hidden", borderRadius: 28, pointerEvents: "none" }}>
+    <div style={{ position: "absolute", top: -40, left: -30, width: 260, height: 260, borderRadius: "50%", background: "radial-gradient(circle, rgba(99,102,241,0.55), transparent 70%)", filter: "blur(50px)" }}/>
+    <div style={{ position: "absolute", top: -20, left: "20%", width: 220, height: 220, borderRadius: "50%", background: "radial-gradient(circle, rgba(139,92,246,0.45), transparent 70%)", filter: "blur(45px)" }}/>
+    <div style={{ position: "absolute", top: -30, left: "45%", width: 200, height: 200, borderRadius: "50%", background: "radial-gradient(circle, rgba(56,189,248,0.4), transparent 70%)", filter: "blur(50px)" }}/>
+    <div style={{ position: "absolute", top: -10, right: -20, width: 240, height: 240, borderRadius: "50%", background: "radial-gradient(circle, rgba(244,114,182,0.45), transparent 70%)", filter: "blur(45px)" }}/>
+    <div style={{ position: "absolute", bottom: -40, left: "30%", width: 180, height: 180, borderRadius: "50%", background: "radial-gradient(circle, rgba(167,139,250,0.35), transparent 70%)", filter: "blur(40px)" }}/>
+  </div>
+
+  {stats.map((s, i) => (
+    <div key={i} className="stat-card" style={{
+      position: "relative",
+      zIndex: 1,
+      borderRadius: 20,
+      padding: "22px",
+      // Glass body
+      backdropFilter: "blur(24px) saturate(180%) brightness(1.08)",
+      WebkitBackdropFilter: "blur(24px) saturate(180%) brightness(1.08)",
+      background: "linear-gradient(145deg, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.2) 50%, rgba(255,255,255,0.3) 100%)",
+      border: "1px solid rgba(255,255,255,0.7)",
+      boxShadow: `
+        inset 0 1.5px 0 rgba(255,255,255,0.9),
+        inset 0 -1px 0 rgba(255,255,255,0.15),
+        inset 1px 0 0 rgba(255,255,255,0.5),
+        inset -1px 0 0 rgba(255,255,255,0.2),
+        0 8px 32px rgba(99,102,241,0.15),
+        0 2px 8px rgba(99,102,241,0.08)
+      `,
+      overflow: "hidden",
+    }}>
+      {/* Specular sweep — the #1 thing that makes it look like glass */}
+      <div style={{ position: "absolute", inset: 0, borderRadius: 20, background: "linear-gradient(155deg, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0.05) 40%, transparent 60%)", pointerEvents: "none" }}/>
+      {/* Top specular rim */}
+      <div style={{ position: "absolute", top: 1, left: "15%", right: "15%", height: 1, background: "linear-gradient(90deg, transparent, rgba(255,255,255,1) 40%, rgba(255,255,255,1) 60%, transparent)", borderRadius: "50%", pointerEvents: "none" }}/>
+      {/* Caustic light */}
+      <div style={{ position: "absolute", top: "-15%", right: "-5%", width: "65%", height: "75%", background: "radial-gradient(ellipse at 40% 30%, rgba(255,255,255,0.2) 0%, transparent 65%)", filter: "blur(10px)", pointerEvents: "none" }}/>
+
+      {/* Content — same as your original */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16, position: "relative", zIndex: 1 }}>
+        <div style={{ width: 38, height: 38, borderRadius: 11, background: "rgba(255,255,255,0.5)", border: "1px solid rgba(255,255,255,0.7)", boxShadow: "inset 0 1px 0 rgba(255,255,255,0.8)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <s.Icon size={16} strokeWidth={1.8} color={s.color}/>
         </div>
+        <span style={{ fontSize: 10, fontWeight: 700, padding: "4px 9px", borderRadius: 20, color: s.up ? "#15803d" : "#DC2626", background: s.up ? "rgba(220,252,231,0.8)" : "rgba(254,226,226,0.8)", display: "flex", alignItems: "center", gap: 3, backdropFilter: "blur(8px)", border: "1px solid rgba(255,255,255,0.5)" }}>
+          {s.up ? <TrendingUp size={9} strokeWidth={2.5}/> : <TrendingDown size={9} strokeWidth={2.5}/>} {s.change}
+        </span>
+      </div>
+      <div style={{ fontSize: 11, color: "rgba(55,65,81,0.8)", fontWeight: 600, marginBottom: 5, position: "relative", zIndex: 1 }}>{s.label}</div>
+      <div style={{ fontSize: 32, fontWeight: 800, color: "#111827", letterSpacing: "-1.5px", lineHeight: 1, marginBottom: 5, position: "relative", zIndex: 1 }}>{s.value}</div>
+      <div style={{ fontSize: 10, color: "rgba(107,114,128,0.7)", position: "relative", zIndex: 1, fontWeight: 500 }}>{s.sub}</div>
+    </div>
+  ))}
+</div>
 
         {/* ── Chart + Donut ── */}
         <div className="fu2" style={{ display:"grid", gridTemplateColumns:"1.7fr 1fr", gap:16 }}>
