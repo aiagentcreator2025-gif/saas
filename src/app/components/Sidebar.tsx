@@ -48,14 +48,6 @@ export function Sidebar({ active, onNav }: Props) {
         }
       `}</style>
 
-      {/* Orbs */}
-      <div style={{ position: "absolute", inset: 0, pointerEvents: "none", zIndex: 0 }}>
-        <div style={{ position: "absolute", top: -80, left: -60, width: 280, height: 280, borderRadius: "50%", background: "radial-gradient(circle, rgba(139,92,246,0.4), transparent 70%)", filter: "blur(60px)" }}/>
-        <div style={{ position: "absolute", top: "25%", right: -80, width: 220, height: 220, borderRadius: "50%", background: "radial-gradient(circle, rgba(99,102,241,0.3), transparent 70%)", filter: "blur(55px)" }}/>
-        <div style={{ position: "absolute", bottom: 80, left: -40, width: 240, height: 240, borderRadius: "50%", background: "radial-gradient(circle, rgba(244,114,182,0.3), transparent 70%)", filter: "blur(55px)" }}/>
-        <div style={{ position: "absolute", bottom: -60, right: -30, width: 200, height: 200, borderRadius: "50%", background: "radial-gradient(circle, rgba(167,139,250,0.28), transparent 70%)", filter: "blur(50px)" }}/>
-      </div>
-
       {/* Glass card */}
       <div style={{
         flex: 1, position: "relative", zIndex: 1, borderRadius: 24,
