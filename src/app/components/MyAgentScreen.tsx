@@ -1,8 +1,19 @@
 import { useEffect, useState, useRef } from "react";
-import { Lock, Send, CheckCircle, XCircle, Bot, RotateCcw } from "lucide-react";
+import { Lock, Send, CheckCircle, XCircle, Bot, RotateCcw, Plus, X, FlaskConical, Shield, Sparkles, ChevronRight, Loader2 } from "lucide-react";
 import { supabase } from "../supabaseClient";
 
-const WEBHOOK_URL = "https://rosegoldprojectai2.app.n8n.cloud/webhook/9d8cb518-ca82-48b8-b31d-c6ce4011d9a3";
+const CHAT_WEBHOOK = "https://rosegoldprojectai2.app.n8n.cloud/webhook/9d8cb518-ca82-48b8-b31d-c6ce4011d9a3";
+const CRITERIA_WEBHOOK = "https://rosegoldprojectai2.app.n8n.cloud/webhook/4d529467-d018-4ed1-97aa-fc9e4bacf35b";
+const BULK_WEBHOOK = "https://rosegoldprojectai2.app.n8n.cloud/webhook/30b16e34-147b-47e2-be94-1eb8b3382d6c";
+
+// ─── Mock universal criteria (replace with Supabase fetch later) ───
+const UNIVERSAL_CRITERIA = [
+  { id: "u1", text: "Agent never gives incorrect information from the business profile" },
+  { id: "u2", text: "Agent always has a fallback when it doesn't understand a message" },
+  { id: "u3", text: "Agent never goes off-topic or discusses unrelated subjects" },
+  { id: "u4", text: "Agent never promises something not configured in onboarding" },
+  { id: "u5", text: "Agent always attempts to move the lead toward the goal before ending" },
+];
 
 interface AgentPrompt {
   id: string;
@@ -21,6 +32,13 @@ interface Message {
   time: string;
 }
 
+interface Criteria {
+  id: string;
+  text: string;
+  type: "universal" | "ai" | "custom";
+  selected: boolean;
+}
+
 function getNow() {
   return new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 }
@@ -37,22 +55,45 @@ async function fetchPrompt(userId: string): Promise<AgentPrompt | null> {
   return data ?? null;
 }
 
+// ─── Glass card wrapper ───
+function GlassCard({ children, style }: { children: React.ReactNode; style?: React.CSSProperties }) {
+  return (
+    <div style={{
+      background: "linear-gradient(145deg, rgba(255,255,255,0.72) 0%, rgba(255,255,255,0.45) 100%)",
+      backdropFilter: "blur(32px) saturate(180%)",
+      WebkitBackdropFilter: "blur(32px) saturate(180%)",
+      border: "1px solid rgba(255,255,255,0.75)",
+      borderRadius: 20,
+      boxShadow: `
+        inset 0 1.5px 0 rgba(255,255,255,0.9),
+        inset 0 -1px 0 rgba(255,255,255,0.08),
+        0 4px 32px rgba(99,102,241,0.08),
+        0 1px 4px rgba(0,0,0,0.04)
+      `,
+      ...style,
+    }}>
+      {children}
+    </div>
+  );
+}
+
+// ─── Score Ring ───
 function ScoreRing({ score }: { score: number }) {
   const r = 42;
   const circ = 2 * Math.PI * r;
   const fill = (score / 100) * circ;
   const color = score >= 90 ? "#059669" : score >= 70 ? "#D97706" : "#DC2626";
   return (
-    <div style={{ position:"relative", width:100, height:100, flexShrink:0 }}>
+    <div style={{ position: "relative", width: 100, height: 100, flexShrink: 0 }}>
       <svg width="100" height="100" viewBox="0 0 100 100">
-        <circle cx="50" cy="50" r={r} fill="none" stroke="#E5E7EB" strokeWidth="8" />
+        <circle cx="50" cy="50" r={r} fill="none" stroke="rgba(255,255,255,0.5)" strokeWidth="8" />
         <circle cx="50" cy="50" r={r} fill="none" stroke={color} strokeWidth="8"
           strokeDasharray={`${fill} ${circ}`} strokeLinecap="round"
-          transform="rotate(-90 50 50)" style={{ transition:"stroke-dasharray 1s ease" }} />
+          transform="rotate(-90 50 50)" style={{ transition: "stroke-dasharray 1s ease" }} />
       </svg>
-      <div style={{ position:"absolute", inset:0, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center" }}>
-        <span style={{ fontSize:22, fontWeight:800, color:"#111827", lineHeight:1 }}>{score}</span>
-        <span style={{ fontSize:10, color:"#9CA3AF" }}>/100</span>
+      <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+        <span style={{ fontSize: 22, fontWeight: 800, color: "#111827", lineHeight: 1 }}>{score}</span>
+        <span style={{ fontSize: 10, color: "rgba(99,102,241,0.6)" }}>/100</span>
       </div>
     </div>
   );
@@ -60,7 +101,14 @@ function ScoreRing({ score }: { score: number }) {
 
 function PassBadge({ pass }: { pass: boolean }) {
   return (
-    <span style={{ display:"inline-flex", alignItems:"center", gap:4, fontSize:10, fontWeight:700, padding:"3px 10px", borderRadius:20, flexShrink:0, background: pass ? "#ECFDF5" : "#FEF2F2", color: pass ? "#059669" : "#DC2626" }}>
+    <span style={{
+      display: "inline-flex", alignItems: "center", gap: 4,
+      fontSize: 10, fontWeight: 700, padding: "3px 10px",
+      borderRadius: 20, flexShrink: 0,
+      background: pass ? "rgba(5,150,105,0.1)" : "rgba(220,38,38,0.08)",
+      color: pass ? "#059669" : "#DC2626",
+      border: `1px solid ${pass ? "rgba(5,150,105,0.2)" : "rgba(220,38,38,0.15)"}`,
+    }}>
       {pass ? <CheckCircle size={10} /> : <XCircle size={10} />}
       {pass ? "Pass" : "Fail"}
     </span>
@@ -69,123 +117,185 @@ function PassBadge({ pass }: { pass: boolean }) {
 
 function LockedState() {
   return (
-    <div style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", padding:"80px 24px", textAlign:"center" }}>
-      <div style={{ width:64, height:64, borderRadius:"50%", background:"#EEF2FF", display:"flex", alignItems:"center", justifyContent:"center", marginBottom:20 }}>
-        <Lock size={24} strokeWidth={1.5} color="#4F46E5" />
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "80px 24px", textAlign: "center" }}>
+      <div style={{
+        width: 64, height: 64, borderRadius: "50%",
+        background: "linear-gradient(135deg, rgba(139,92,246,0.15), rgba(99,102,241,0.1))",
+        display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 20,
+        border: "1px solid rgba(139,92,246,0.2)",
+      }}>
+        <Lock size={24} strokeWidth={1.5} color="#7C3AED" />
       </div>
-      <div style={{ fontSize:18, fontWeight:800, color:"#111827", marginBottom:8 }}>Your agent isn't ready yet</div>
-      <div style={{ fontSize:13, color:"#9CA3AF", maxWidth:320, lineHeight:1.6 }}>
+      <div style={{ fontSize: 18, fontWeight: 800, color: "#111827", marginBottom: 8 }}>Your agent isn't ready yet</div>
+      <div style={{ fontSize: 13, color: "rgba(99,102,241,0.6)", maxWidth: 320, lineHeight: 1.6 }}>
         Complete your onboarding to generate your AI agent. Once approved, you'll be able to test it and view the full quality report here.
       </div>
     </div>
   );
 }
 
+// ─── Full Report (glass redesign) ───
 function FullReport({ prompt }: { prompt: AgentPrompt }) {
   const report = typeof prompt.scoring_report === "string"
     ? JSON.parse(prompt.scoring_report)
     : prompt.scoring_report;
   const color = prompt.score >= 90 ? "#059669" : "#D97706";
   const summaryItems = [
-    { label:"IOE Structure", value: report?.summary?.ioe_structure ?? "—" },
-    { label:"Pitfalls",      value: report?.summary?.pitfalls ?? "—" },
-    { label:"Principles",    value: report?.summary?.principles ?? "—" },
-    { label:"Levels",        value: report?.summary?.levels ?? "—" },
+    { label: "IOE Structure", value: report?.summary?.ioe_structure ?? "—" },
+    { label: "Pitfalls", value: report?.summary?.pitfalls ?? "—" },
+    { label: "Principles", value: report?.summary?.principles ?? "—" },
+    { label: "Levels", value: report?.summary?.levels ?? "—" },
   ];
   const sections = [
-    { title:"Pitfalls Check", data: report?.pitfalls_check?.results,  score: report?.pitfalls_check?.score,  max:25 },
-    { title:"IOE Structure",  data: report?.ioe_check?.results,       score: report?.ioe_check?.score,       max:25 },
-    { title:"Principles",     data: report?.principles_check?.results, score: report?.principles_check?.score, max:25 },
-    { title:"Levels",         data: report?.levels_check?.results,    score: report?.levels_check?.score,    max:25 },
+    { title: "Pitfalls Check", icon: "🛡️", data: report?.pitfalls_check?.results, score: report?.pitfalls_check?.score, max: 25 },
+    { title: "IOE Structure", icon: "🏗️", data: report?.ioe_check?.results, score: report?.ioe_check?.score, max: 25 },
+    { title: "Principles", icon: "✨", data: report?.principles_check?.results, score: report?.principles_check?.score, max: 25 },
+    { title: "Levels", icon: "📊", data: report?.levels_check?.results, score: report?.levels_check?.score, max: 25 },
   ];
   return (
-    <div style={{ display:"flex", flexDirection:"column", gap:16 }}>
-      <div style={{ background:"#FFFFFF", border:"1px solid #E5E7EB", borderRadius:16, padding:24, display:"flex", alignItems:"center", gap:28, boxShadow:"0 1px 4px rgba(0,0,0,.04)" }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+      {/* Score hero card */}
+      <GlassCard style={{ padding: 24, display: "flex", alignItems: "center", gap: 28 }}>
         <ScoreRing score={prompt.score} />
-        <div style={{ flex:1 }}>
-          <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:12, flexWrap:"wrap" as const }}>
-            <span style={{ fontSize:16, fontWeight:800, color:"#111827" }}>{report?.headline ?? "Quality Report"}</span>
-            <span style={{ fontSize:10, fontWeight:700, padding:"3px 10px", borderRadius:20, background: prompt.status === "approved" ? "#ECFDF5" : "#FEF2F2", color: prompt.status === "approved" ? "#059669" : "#DC2626" }}>
+        <div style={{ flex: 1 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14, flexWrap: "wrap" as const }}>
+            <span style={{ fontSize: 16, fontWeight: 800, color: "#111827" }}>{report?.headline ?? "Quality Report"}</span>
+            <span style={{
+              fontSize: 10, fontWeight: 700, padding: "3px 10px", borderRadius: 20,
+              background: prompt.status === "approved" ? "rgba(5,150,105,0.1)" : "rgba(220,38,38,0.08)",
+              color: prompt.status === "approved" ? "#059669" : "#DC2626",
+              border: `1px solid ${prompt.status === "approved" ? "rgba(5,150,105,0.25)" : "rgba(220,38,38,0.2)"}`,
+            }}>
               {prompt.status === "approved" ? "✓ Approved" : "✗ Rejected"}
             </span>
           </div>
-          <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:10 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 10 }}>
             {summaryItems.map((s, i) => (
-              <div key={i} style={{ background:"#F9FAFB", borderRadius:10, padding:"10px 12px", border:"1px solid #F3F4F6" }}>
-                <div style={{ fontSize:9, color:"#9CA3AF", textTransform:"uppercase" as const, letterSpacing:"0.8px", marginBottom:4, fontWeight:700 }}>{s.label}</div>
-                <div style={{ fontSize:12, fontWeight:700, color }}>{s.value}</div>
+              <div key={i} style={{
+                background: "rgba(255,255,255,0.6)",
+                backdropFilter: "blur(12px)",
+                borderRadius: 12, padding: "10px 12px",
+                border: "1px solid rgba(255,255,255,0.8)",
+                boxShadow: "inset 0 1px 0 rgba(255,255,255,0.9)",
+              }}>
+                <div style={{ fontSize: 9, color: "rgba(99,102,241,0.55)", textTransform: "uppercase" as const, letterSpacing: "0.8px", marginBottom: 4, fontWeight: 700 }}>{s.label}</div>
+                <div style={{ fontSize: 12, fontWeight: 700, color }}>{s.value}</div>
               </div>
             ))}
           </div>
         </div>
-      </div>
+      </GlassCard>
 
+      {/* Section cards */}
       {sections.map((section, i) => section.data ? (
-        <div key={i} style={{ background:"#FFFFFF", border:"1px solid #E5E7EB", borderRadius:16, overflow:"hidden", boxShadow:"0 1px 4px rgba(0,0,0,.04)" }}>
-          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"14px 20px", borderBottom:"1px solid #F3F4F6" }}>
-            <div style={{ fontSize:14, fontWeight:700, color:"#111827" }}>{section.title}</div>
-            <span style={{ fontSize:11, fontWeight:600, color:"#9CA3AF" }}>{section.score}/{section.max}</span>
+        <GlassCard key={i} style={{ overflow: "hidden" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "14px 20px", borderBottom: "1px solid rgba(255,255,255,0.5)" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <span style={{ fontSize: 14 }}>{section.icon}</span>
+              <div style={{ fontSize: 14, fontWeight: 700, color: "#111827" }}>{section.title}</div>
+            </div>
+            <span style={{
+              fontSize: 11, fontWeight: 700, padding: "2px 10px", borderRadius: 20,
+              background: "rgba(99,102,241,0.08)", color: "#4F46E5",
+              border: "1px solid rgba(99,102,241,0.15)",
+            }}>{section.score}/{section.max}</span>
           </div>
           <div>
             {Object.entries(section.data).map(([key, val]: [string, any], j, arr) => (
-              <div key={j} style={{ display:"flex", alignItems:"flex-start", gap:14, padding:"12px 20px", borderBottom: j < arr.length-1 ? "1px solid #F9FAFB" : "none" }}>
+              <div key={j} style={{
+                display: "flex", alignItems: "flex-start", gap: 14, padding: "12px 20px",
+                borderBottom: j < arr.length - 1 ? "1px solid rgba(255,255,255,0.5)" : "none",
+                background: j % 2 === 0 ? "rgba(255,255,255,0.2)" : "transparent",
+              }}>
                 <PassBadge pass={val?.pass ?? false} />
-                <div style={{ flex:1 }}>
-                  <div style={{ fontSize:12, color:"#111827", fontWeight:700, marginBottom:2 }}>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 12, color: "#111827", fontWeight: 700, marginBottom: 2 }}>
                     {key.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase())}
                   </div>
-                  <div style={{ fontSize:11, color:"#6B7280", lineHeight:1.5 }}>{val?.note ?? ""}</div>
+                  <div style={{ fontSize: 11, color: "rgba(60,40,120,0.6)", lineHeight: 1.5 }}>{val?.note ?? ""}</div>
                 </div>
               </div>
             ))}
           </div>
-        </div>
+        </GlassCard>
       ) : null)}
 
+      {/* Fixes */}
       {report?.fixes?.length > 0 && (
-        <div style={{ background:"#FFFFFF", border:"1px solid #E5E7EB", borderRadius:16, overflow:"hidden", boxShadow:"0 1px 4px rgba(0,0,0,.04)" }}>
-          <div style={{ padding:"14px 20px", borderBottom:"1px solid #F3F4F6" }}>
-            <div style={{ fontSize:14, fontWeight:700, color:"#111827" }}>Recommended Fixes</div>
-            <div style={{ fontSize:11, color:"#9CA3AF", marginTop:2 }}>Ordered by priority</div>
+        <GlassCard style={{ overflow: "hidden" }}>
+          <div style={{ padding: "14px 20px", borderBottom: "1px solid rgba(255,255,255,0.5)" }}>
+            <div style={{ fontSize: 14, fontWeight: 700, color: "#111827" }}>Recommended Fixes</div>
+            <div style={{ fontSize: 11, color: "rgba(99,102,241,0.55)", marginTop: 2 }}>Ordered by priority</div>
           </div>
           <div>
             {report.fixes.map((fix: any, i: number) => (
-              <div key={i} style={{ display:"flex", alignItems:"flex-start", gap:14, padding:"12px 20px", borderBottom: i < report.fixes.length-1 ? "1px solid #F9FAFB" : "none" }}>
-                <div style={{ width:22, height:22, borderRadius:"50%", background:"#EEF2FF", display:"flex", alignItems:"center", justifyContent:"center", fontSize:10, fontWeight:700, color:"#4F46E5", flexShrink:0 }}>
+              <div key={i} style={{
+                display: "flex", alignItems: "flex-start", gap: 14, padding: "12px 20px",
+                borderBottom: i < report.fixes.length - 1 ? "1px solid rgba(255,255,255,0.5)" : "none",
+              }}>
+                <div style={{
+                  width: 22, height: 22, borderRadius: "50%",
+                  background: "linear-gradient(135deg, rgba(139,92,246,0.2), rgba(99,102,241,0.1))",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  fontSize: 10, fontWeight: 700, color: "#4F46E5", flexShrink: 0,
+                  border: "1px solid rgba(99,102,241,0.2)",
+                }}>
                   {fix.priority}
                 </div>
                 <div>
-                  <div style={{ fontSize:12, color:"#111827", fontWeight:700, marginBottom:2 }}>{fix.issue}</div>
-                  <div style={{ fontSize:11, color:"#6B7280", lineHeight:1.5 }}>{fix.detail}</div>
+                  <div style={{ fontSize: 12, color: "#111827", fontWeight: 700, marginBottom: 2 }}>{fix.issue}</div>
+                  <div style={{ fontSize: 11, color: "rgba(60,40,120,0.6)", lineHeight: 1.5 }}>{fix.detail}</div>
                 </div>
               </div>
             ))}
           </div>
-        </div>
+        </GlassCard>
       )}
     </div>
   );
 }
 
+// ─── Chat bubble ───
 function Bubble({ msg }: { msg: Message }) {
   const isUser = msg.role === "user";
   return (
-    <div style={{ display:"flex", justifyContent: isUser ? "flex-end" : "flex-start", marginBottom:12 }}>
+    <div style={{ display: "flex", justifyContent: isUser ? "flex-end" : "flex-start", marginBottom: 12 }}>
       {!isUser && (
-        <div style={{ width:28, height:28, borderRadius:"50%", background:"#EEF2FF", display:"flex", alignItems:"center", justifyContent:"center", marginRight:8, flexShrink:0, alignSelf:"flex-end" }}>
-          <Bot size={13} color="#4F46E5" />
+        <div style={{
+          width: 28, height: 28, borderRadius: "50%",
+          background: "linear-gradient(135deg, rgba(139,92,246,0.2), rgba(99,102,241,0.1))",
+          border: "1px solid rgba(139,92,246,0.25)",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          marginRight: 8, flexShrink: 0, alignSelf: "flex-end",
+        }}>
+          <Bot size={13} color="#7C3AED" />
         </div>
       )}
-      <div style={{ maxWidth:"68%" }}>
-        <div style={{ padding:"10px 14px", borderRadius: isUser ? "16px 16px 4px 16px" : "16px 16px 16px 4px", background: isUser ? "#4F46E5" : "#FFFFFF", border: isUser ? "none" : "1px solid #E5E7EB", fontSize:13, fontWeight: isUser ? 500 : 400, color: isUser ? "#fff" : "#111827", lineHeight:1.55, whiteSpace:"pre-wrap" as const }}>
+      <div style={{ maxWidth: "68%" }}>
+        <div style={{
+          padding: "10px 14px",
+          borderRadius: isUser ? "16px 16px 4px 16px" : "16px 16px 16px 4px",
+          background: isUser
+            ? "linear-gradient(135deg, #6D28D9, #4F46E5)"
+            : "rgba(255,255,255,0.75)",
+          backdropFilter: isUser ? "none" : "blur(20px)",
+          border: isUser ? "none" : "1px solid rgba(255,255,255,0.8)",
+          boxShadow: isUser
+            ? "0 2px 12px rgba(99,102,241,0.25)"
+            : "inset 0 1px 0 rgba(255,255,255,0.9), 0 2px 8px rgba(0,0,0,0.04)",
+          fontSize: 13, fontWeight: isUser ? 500 : 400,
+          color: isUser ? "#fff" : "#111827",
+          lineHeight: 1.55, whiteSpace: "pre-wrap" as const,
+        }}>
           {msg.content}
         </div>
-        <div style={{ fontSize:9, color:"#9CA3AF", marginTop:4, textAlign: isUser ? "right" as const : "left" as const }}>{msg.time}</div>
+        <div style={{ fontSize: 9, color: "rgba(99,102,241,0.5)", marginTop: 4, textAlign: isUser ? "right" as const : "left" as const }}>{msg.time}</div>
       </div>
     </div>
   );
 }
 
+// ─── Test Agent tab ───
 function TestAgent({ prompt, userId, messages, setMessages }: {
   prompt: AgentPrompt; userId: string;
   messages: Message[]; setMessages: React.Dispatch<React.SetStateAction<Message[]>>;
@@ -195,70 +305,95 @@ function TestAgent({ prompt, userId, messages, setMessages }: {
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior:"smooth" });
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, loading]);
 
   async function send() {
     const text = input.trim();
     if (!text || loading) return;
     setInput("");
-    const userMsg: Message = { role:"user", content:text, time:getNow() };
+    const userMsg: Message = { role: "user", content: text, time: getNow() };
     setMessages(prev => [...prev, userMsg]);
     setLoading(true);
     try {
       const history = [...messages, userMsg].map(m => ({ role: m.role === "user" ? "user" : "assistant", content: m.content }));
-      const res = await fetch(WEBHOOK_URL, {
-        method:"POST", headers:{ "Content-Type":"application/json" },
-        body: JSON.stringify({ user_id:userId, message:text, history }),
+      const res = await fetch(CHAT_WEBHOOK, {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ user_id: userId, message: text, history }),
       });
       const data = await res.json();
       const reply = data?.message ?? data?.output ?? "...";
-      setMessages(prev => [...prev, { role:"agent", content:reply, time:getNow() }]);
+      setMessages(prev => [...prev, { role: "agent", content: reply, time: getNow() }]);
     } catch {
-      setMessages(prev => [...prev, { role:"agent", content:"Something went wrong. Please try again.", time:getNow() }]);
+      setMessages(prev => [...prev, { role: "agent", content: "Something went wrong. Please try again.", time: getNow() }]);
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <div style={{ background:"#FFFFFF", border:"1px solid #E5E7EB", borderRadius:16, overflow:"hidden", display:"flex", flexDirection:"column", height:560, boxShadow:"0 1px 4px rgba(0,0,0,.04)" }}>
+    <GlassCard style={{ overflow: "hidden", display: "flex", flexDirection: "column", height: 580 }}>
       {/* Header */}
-      <div style={{ padding:"14px 20px", borderBottom:"1px solid #F3F4F6", display:"flex", alignItems:"center", justifyContent:"space-between", background:"#FAFAFA" }}>
-        <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-          <div style={{ width:34, height:34, borderRadius:"50%", background:"#EEF2FF", display:"flex", alignItems:"center", justifyContent:"center" }}>
-            <Bot size={15} color="#4F46E5" />
+      <div style={{
+        padding: "14px 20px", borderBottom: "1px solid rgba(255,255,255,0.5)",
+        display: "flex", alignItems: "center", justifyContent: "space-between",
+        background: "rgba(255,255,255,0.3)",
+      }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <div style={{
+            width: 34, height: 34, borderRadius: "50%",
+            background: "linear-gradient(135deg, rgba(139,92,246,0.2), rgba(99,102,241,0.1))",
+            border: "1px solid rgba(139,92,246,0.25)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+          }}>
+            <Bot size={15} color="#7C3AED" />
           </div>
           <div>
-            <div style={{ fontSize:13, fontWeight:700, color:"#111827" }}>Your AI Agent</div>
-            <div style={{ fontSize:10, color:"#059669", fontWeight:600 }}>● Live — Score {prompt.score}/100</div>
+            <div style={{ fontSize: 13, fontWeight: 700, color: "#111827" }}>Your AI Agent</div>
+            <div style={{ fontSize: 10, color: "#059669", fontWeight: 600 }}>● Live — Score {prompt.score}/100</div>
           </div>
         </div>
-        <button onClick={() => { setMessages([]); setInput(""); }} style={{ display:"flex", alignItems:"center", gap:5, fontSize:11, fontWeight:600, color:"#6B7280", background:"#F3F4F6", border:"none", borderRadius:8, padding:"6px 12px", cursor:"pointer", fontFamily:"'Plus Jakarta Sans',sans-serif" }}>
+        <button onClick={() => { setMessages([]); setInput(""); }} style={{
+          display: "flex", alignItems: "center", gap: 5,
+          fontSize: 11, fontWeight: 600, color: "rgba(60,40,120,0.7)",
+          background: "rgba(255,255,255,0.5)", backdropFilter: "blur(12px)",
+          border: "1px solid rgba(255,255,255,0.7)", borderRadius: 8,
+          padding: "6px 12px", cursor: "pointer", fontFamily: "'DM Sans',sans-serif",
+        }}>
           <RotateCcw size={11} /> Reset
         </button>
       </div>
 
       {/* Messages */}
-      <div style={{ flex:1, overflowY:"auto" as const, padding:"20px 16px", background:"#F9FAFB" }}>
+      <div style={{ flex: 1, overflowY: "auto" as const, padding: "20px 16px", background: "rgba(255,255,255,0.1)" }}>
         {messages.length === 0 && (
-          <div style={{ textAlign:"center" as const, padding:"40px 20px" }}>
-            <div style={{ fontSize:13, color:"#9CA3AF", lineHeight:1.7 }}>
+          <div style={{ textAlign: "center" as const, padding: "40px 20px" }}>
+            <div style={{ fontSize: 13, color: "rgba(99,102,241,0.6)", lineHeight: 1.7 }}>
               Send a message to start testing your agent.<br />
-              Try: <span style={{ color:"#4F46E5", fontWeight:600 }}>"Hey I saw your post"</span>
+              Try: <span style={{ color: "#4F46E5", fontWeight: 600 }}>"Hey I saw your post"</span>
             </div>
           </div>
         )}
         {messages.map((msg, i) => <Bubble key={i} msg={msg} />)}
         {loading && (
-          <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:12 }}>
-            <div style={{ width:28, height:28, borderRadius:"50%", background:"#EEF2FF", display:"flex", alignItems:"center", justifyContent:"center" }}>
-              <Bot size={13} color="#4F46E5" />
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+            <div style={{
+              width: 28, height: 28, borderRadius: "50%",
+              background: "linear-gradient(135deg, rgba(139,92,246,0.2), rgba(99,102,241,0.1))",
+              border: "1px solid rgba(139,92,246,0.25)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+            }}>
+              <Bot size={13} color="#7C3AED" />
             </div>
-            <div style={{ padding:"10px 14px", background:"#FFFFFF", border:"1px solid #E5E7EB", borderRadius:"16px 16px 16px 4px" }}>
-              <div style={{ display:"flex", gap:4 }}>
-                {[0,1,2].map(i => (
-                  <div key={i} style={{ width:6, height:6, borderRadius:"50%", background:"#D1D5DB", animation:`agentbounce 1.2s ease-in-out ${i*0.2}s infinite` }} />
+            <div style={{
+              padding: "10px 14px",
+              background: "rgba(255,255,255,0.75)", backdropFilter: "blur(20px)",
+              border: "1px solid rgba(255,255,255,0.8)",
+              borderRadius: "16px 16px 16px 4px",
+            }}>
+              <div style={{ display: "flex", gap: 4 }}>
+                {[0, 1, 2].map(i => (
+                  <div key={i} style={{ width: 6, height: 6, borderRadius: "50%", background: "rgba(99,102,241,0.4)", animation: `agentbounce 1.2s ease-in-out ${i * 0.2}s infinite` }} />
                 ))}
               </div>
             </div>
@@ -268,28 +403,376 @@ function TestAgent({ prompt, userId, messages, setMessages }: {
       </div>
 
       {/* Input */}
-      <div style={{ padding:"12px 16px", borderTop:"1px solid #F3F4F6", display:"flex", gap:10, background:"#FFFFFF" }}>
+      <div style={{ padding: "12px 16px", borderTop: "1px solid rgba(255,255,255,0.5)", display: "flex", gap: 10, background: "rgba(255,255,255,0.3)" }}>
         <input
           value={input}
           onChange={e => setInput(e.target.value)}
           onKeyDown={e => e.key === "Enter" && !e.shiftKey && send()}
           placeholder="Type a message..."
-          style={{ flex:1, border:"1.5px solid #E5E7EB", borderRadius:10, padding:"10px 14px", fontSize:13, color:"#111827", outline:"none", fontFamily:"'Plus Jakarta Sans',sans-serif", background:"#F9FAFB" }}
+          style={{
+            flex: 1, border: "1.5px solid rgba(255,255,255,0.7)",
+            borderRadius: 10, padding: "10px 14px", fontSize: 13, color: "#111827",
+            outline: "none", fontFamily: "'DM Sans',sans-serif",
+            background: "rgba(255,255,255,0.6)", backdropFilter: "blur(12px)",
+          }}
         />
         <button
           onClick={send}
           disabled={!input.trim() || loading}
-          style={{ width:40, height:40, borderRadius:10, background: input.trim() && !loading ? "#4F46E5" : "#F3F4F6", border:"none", cursor: input.trim() && !loading ? "pointer" : "default", display:"flex", alignItems:"center", justifyContent:"center", transition:"background .15s", flexShrink:0 }}
+          style={{
+            width: 40, height: 40, borderRadius: 10,
+            background: input.trim() && !loading
+              ? "linear-gradient(135deg, #6D28D9, #4F46E5)"
+              : "rgba(255,255,255,0.4)",
+            border: "1px solid rgba(255,255,255,0.7)",
+            cursor: input.trim() && !loading ? "pointer" : "default",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            transition: "all .15s", flexShrink: 0,
+          }}
         >
-          <Send size={15} color={input.trim() && !loading ? "#fff" : "#9CA3AF"} />
+          <Send size={15} color={input.trim() && !loading ? "#fff" : "rgba(99,102,241,0.4)"} />
         </button>
+      </div>
+    </GlassCard>
+  );
+}
+
+// ─── Criteria Card ───
+function CriteriaCard({
+  criteria, onToggle, onRemove,
+}: {
+  criteria: Criteria;
+  onToggle: (id: string) => void;
+  onRemove?: (id: string) => void;
+}) {
+  const isUniversal = criteria.type === "universal";
+  const isAI = criteria.type === "ai";
+
+  const iconMap = {
+    universal: <Shield size={16} color="#7C3AED" />,
+    ai: <Sparkles size={16} color="#0891B2" />,
+    custom: <Plus size={16} color="#059669" />,
+  };
+
+  const colorMap = {
+    universal: { bg: "rgba(139,92,246,0.08)", border: "rgba(139,92,246,0.2)", label: "Universal", labelColor: "#7C3AED", labelBg: "rgba(139,92,246,0.1)" },
+    ai: { bg: "rgba(8,145,178,0.06)", border: "rgba(8,145,178,0.18)", label: "AI Generated", labelColor: "#0891B2", labelBg: "rgba(8,145,178,0.08)" },
+    custom: { bg: "rgba(5,150,105,0.06)", border: "rgba(5,150,105,0.18)", label: "Custom", labelColor: "#059669", labelBg: "rgba(5,150,105,0.08)" },
+  };
+
+  const c = colorMap[criteria.type];
+
+  return (
+    <div style={{
+      background: criteria.selected
+        ? `linear-gradient(145deg, rgba(255,255,255,0.82), rgba(255,255,255,0.6))`
+        : "rgba(255,255,255,0.35)",
+      backdropFilter: "blur(20px)",
+      WebkitBackdropFilter: "blur(20px)",
+      border: `1px solid ${criteria.selected ? c.border : "rgba(255,255,255,0.5)"}`,
+      borderRadius: 16,
+      padding: 16,
+      display: "flex", flexDirection: "column", gap: 10,
+      boxShadow: criteria.selected
+        ? `inset 0 1px 0 rgba(255,255,255,0.9), 0 4px 16px ${c.bg}`
+        : "inset 0 1px 0 rgba(255,255,255,0.7)",
+      opacity: criteria.selected ? 1 : 0.65,
+      transition: "all 0.2s",
+      cursor: isUniversal ? "default" : "pointer",
+      position: "relative" as const,
+    }}
+      onClick={() => !isUniversal && onToggle(criteria.id)}
+    >
+      {/* Top row */}
+      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 8 }}>
+        <div style={{
+          width: 32, height: 32, borderRadius: 10, flexShrink: 0,
+          background: c.bg, border: `1px solid ${c.border}`,
+          display: "flex", alignItems: "center", justifyContent: "center",
+        }}>
+          {iconMap[criteria.type]}
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 6, marginLeft: "auto" }}>
+          <span style={{
+            fontSize: 9, fontWeight: 700, padding: "2px 8px", borderRadius: 20,
+            background: c.labelBg, color: c.labelColor,
+            border: `1px solid ${c.border}`, letterSpacing: "0.5px",
+          }}>{c.label}</span>
+          {isUniversal && (
+            <div style={{
+              width: 16, height: 16, borderRadius: "50%",
+              background: "rgba(139,92,246,0.1)", border: "1px solid rgba(139,92,246,0.2)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+            }}>
+              <Lock size={8} color="#7C3AED" />
+            </div>
+          )}
+          {!isUniversal && onRemove && (
+            <div onClick={e => { e.stopPropagation(); onRemove(criteria.id); }} style={{
+              width: 18, height: 18, borderRadius: "50%", cursor: "pointer",
+              background: "rgba(220,38,38,0.08)", border: "1px solid rgba(220,38,38,0.15)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+            }}>
+              <X size={9} color="#DC2626" />
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Text */}
+      <div style={{ fontSize: 12, color: "#1A1916", fontWeight: 500, lineHeight: 1.5 }}>
+        {criteria.text}
+      </div>
+
+      {/* Checkbox indicator */}
+      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+        <div style={{
+          width: 14, height: 14, borderRadius: 4,
+          background: criteria.selected
+            ? (isUniversal ? "rgba(139,92,246,0.8)" : isAI ? "rgba(8,145,178,0.8)" : "rgba(5,150,105,0.8)")
+            : "rgba(255,255,255,0.5)",
+          border: `1.5px solid ${criteria.selected ? c.border : "rgba(200,200,200,0.5)"}`,
+          display: "flex", alignItems: "center", justifyContent: "center",
+          transition: "all 0.15s",
+        }}>
+          {criteria.selected && <CheckCircle size={8} color="#fff" />}
+        </div>
+        <span style={{ fontSize: 10, color: "rgba(60,40,120,0.5)", fontWeight: 400 }}>
+          {isUniversal ? "Always tested" : criteria.selected ? "Will be tested" : "Skipped"}
+        </span>
       </div>
     </div>
   );
 }
 
+// ─── Bulk Testing tab ───
+function BulkTesting({ userId, prompt }: { userId: string; prompt: AgentPrompt }) {
+  const [criteria, setCriteria] = useState<Criteria[]>([
+    ...UNIVERSAL_CRITERIA.map(c => ({ ...c, type: "universal" as const, selected: true })),
+  ]);
+  const [customInput, setCustomInput] = useState("");
+  const [addingCustom, setAddingCustom] = useState(false);
+  const [loadingCriteria, setLoadingCriteria] = useState(false);
+  const [running, setRunning] = useState(false);
+  const [runStatus, setRunStatus] = useState<"idle" | "running" | "done" | "error">("idle");
+
+  // Fetch AI-generated criteria on mount
+  useEffect(() => {
+    async function loadAICriteria() {
+      setLoadingCriteria(true);
+      try {
+        const res = await fetch(CRITERIA_WEBHOOK, {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ user_id: userId }),
+        });
+        const data = await res.json();
+        const aiList: string[] = data?.criteria ?? data?.output ?? [];
+        if (Array.isArray(aiList) && aiList.length > 0) {
+          setCriteria(prev => [
+            ...prev,
+            ...aiList.map((text: string, i: number) => ({
+              id: `ai_${i}`,
+              text,
+              type: "ai" as const,
+              selected: true,
+            })),
+          ]);
+        }
+      } catch {
+        // silently fail — universal criteria still show
+      } finally {
+        setLoadingCriteria(false);
+      }
+    }
+    loadAICriteria();
+  }, [userId]);
+
+  function toggleCriteria(id: string) {
+    setCriteria(prev => prev.map(c => c.id === id ? { ...c, selected: !c.selected } : c));
+  }
+
+  function removeCriteria(id: string) {
+    setCriteria(prev => prev.filter(c => c.id !== id));
+  }
+
+  function addCustom() {
+    const text = customInput.trim();
+    if (!text) return;
+    setCriteria(prev => [...prev, {
+      id: `custom_${Date.now()}`,
+      text,
+      type: "custom",
+      selected: true,
+    }]);
+    setCustomInput("");
+    setAddingCustom(false);
+  }
+
+  async function runBulkTest() {
+    const selected = criteria.filter(c => c.selected);
+    if (selected.length === 0) return;
+    setRunning(true);
+    setRunStatus("running");
+    try {
+      await fetch(BULK_WEBHOOK, {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          user_id: userId,
+          agent_id: prompt.id,
+          criteria: selected.map(c => ({ id: c.id, text: c.text, type: c.type })),
+        }),
+      });
+      setRunStatus("done");
+    } catch {
+      setRunStatus("error");
+    } finally {
+      setRunning(false);
+    }
+  }
+
+  const selectedCount = criteria.filter(c => c.selected).length;
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+      {/* Header card */}
+      <GlassCard style={{ padding: "18px 22px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16 }}>
+        <div>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+            <FlaskConical size={18} color="#7C3AED" />
+            <span style={{ fontSize: 16, fontWeight: 800, color: "#111827" }}>Bulk Testing</span>
+          </div>
+          <div style={{ fontSize: 12, color: "rgba(60,40,120,0.55)", lineHeight: 1.5 }}>
+            Select criteria to test. Your agent will be automatically evaluated against each one.
+          </div>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
+          <div style={{
+            padding: "6px 14px", borderRadius: 20,
+            background: "rgba(99,102,241,0.08)", border: "1px solid rgba(99,102,241,0.18)",
+            fontSize: 12, fontWeight: 700, color: "#4F46E5",
+          }}>
+            {selectedCount} selected
+          </div>
+          <button
+            onClick={runBulkTest}
+            disabled={running || selectedCount === 0}
+            style={{
+              display: "flex", alignItems: "center", gap: 6,
+              padding: "9px 20px", borderRadius: 12, border: "none",
+              background: selectedCount > 0 && !running
+                ? "linear-gradient(135deg, #6D28D9, #4F46E5)"
+                : "rgba(255,255,255,0.4)",
+              color: selectedCount > 0 && !running ? "#fff" : "rgba(99,102,241,0.4)",
+              fontSize: 13, fontWeight: 700, cursor: selectedCount > 0 && !running ? "pointer" : "default",
+              fontFamily: "'DM Sans',sans-serif",
+              boxShadow: selectedCount > 0 && !running ? "0 4px 16px rgba(99,102,241,0.3)" : "none",
+              transition: "all 0.2s",
+            }}
+          >
+            {running ? <Loader2 size={14} style={{ animation: "spin 1s linear infinite" }} /> : <ChevronRight size={14} />}
+            {running ? "Running..." : "Run Test"}
+          </button>
+        </div>
+      </GlassCard>
+
+      {/* Status banner */}
+      {runStatus === "done" && (
+        <GlassCard style={{ padding: "12px 20px", display: "flex", alignItems: "center", gap: 10, background: "rgba(5,150,105,0.08)", border: "1px solid rgba(5,150,105,0.2)" }}>
+          <CheckCircle size={16} color="#059669" />
+          <span style={{ fontSize: 13, fontWeight: 600, color: "#059669" }}>Test started — results will appear in your dashboard shortly.</span>
+        </GlassCard>
+      )}
+      {runStatus === "error" && (
+        <GlassCard style={{ padding: "12px 20px", display: "flex", alignItems: "center", gap: 10, background: "rgba(220,38,38,0.06)", border: "1px solid rgba(220,38,38,0.18)" }}>
+          <XCircle size={16} color="#DC2626" />
+          <span style={{ fontSize: 13, fontWeight: 600, color: "#DC2626" }}>Something went wrong. Please check your agent and try again.</span>
+        </GlassCard>
+      )}
+
+      {/* Loading AI criteria */}
+      {loadingCriteria && (
+        <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "4px 0" }}>
+          <Loader2 size={14} color="rgba(99,102,241,0.5)" style={{ animation: "spin 1s linear infinite" }} />
+          <span style={{ fontSize: 12, color: "rgba(99,102,241,0.5)" }}>Generating AI criteria from your business profile...</span>
+        </div>
+      )}
+
+      {/* Criteria grid */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 12 }}>
+        {criteria.map(c => (
+          <CriteriaCard
+            key={c.id}
+            criteria={c}
+            onToggle={toggleCriteria}
+            onRemove={c.type !== "universal" ? removeCriteria : undefined}
+          />
+        ))}
+
+        {/* Add custom card */}
+        {addingCustom ? (
+          <div style={{
+            background: "rgba(255,255,255,0.6)", backdropFilter: "blur(20px)",
+            border: "1.5px solid rgba(5,150,105,0.3)", borderRadius: 16, padding: 16,
+            display: "flex", flexDirection: "column", gap: 10,
+          }}>
+            <textarea
+              autoFocus
+              value={customInput}
+              onChange={e => setCustomInput(e.target.value)}
+              placeholder="Describe your custom criteria..."
+              style={{
+                border: "1px solid rgba(255,255,255,0.7)", borderRadius: 10,
+                padding: "8px 10px", fontSize: 12, color: "#111827",
+                outline: "none", fontFamily: "'DM Sans',sans-serif",
+                background: "rgba(255,255,255,0.7)", resize: "none", minHeight: 72,
+              }}
+            />
+            <div style={{ display: "flex", gap: 8 }}>
+              <button onClick={addCustom} style={{
+                flex: 1, padding: "7px 0", borderRadius: 8, border: "none",
+                background: "linear-gradient(135deg, #059669, #0D9488)",
+                color: "#fff", fontSize: 12, fontWeight: 700, cursor: "pointer",
+                fontFamily: "'DM Sans',sans-serif",
+              }}>Add</button>
+              <button onClick={() => { setAddingCustom(false); setCustomInput(""); }} style={{
+                flex: 1, padding: "7px 0", borderRadius: 8,
+                border: "1px solid rgba(255,255,255,0.7)",
+                background: "rgba(255,255,255,0.5)", color: "rgba(60,40,120,0.6)",
+                fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "'DM Sans',sans-serif",
+              }}>Cancel</button>
+            </div>
+          </div>
+        ) : (
+          <div
+            onClick={() => setAddingCustom(true)}
+            style={{
+              background: "rgba(255,255,255,0.25)", backdropFilter: "blur(12px)",
+              border: "1.5px dashed rgba(99,102,241,0.25)", borderRadius: 16, padding: 16,
+              display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+              gap: 8, cursor: "pointer", minHeight: 120,
+              transition: "all 0.2s",
+            }}
+            onMouseEnter={e => (e.currentTarget.style.background = "rgba(255,255,255,0.45)")}
+            onMouseLeave={e => (e.currentTarget.style.background = "rgba(255,255,255,0.25)")}
+          >
+            <div style={{
+              width: 32, height: 32, borderRadius: 10,
+              background: "rgba(99,102,241,0.08)", border: "1px solid rgba(99,102,241,0.18)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+            }}>
+              <Plus size={16} color="#4F46E5" />
+            </div>
+            <span style={{ fontSize: 12, fontWeight: 600, color: "rgba(60,40,120,0.55)" }}>Add custom criteria</span>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─── Main screen ───
 export function MyAgentScreen({ userId }: { userId: string }) {
-  const [tab, setTab] = useState<"test"|"report">("test");
+  const [tab, setTab] = useState<"test" | "report" | "bulk">("test");
   const [prompt, setPrompt] = useState<AgentPrompt | null>(null);
   const [loading, setLoading] = useState(true);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -301,48 +784,92 @@ export function MyAgentScreen({ userId }: { userId: string }) {
   const hr = new Date().getHours();
   const greeting = hr < 12 ? "morning" : hr < 18 ? "afternoon" : "evening";
 
+  const tabs = [
+    { id: "test", label: "Test Agent" },
+    { id: "report", label: "Prompt Score" },
+    { id: "bulk", label: "Bulk Testing" },
+  ] as const;
+
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800&display=swap');
         @keyframes agentbounce { 0%,80%,100%{transform:translateY(0)} 40%{transform:translateY(-6px)} }
+        @keyframes spin { to { transform: rotate(360deg); } }
         * { box-sizing: border-box; }
         ::-webkit-scrollbar { width: 4px; }
-        ::-webkit-scrollbar-thumb { background: #D1D5DB; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: rgba(139,92,246,0.2); border-radius: 4px; }
       `}</style>
-      <div style={{ padding:"36px 40px", width:"100%", fontFamily:"'Plus Jakarta Sans',sans-serif", background:"#EDEEF5", minHeight:"100vh" }}>
+
+      {/* Orb background — same language as sidebar */}
+      <div style={{ position: "fixed", inset: 0, pointerEvents: "none", zIndex: 0, overflow: "hidden" }}>
+        <div style={{ position: "absolute", top: -120, right: 80, width: 480, height: 480, borderRadius: "50%", background: "radial-gradient(circle, rgba(139,92,246,0.18), transparent 70%)", filter: "blur(80px)" }} />
+        <div style={{ position: "absolute", top: "30%", left: -100, width: 400, height: 400, borderRadius: "50%", background: "radial-gradient(circle, rgba(99,102,241,0.14), transparent 70%)", filter: "blur(70px)" }} />
+        <div style={{ position: "absolute", bottom: 60, right: -60, width: 360, height: 360, borderRadius: "50%", background: "radial-gradient(circle, rgba(244,114,182,0.14), transparent 70%)", filter: "blur(70px)" }} />
+        <div style={{ position: "absolute", bottom: -80, left: 120, width: 300, height: 300, borderRadius: "50%", background: "radial-gradient(circle, rgba(167,139,250,0.12), transparent 70%)", filter: "blur(60px)" }} />
+      </div>
+
+      <div style={{
+        padding: "36px 40px", width: "100%",
+        fontFamily: "'DM Sans', sans-serif",
+        background: "linear-gradient(135deg, #F0EFFA 0%, #EAE8F5 50%, #F2EDF7 100%)",
+        minHeight: "100vh", position: "relative", zIndex: 1,
+      }}>
 
         {/* Header */}
-        <div style={{ marginBottom:28 }}>
-          <h1 style={{ fontSize:26, fontWeight:800, color:"#111827", letterSpacing:"-0.5px", marginBottom:4 }}>
-            Good <span style={{ color:"#4F46E5" }}>{greeting}</span>
+        <div style={{ marginBottom: 28 }}>
+          <h1 style={{ fontSize: 26, fontWeight: 800, color: "#111827", letterSpacing: "-0.5px", marginBottom: 4 }}>
+            Good <span style={{ color: "#4F46E5" }}>{greeting}</span>
           </h1>
-          <p style={{ fontSize:13, color:"#9CA3AF" }}>
+          <p style={{ fontSize: 13, color: "rgba(99,102,241,0.6)" }}>
             {prompt ? "Your agent is ready — test it or review its quality report." : "Complete onboarding to unlock your AI agent."}
           </p>
         </div>
 
         {/* Tabs */}
-        <div style={{ display:"flex", gap:4, marginBottom:20, background:"#E5E7EB", borderRadius:10, padding:4, width:"fit-content" }}>
-          {(["test","report"] as const).map(t => (
-            <button key={t} onClick={() => setTab(t)} style={{ padding:"8px 22px", borderRadius:8, border:"none", fontSize:12, fontWeight:700, cursor:"pointer", fontFamily:"'Plus Jakarta Sans',sans-serif", transition:"all .15s", background: tab===t ? "#FFFFFF" : "transparent", color: tab===t ? "#111827" : "#9CA3AF", boxShadow: tab===t ? "0 1px 4px rgba(0,0,0,.08)" : "none" }}>
-              {t === "test" ? "Test Agent" : "Full Report"}
+        <div style={{
+          display: "flex", gap: 4, marginBottom: 22,
+          background: "rgba(255,255,255,0.35)",
+          backdropFilter: "blur(20px)",
+          WebkitBackdropFilter: "blur(20px)",
+          borderRadius: 12, padding: 4, width: "fit-content",
+          border: "1px solid rgba(255,255,255,0.6)",
+          boxShadow: "inset 0 1px 0 rgba(255,255,255,0.8)",
+        }}>
+          {tabs.map(t => (
+            <button key={t.id} onClick={() => setTab(t.id)} style={{
+              padding: "8px 22px", borderRadius: 9, border: "none",
+              fontSize: 12, fontWeight: 700, cursor: "pointer",
+              fontFamily: "'DM Sans',sans-serif", transition: "all .15s",
+              background: tab === t.id
+                ? "rgba(255,255,255,0.85)"
+                : "transparent",
+              color: tab === t.id ? "#3730a3" : "rgba(60,40,120,0.5)",
+              boxShadow: tab === t.id
+                ? "inset 0 1px 0 rgba(255,255,255,0.9), 0 2px 8px rgba(99,102,241,0.1)"
+                : "none",
+              backdropFilter: tab === t.id ? "blur(12px)" : "none",
+            }}>
+              {t.label}
             </button>
           ))}
         </div>
 
+        {/* Content */}
         {loading ? (
-          <div style={{ display:"flex", alignItems:"center", justifyContent:"center", height:300 }}>
-            <div style={{ fontSize:13, color:"#9CA3AF" }}>Loading your agent...</div>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: 300 }}>
+            <div style={{ fontSize: 13, color: "rgba(99,102,241,0.5)" }}>Loading your agent...</div>
           </div>
         ) : !prompt ? (
-          <div style={{ background:"#FFFFFF", border:"1px solid #E5E7EB", borderRadius:16, boxShadow:"0 1px 4px rgba(0,0,0,.04)" }}>
+          <GlassCard>
             <LockedState />
-          </div>
+          </GlassCard>
         ) : tab === "test" ? (
           <TestAgent prompt={prompt} userId={userId} messages={messages} setMessages={setMessages} />
-        ) : (
+        ) : tab === "report" ? (
           <FullReport prompt={prompt} />
+        ) : (
+          <BulkTesting userId={userId} prompt={prompt} />
         )}
       </div>
     </>
