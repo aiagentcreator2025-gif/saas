@@ -57,13 +57,14 @@ const AGENT_IMAGES: Record<string,string> = {
   "Follow-Up Agent":      `${BASE}facefollowupagent.png`,
 };
 
-// ─── GLASSMORPHISM CARD (Optimized) ─────────────────────────────────────────
-const glassCard: React.CSSProperties = {
-  background: "rgba(255, 255, 255, 0.08)",
-  backdropFilter: "blur(12px)",
-  borderRadius: 24,
-  border: "1px solid rgba(255, 255, 255, 0.15)",
-  boxShadow: "0 8px 32px rgba(31, 38, 135, 0.15), inset 0 0 0 1px rgba(255, 255, 255, 0.2)",
+// ─── CARD STYLE — no backdropFilter, premium shadow instead ─────────────────
+// backdropFilter: blur() causes GPU repaints on every frame and tanks performance.
+// We replicate the "glass" feel with white bg + border + layered box-shadows.
+const card: React.CSSProperties = {
+  background: "#ffffff",
+  borderRadius: 20,
+  border: "1px solid #E8EFFE",
+  boxShadow: "0 2px 8px rgba(79,70,229,0.06), 0 8px 24px rgba(79,70,229,0.04)",
 };
 
 // ─── SVG Icons ────────────────────────────────────────────────────────────────
@@ -141,7 +142,7 @@ type Flow     = typeof FLOWS[0];
 
 function AgentAvatar({ flowTitle }: { flowTitle:string }) {
   return (
-    <div style={{ width:48, height:48, borderRadius:"50%", overflow:"hidden", border:"2px solid rgba(255,255,255,0.2)", boxShadow:"0 4px 12px rgba(79,70,229,0.15)", background:"#EEF2FF", flexShrink:0 }}>
+    <div style={{ width:48, height:48, borderRadius:"50%", overflow:"hidden", border:"2px solid #E8EFFE", boxShadow:"0 2px 8px rgba(79,70,229,0.12)", background:"#EEF2FF", flexShrink:0 }}>
       <img src={AGENT_IMAGES[flowTitle]} alt={flowTitle}
         style={{ width:"100%", height:"100%", objectFit:"cover" }}
         onError={e=>{ (e.target as HTMLImageElement).style.display="none"; }}
@@ -169,7 +170,7 @@ function DonutChart() {
   }
   return (
     <div style={{ display:"flex", alignItems:"center", gap:20 }}>
-      <svg width={160} height={160} viewBox="0 0 160 160" style={{ flexShrink:0, filter:"drop-shadow(0 4px 16px rgba(79,70,229,0.18))" }}>
+      <svg width={160} height={160} viewBox="0 0 160 160" style={{ flexShrink:0, filter:"drop-shadow(0 4px 16px rgba(79,70,229,0.12))" }}>
         {segs.map((s,i)=><path key={i} d={arc(s.pct)} fill={s.color}/>)}
         <circle cx={cx} cy={cy} r={32} fill="#fff"/>
         <text x={cx} y={cy-5} textAnchor="middle" fontSize={14} fontWeight={800} fill="#111827" fontFamily="'Plus Jakarta Sans',sans-serif">301</text>
@@ -205,15 +206,15 @@ function BubbleBarChart({ data, labels }: { data:DataRow[]; labels:string[] }) {
             <div key={i} style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", gap:4, cursor:"pointer", position:"relative" }}
               onMouseEnter={()=>setTooltip(i)} onMouseLeave={()=>setTooltip(null)}>
               {hov && (
-                <div style={{ position:"absolute", bottom:h1+18, left:"50%", transform:"translateX(-50%)", background:"#111827", color:"#fff", borderRadius:12, padding:"10px 14px", fontSize:11, fontWeight:600, whiteSpace:"nowrap", zIndex:10, boxShadow:"0 8px 24px rgba(0,0,0,0.2)", display:"flex", flexDirection:"column", gap:4 }}>
+                <div style={{ position:"absolute", bottom:h1+18, left:"50%", transform:"translateX(-50%)", background:"#111827", color:"#fff", borderRadius:12, padding:"10px 14px", fontSize:11, fontWeight:600, whiteSpace:"nowrap", zIndex:10, boxShadow:"0 8px 24px rgba(0,0,0,0.15)", display:"flex", flexDirection:"column", gap:4 }}>
                   <span style={{ color:"#818CF8" }}>● {entry.leadsHandled} Leads</span>
                   <span style={{ color:"#C7D2FE" }}>● {entry.magnetSent} Magnets</span>
                   <div style={{ position:"absolute", bottom:-5, left:"50%", transform:"translateX(-50%)", width:0, height:0, borderLeft:"5px solid transparent", borderRight:"5px solid transparent", borderTop:"5px solid #111827" }}/>
                 </div>
               )}
               <div style={{ display:"flex", gap:3, alignItems:"flex-end", width:"100%" }}>
-                <div style={{ flex:1, height:h1, background: hov ? "linear-gradient(180deg,#6366F1,#4F46E5)" : "linear-gradient(180deg,#A5B4FC,#818CF8)", borderRadius:"8px 8px 0 0", transition:"all .2s ease", boxShadow: hov ? "0 4px 12px rgba(79,70,229,0.35)" : "none" }}/>
-                <div style={{ flex:1, height:h2, background: hov ? "linear-gradient(180deg,#C7D2FE,#A5B4FC)" : "linear-gradient(180deg,#E0E7FF,#C7D2FE)", borderRadius:"8px 8px 0 0", transition:"all .2s ease" }}/>
+                <div style={{ flex:1, height:h1, background: hov ? "linear-gradient(180deg,#6366F1,#4F46E5)" : "linear-gradient(180deg,#A5B4FC,#818CF8)", borderRadius:"8px 8px 0 0", transition:"all .2s ease", boxShadow: hov ? "0 4px 12px rgba(79,70,229,0.25)" : "none" }}/>
+                <div style={{ flex:1, height:h2, background: hov ? "linear-gradient(180deg,#C7D2FE,#A5B4FC)" : "linear-gradient(180deg,#EEF2FF,#C7D2FE)", borderRadius:"8px 8px 0 0", transition:"all .2s ease" }}/>
               </div>
               <span style={{ fontSize:9, color:"#9CA3AF", fontWeight:600 }}>{labels[i]}</span>
             </div>
@@ -226,7 +227,7 @@ function BubbleBarChart({ data, labels }: { data:DataRow[]; labels:string[] }) {
           <span style={{ fontSize:10, color:"#9CA3AF", fontWeight:500 }}>Leads Handled</span>
         </div>
         <div style={{ display:"flex", alignItems:"center", gap:6 }}>
-          <div style={{ width:10, height:10, borderRadius:3, background:"linear-gradient(135deg,#E0E7FF,#C7D2FE)" }}/>
+          <div style={{ width:10, height:10, borderRadius:3, background:"linear-gradient(135deg,#EEF2FF,#C7D2FE)" }}/>
           <span style={{ fontSize:10, color:"#9CA3AF", fontWeight:500 }}>Lead Magnet Sent</span>
         </div>
       </div>
@@ -244,9 +245,9 @@ function Avatar({ init, bg="#EEF2FF", color="#4F46E5", size=30 }: { init:string;
 
 function FlowStepCard({ step }: { step:FlowStep }) {
   return (
-    <div style={{ textAlign:"center", ...glassCard, padding:"14px 10px", transition:"transform .2s ease, box-shadow .2s ease", cursor:"pointer" }}
-      onMouseEnter={e=>{ (e.currentTarget as HTMLElement).style.transform="translateY(-4px)"; (e.currentTarget as HTMLElement).style.boxShadow="0 12px 32px rgba(79,70,229,0.25)"; }}
-      onMouseLeave={e=>{ (e.currentTarget as HTMLElement).style.transform="translateY(0)"; (e.currentTarget as HTMLElement).style.boxShadow="0 8px 32px rgba(31, 38, 135, 0.15)"; }}
+    <div
+      className="step-card"
+      style={{ textAlign:"center", ...card, padding:"14px 10px", cursor:"pointer", transition:"transform .2s ease, box-shadow .2s ease" }}
     >
       <div style={{ display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 8px" }}>
         <StepIllustration label={step.label} color={step.color}/>
@@ -260,7 +261,7 @@ function FlowStepCard({ step }: { step:FlowStep }) {
 
 function FlowSection({ flow }: { flow:Flow }) {
   return (
-    <div style={{ ...glassCard, padding:"22px 24px" }}>
+    <div style={{ ...card, padding:"22px 24px" }}>
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:18 }}>
         <div style={{ display:"flex", alignItems:"center", gap:12 }}>
           <AgentAvatar flowTitle={flow.title}/>
@@ -269,10 +270,9 @@ function FlowSection({ flow }: { flow:Flow }) {
             <div style={{ fontSize:11, color:"#9CA3AF", fontWeight:500 }}>{flow.subtitle}</div>
           </div>
         </div>
-        <button style={{ padding:"8px 18px", borderRadius:20, border:"none", background:"#111827", color:"#fff", fontSize:11, fontWeight:700, cursor:"pointer", fontFamily:"'Plus Jakarta Sans',sans-serif", transition:"all .2s ease" }}
-          onMouseEnter={e=>{ (e.currentTarget as HTMLElement).style.background="#374151"; (e.currentTarget as HTMLElement).style.transform="translateY(-1px)"; }}
-          onMouseLeave={e=>{ (e.currentTarget as HTMLElement).style.background="#111827"; (e.currentTarget as HTMLElement).style.transform="translateY(0)"; }}
-        >Edit Flow</button>
+        <button className="edit-btn" style={{ padding:"8px 18px", borderRadius:20, border:"none", background:"#111827", color:"#fff", fontSize:11, fontWeight:700, cursor:"pointer", fontFamily:"'Plus Jakarta Sans',sans-serif", transition:"all .2s ease" }}>
+          Edit Flow
+        </button>
       </div>
       <div style={{ display:"flex", alignItems:"center" }}>
         {flow.steps.map((step, i) => (
@@ -288,9 +288,9 @@ function FlowSection({ flow }: { flow:Flow }) {
           </div>
         ))}
       </div>
-      <div style={{ marginTop:14, display:"flex", alignItems:"center", gap:12, ...glassCard, padding:"10px 14px" }}>
+      <div style={{ marginTop:14, display:"flex", alignItems:"center", gap:12, background:"#F8F9FF", borderRadius:12, border:"1px solid #E8EFFE", padding:"10px 14px" }}>
         <span style={{ fontSize:11, color:"#9CA3AF", flexShrink:0, fontWeight:500 }}>Conversion rate</span>
-        <div style={{ flex:1, height:5, background:"rgba(224,231,255,0.4)", borderRadius:10, overflow:"hidden", backdropFilter:"blur(4px)" }}>
+        <div style={{ flex:1, height:5, background:"#E8EFFE", borderRadius:10, overflow:"hidden" }}>
           <div style={{ height:"100%", width:`${flow.conversion.pct}%`, background:"linear-gradient(90deg,#4F46E5,#818CF8)", borderRadius:10 }}/>
         </div>
         <span style={{ fontSize:12, fontWeight:800, color:"#4F46E5", flexShrink:0 }}>{flow.conversion.label}</span>
@@ -320,39 +320,38 @@ export function DashboardScreen() {
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
         * { box-sizing:border-box; margin:0; padding:0; }
+
+        /* No backdrop-filter anywhere — kills performance */
         .stat-card { transition: transform .2s ease, box-shadow .2s ease; cursor:pointer; }
-        .stat-card:hover { transform: translateY(-5px); box-shadow: 0 16px 40px rgba(99,102,241,0.25) !important; }
+        .stat-card:hover { transform: translateY(-4px); box-shadow: 0 8px 28px rgba(79,70,229,0.14) !important; }
+
+        .step-card:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(79,70,229,0.12) !important; }
+
         .per-btn { transition:all .15s; cursor:pointer; border:none; }
+
+        .edit-btn:hover { background:#374151 !important; transform:translateY(-1px); }
+
         ::-webkit-scrollbar { width:4px; }
-        ::-webkit-scrollbar-thumb { background:rgba(199,210,254,0.5); border-radius:4px; }
+        ::-webkit-scrollbar-thumb { background:#C7D2FE; border-radius:4px; }
         ::-webkit-scrollbar-track { background:transparent; }
-        @keyframes fadeUp { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:translateY(0); } }
-        .fu  { animation: fadeUp 0.45s ease forwards; }
-        .fu1 { animation: fadeUp 0.45s ease 0.06s forwards; opacity:0; }
-        .fu2 { animation: fadeUp 0.45s ease 0.12s forwards; opacity:0; }
-        .fu3 { animation: fadeUp 0.45s ease 0.18s forwards; opacity:0; }
-        .fu4 { animation: fadeUp 0.45s ease 0.24s forwards; opacity:0; }
-        @keyframes float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-8px); } }
-        .float-circle { animation: float 6s ease-in-out infinite; }
+
+        @keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+        .fu  { animation: fadeUp 0.4s ease forwards; }
+        .fu1 { animation: fadeUp 0.4s ease 0.05s forwards; opacity:0; }
+        .fu2 { animation: fadeUp 0.4s ease 0.1s forwards; opacity:0; }
+        .fu3 { animation: fadeUp 0.4s ease 0.15s forwards; opacity:0; }
+        .fu4 { animation: fadeUp 0.4s ease 0.2s forwards; opacity:0; }
       `}</style>
 
       <div style={{
         flex:1, overflowY:"auto", padding:"28px 28px 40px 24px",
         display:"flex", flexDirection:"column", gap:18,
         fontFamily:"'Plus Jakarta Sans',sans-serif",
-        background:"linear-gradient(135deg, #A8B5FF 0%, #B8C5FF 25%, #C8D5FF 50%, #B8C5FF 75%, #A8B5FF 100%)",
+        /* Clean white base with a very soft blue tint in corners — no heavy gradient */
+        background:"radial-gradient(ellipse 80% 60% at 10% 0%, #EEF2FF 0%, #ffffff 55%) , radial-gradient(ellipse 60% 50% at 90% 100%, #EDF1FF 0%, #ffffff 60%)",
+        backgroundColor:"#ffffff",
         minHeight:"100vh",
-        position:"relative",
-        overflow:"hidden",
       }}>
-
-        {/* ── Floating Circles (Background) ── */}
-        <div style={{ position:"absolute", top:"5%", left:"5%", width:200, height:200, borderRadius:"50%", background:"radial-gradient(circle, rgba(99,102,241,0.15) 0%, transparent 70%)", filter:"blur(40px)", pointerEvents:"none", animation:"float 8s ease-in-out infinite" }}/>
-        <div style={{ position:"absolute", bottom:"10%", right:"8%", width:250, height:250, borderRadius:"50%", background:"radial-gradient(circle, rgba(79,70,229,0.12) 0%, transparent 70%)", filter:"blur(50px)", pointerEvents:"none", animation:"float 10s ease-in-out infinite 2s" }}/>
-        <div style={{ position:"absolute", top:"50%", right:"5%", width:180, height:180, borderRadius:"50%", background:"radial-gradient(circle, rgba(139,92,246,0.1) 0%, transparent 70%)", filter:"blur(45px)", pointerEvents:"none", animation:"float 7s ease-in-out infinite 1s" }}/>
-
-        {/* ── Content (Relative positioning) ── */}
-        <div style={{ position:"relative", zIndex:1 }}>
 
         {/* ── Greeting ── */}
         <div className="fu">
@@ -370,28 +369,30 @@ export function DashboardScreen() {
             const isDark = i===0;
             return (
               <div key={i} className="stat-card" style={{
-                borderRadius:24, padding:"22px",
+                borderRadius:20, padding:"22px",
                 background: isDark
                   ? "linear-gradient(135deg,#4F46E5 0%,#6366F1 55%,#818CF8 100%)"
-                  : "rgba(255, 255, 255, 0.1)",
-                backdropFilter: isDark ? "none" : "blur(12px)",
-                border: isDark ? "none" : "1px solid rgba(255, 255, 255, 0.15)",
+                  : "#ffffff",
+                border: isDark ? "none" : "1px solid #E8EFFE",
                 boxShadow: isDark
-                  ? "0 12px 40px rgba(79,70,229,0.38)"
-                  : "0 8px 32px rgba(31, 38, 135, 0.1), inset 0 0 0 1px rgba(255, 255, 255, 0.1)",
+                  ? "0 8px 28px rgba(79,70,229,0.28)"
+                  : "0 2px 8px rgba(79,70,229,0.06), 0 8px 24px rgba(79,70,229,0.04)",
                 position:"relative", overflow:"hidden",
               }}>
                 {isDark && (
                   <>
-                    <div style={{ position:"absolute", top:-40, right:-40, width:120, height:120, borderRadius:"50%", background:"rgba(255,255,255,0.1)", filter:"blur(30px)" }}/>
-                    <div style={{ position:"absolute", bottom:-20, left:-20, width:80, height:80, borderRadius:"50%", background:"rgba(255,255,255,0.08)", filter:"blur(20px)" }}/>
+                    <div style={{ position:"absolute", top:-40, right:-40, width:120, height:120, borderRadius:"50%", background:"rgba(255,255,255,0.1)" }}/>
+                    <div style={{ position:"absolute", bottom:-20, left:-20, width:80, height:80, borderRadius:"50%", background:"rgba(255,255,255,0.07)" }}/>
                   </>
                 )}
                 <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:16, position:"relative" }}>
-                  <div style={{ width:38, height:38, borderRadius:11, background: isDark?"rgba(255,255,255,0.16)":"rgba(255,255,255,0.2)", backdropFilter:"blur(4px)", display:"flex", alignItems:"center", justifyContent:"center" }}>
+                  <div style={{ width:38, height:38, borderRadius:11, background: isDark?"rgba(255,255,255,0.18)":"#EEF2FF", display:"flex", alignItems:"center", justifyContent:"center" }}>
                     <s.Icon size={16} strokeWidth={1.8} color={isDark?"#fff":"#4F46E5"}/>
                   </div>
-                  <span style={{ fontSize:10, fontWeight:700, padding:"4px 9px", borderRadius:20, color: s.up?(isDark?"#fff":"#16A34A"):"#DC2626", background: s.up?(isDark?"rgba(255,255,255,0.18)":"rgba(34,197,94,0.15)"):"rgba(220,38,38,0.15)", backdropFilter:"blur(4px)", display:"flex", alignItems:"center", gap:3 }}>
+                  <span style={{ fontSize:10, fontWeight:700, padding:"4px 9px", borderRadius:20,
+                    color: s.up?(isDark?"#fff":"#16A34A"):"#DC2626",
+                    background: s.up?(isDark?"rgba(255,255,255,0.2)":"#DCFCE7"):"#FEE2E2",
+                    display:"flex", alignItems:"center", gap:3 }}>
                     {s.up?<TrendingUp size={9} strokeWidth={2.5}/>:<TrendingDown size={9} strokeWidth={2.5}/>} {s.change}
                   </span>
                 </div>
@@ -405,15 +406,21 @@ export function DashboardScreen() {
 
         {/* ── Chart + Donut ── */}
         <div className="fu2" style={{ display:"grid", gridTemplateColumns:"1.7fr 1fr", gap:16 }}>
-          <div style={{ ...glassCard, padding:"22px 24px" }}>
+          <div style={{ ...card, padding:"22px 24px" }}>
             <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:20 }}>
               <div>
                 <div style={{ fontSize:15, fontWeight:800, color:"#111827", letterSpacing:"-0.3px", marginBottom:2 }}>Lead Habits</div>
                 <div style={{ fontSize:11, color:"#6B7280", fontWeight:500 }}>Track your lead flow performance</div>
               </div>
-              <div style={{ display:"flex", background:"rgba(255,255,255,0.15)", borderRadius:10, padding:3, gap:1, backdropFilter:"blur(4px)" }}>
+              <div style={{ display:"flex", background:"#F3F4F6", borderRadius:10, padding:3, gap:1 }}>
                 {["weekly","monthly","yearly"].map(p=>(
-                  <button key={p} className="per-btn" onClick={()=>setPeriod(p)} style={{ padding:"5px 12px", borderRadius:8, fontSize:10, fontFamily:"'Plus Jakarta Sans',sans-serif", fontWeight:700, background:period===p?"rgba(255,255,255,0.3)":"transparent", color:period===p?"#111827":"#6B7280", backdropFilter:period===p?"blur(8px)":"none", boxShadow:period===p?"0 2px 6px rgba(0,0,0,0.08)":"none" }}>
+                  <button key={p} className="per-btn" onClick={()=>setPeriod(p)} style={{
+                    padding:"5px 12px", borderRadius:8, fontSize:10,
+                    fontFamily:"'Plus Jakarta Sans',sans-serif", fontWeight:700,
+                    background:period===p?"#ffffff":"transparent",
+                    color:period===p?"#111827":"#6B7280",
+                    boxShadow:period===p?"0 1px 4px rgba(0,0,0,0.08)":"none",
+                  }}>
                     {p.charAt(0).toUpperCase()+p.slice(1)}
                   </button>
                 ))}
@@ -422,23 +429,23 @@ export function DashboardScreen() {
             <BubbleBarChart data={chartData} labels={labels}/>
           </div>
 
-          <div style={{ ...glassCard, padding:"22px 24px" }}>
+          <div style={{ ...card, padding:"22px 24px" }}>
             <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:16 }}>
               <div>
                 <div style={{ fontSize:15, fontWeight:800, color:"#111827", letterSpacing:"-0.3px", marginBottom:2 }}>Flow Stats</div>
                 <div style={{ fontSize:11, color:"#6B7280", fontWeight:500 }}>Track your flow metrics</div>
               </div>
-              <div style={{ display:"flex", alignItems:"center", gap:5, fontSize:11, color:"#6B7280", fontWeight:600, background:"rgba(255,255,255,0.15)", border:"1px solid rgba(255,255,255,0.2)", borderRadius:8, padding:"5px 10px", cursor:"pointer", backdropFilter:"blur(4px)" }}>
+              <div style={{ display:"flex", alignItems:"center", gap:5, fontSize:11, color:"#6B7280", fontWeight:600, background:"#F3F4F6", border:"1px solid #E5E7EB", borderRadius:8, padding:"5px 10px", cursor:"pointer" }}>
                 Today <ChevronDown size={10} strokeWidth={2}/>
               </div>
             </div>
             <DonutChart/>
-            <div style={{ marginTop:16, ...glassCard, padding:"12px 14px" }}>
+            <div style={{ marginTop:16, background:"#F8F9FF", borderRadius:12, border:"1px solid #E8EFFE", padding:"12px 14px" }}>
               <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:8 }}>
                 <span style={{ fontSize:11, color:"#6B7280", fontWeight:500 }}>Conversion rate</span>
                 <span style={{ fontSize:12, fontWeight:800, color:"#4F46E5" }}>24%</span>
               </div>
-              <div style={{ height:5, background:"rgba(224,231,255,0.4)", borderRadius:10, overflow:"hidden", backdropFilter:"blur(4px)" }}>
+              <div style={{ height:5, background:"#E8EFFE", borderRadius:10, overflow:"hidden" }}>
                 <div style={{ height:"100%", width:"24%", background:"linear-gradient(90deg,#4F46E5,#818CF8)", borderRadius:10 }}/>
               </div>
             </div>
@@ -448,17 +455,17 @@ export function DashboardScreen() {
         {/* ── Booking Flow + Recent Activity ── */}
         <div className="fu3" style={{ display:"grid", gridTemplateColumns:"1.7fr 1fr", gap:16 }}>
           <FlowSection flow={FLOWS[0]}/>
-          <div style={{ ...glassCard, padding:"22px 20px", display:"flex", flexDirection:"column" }}>
+          <div style={{ ...card, padding:"22px 20px", display:"flex", flexDirection:"column" }}>
             <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:2 }}>
               <div style={{ fontSize:15, fontWeight:800, color:"#111827", letterSpacing:"-0.3px" }}>Recent Activity</div>
-              <div style={{ display:"flex", alignItems:"center", gap:5, fontSize:11, color:"#6B7280", fontWeight:600, background:"rgba(255,255,255,0.15)", border:"1px solid rgba(255,255,255,0.2)", borderRadius:8, padding:"5px 10px", cursor:"pointer", backdropFilter:"blur(4px)" }}>
+              <div style={{ display:"flex", alignItems:"center", gap:5, fontSize:11, color:"#6B7280", fontWeight:600, background:"#F3F4F6", border:"1px solid #E5E7EB", borderRadius:8, padding:"5px 10px", cursor:"pointer" }}>
                 Today <ChevronDown size={10} strokeWidth={2}/>
               </div>
             </div>
             <div style={{ fontSize:11, color:"#6B7280", marginBottom:16, fontWeight:500 }}>All latest events</div>
             <div style={{ flex:1 }}>
               {ACTIVITIES.map((a,i)=>(
-                <div key={i} style={{ display:"flex", alignItems:"flex-start", gap:10, padding:"10px 0", borderBottom:i<ACTIVITIES.length-1?"1px solid rgba(255,255,255,0.1)":"none" }}>
+                <div key={i} style={{ display:"flex", alignItems:"flex-start", gap:10, padding:"10px 0", borderBottom:i<ACTIVITIES.length-1?"1px solid #F3F4F6":"none" }}>
                   <Avatar init={a.init} bg={a.bg} color={a.color} size={32}/>
                   <div style={{ flex:1 }}>
                     <div style={{ fontSize:12, color:"#111827", lineHeight:1.5 }}>
@@ -471,10 +478,9 @@ export function DashboardScreen() {
                 </div>
               ))}
             </div>
-            <button style={{ width:"100%", marginTop:14, padding:"10px", borderRadius:20, border:"none", background:"#111827", fontSize:11, fontWeight:700, color:"#fff", cursor:"pointer", fontFamily:"'Plus Jakarta Sans',sans-serif", transition:"all .2s ease" }}
-              onMouseEnter={e=>{ (e.currentTarget as HTMLElement).style.background="#374151"; (e.currentTarget as HTMLElement).style.transform="translateY(-1px)"; }}
-              onMouseLeave={e=>{ (e.currentTarget as HTMLElement).style.background="#111827"; (e.currentTarget as HTMLElement).style.transform="translateY(0)"; }}
-            >View all activity</button>
+            <button className="edit-btn" style={{ width:"100%", marginTop:14, padding:"10px", borderRadius:20, border:"none", background:"#111827", fontSize:11, fontWeight:700, color:"#fff", cursor:"pointer", fontFamily:"'Plus Jakarta Sans',sans-serif", transition:"all .2s ease" }}>
+              View all activity
+            </button>
           </div>
         </div>
 
@@ -484,7 +490,6 @@ export function DashboardScreen() {
           <FlowSection flow={FLOWS[2]}/>
         </div>
 
-        </div>
       </div>
     </>
   );
