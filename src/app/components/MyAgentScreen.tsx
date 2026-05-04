@@ -134,7 +134,83 @@ function LockedState() {
   );
 }
 
-// ─── Full Report (glass redesign) ───
+// ─── Section icon SVGs ───
+function IconShield() {
+  return <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="rgba(99,102,241,0.35)" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>;
+}
+function IconGrid() {
+  return <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="rgba(99,102,241,0.35)" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>;
+}
+function IconStar() {
+  return <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="rgba(99,102,241,0.35)" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>;
+}
+function IconLayers() {
+  return <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="rgba(99,102,241,0.35)" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>;
+}
+function IconFix() {
+  return <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="rgba(99,102,241,0.35)" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>;
+}
+
+function CheckCard({ label, note, pass }: { label: string; note: string; pass: boolean }) {
+  return (
+    <div style={{
+      background: "rgba(255,255,255,0.62)", backdropFilter: "blur(24px)",
+      WebkitBackdropFilter: "blur(24px)", border: "1px solid rgba(255,255,255,0.82)",
+      borderRadius: 16, padding: "18px 16px",
+      display: "flex", flexDirection: "column", gap: 10,
+      boxShadow: "inset 0 1.5px 0 rgba(255,255,255,0.95), 0 2px 12px rgba(99,102,241,0.04)",
+    }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+        <div style={{
+          width: 34, height: 34, borderRadius: 10, flexShrink: 0,
+          background: pass ? "rgba(5,150,105,0.07)" : "rgba(220,38,38,0.06)",
+          border: `1px solid ${pass ? "rgba(5,150,105,0.15)" : "rgba(220,38,38,0.12)"}`,
+          display: "flex", alignItems: "center", justifyContent: "center",
+        }}>
+          {pass ? <CheckCircle size={15} color="rgba(5,150,105,0.7)" strokeWidth={1.8}/> : <XCircle size={15} color="rgba(220,38,38,0.7)" strokeWidth={1.8}/>}
+        </div>
+        <span style={{
+          fontSize: 9, fontWeight: 700, padding: "2px 8px", borderRadius: 20, letterSpacing: "0.4px",
+          background: pass ? "rgba(5,150,105,0.07)" : "rgba(220,38,38,0.06)",
+          color: pass ? "#059669" : "#DC2626",
+          border: `1px solid ${pass ? "rgba(5,150,105,0.15)" : "rgba(220,38,38,0.12)"}`,
+        }}>{pass ? "Pass" : "Fail"}</span>
+      </div>
+      <div style={{ fontSize: 12, fontWeight: 700, color: "#1A1916", lineHeight: 1.35 }}>
+        {label.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase())}
+      </div>
+      <div style={{ fontSize: 11, color: "rgba(60,40,120,0.5)", lineHeight: 1.55 }}>{note}</div>
+    </div>
+  );
+}
+
+function SectionBlock({ title, icon, data, score, max }: {
+  title: string; icon: React.ReactNode;
+  data: Record<string, any>; score: number; max: number;
+}) {
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          {icon}
+          <span style={{ fontSize: 14, fontWeight: 700, color: "#1A1916" }}>{title}</span>
+        </div>
+        <span style={{
+          fontSize: 11, fontWeight: 700, padding: "3px 12px", borderRadius: 20,
+          background: "rgba(99,102,241,0.07)", color: "#4F46E5",
+          border: "1px solid rgba(99,102,241,0.14)",
+        }}>{score}/{max}</span>
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(210px, 1fr))", gap: 10 }}>
+        {Object.entries(data).map(([key, val]: [string, any], i) => (
+          <CheckCard key={i} label={key} note={val?.note ?? ""} pass={val?.pass ?? false} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── Full Report — card-grid + agent selector ───
 function FullReport({ prompt }: { prompt: AgentPrompt }) {
   const report = typeof prompt.scoring_report === "string"
     ? JSON.parse(prompt.scoring_report)
