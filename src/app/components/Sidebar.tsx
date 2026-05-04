@@ -27,11 +27,12 @@ export function Sidebar({ active, onNav }: Props) {
 
   return (
     <div style={{
-      width: 240, flexShrink: 0, height: "100vh", position: "sticky",
-      top: 0, zIndex: 10, padding: "12px 10px", display: "flex",
-      flexDirection: "column", fontFamily: "'DM Sans', sans-serif",
-      background: "#F5F6FA", overflow: "hidden",
-    }}>
+  width: 240, flexShrink: 0, height: "100vh", position: "sticky",
+  top: 0, zIndex: 10, padding: "12px 10px", display: "flex",
+  flexDirection: "column", fontFamily: "'DM Sans', sans-serif",
+  background: "transparent",
+  overflow: "hidden",
+}}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;1,400&family=DM+Sans:wght@300;400;500&display=swap');
         .sb-item:hover { background: rgba(255,255,255,0.4) !important; color: #1A1916 !important; }
