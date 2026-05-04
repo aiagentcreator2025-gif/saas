@@ -953,7 +953,7 @@ export function MyAgentScreen({ userId }: { userId: string }) {
       <div style={{
         padding: "36px 40px", width: "100%",
         fontFamily: "'DM Sans', sans-serif",
-        background: "linear-gradient(135deg, #F0EFFA 0%, #EAE8F5 50%, #F2EDF7 100%)",
+        background: "linear-gradient(135deg, #EEF0FA 0%, #F0F1F8 40%, #EBF0FF 100%)",
         minHeight: "100vh", position: "relative", zIndex: 1,
       }}>
 
