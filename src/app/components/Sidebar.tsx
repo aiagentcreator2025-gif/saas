@@ -52,22 +52,21 @@ export function Sidebar({ active, onNav }: Props) {
         }
       `}</style>
 
-      {/* Outer wrapper — the colored bg that glass refracts */}
-      <div style={{
-        width: 240,
-        flexShrink: 0,
-        height: "100vh",
-        position: "sticky",
-        top: 0,
-        padding: "12px 10px",
-        display: "flex",
-        flexDirection: "column",
-        fontFamily: "'DM Sans', sans-serif",
-        // Rich gradient bg — this is what glass bends
-        background: "linear-gradient(160deg, #c8b8f8 0%, #b8c8f8 35%, #d4b8f8 65%, #f0b8e8 100%)",
-        position: "relative",
-        overflow: "hidden",
-      }}>
+    {/* Outer wrapper — the colored bg that glass refracts */}
+<div style={{
+  width: 240,
+  flexShrink: 0,
+  height: "100vh",
+  position: "sticky",
+  top: 0,
+  zIndex: 10,
+  padding: "12px 10px",
+  display: "flex",
+  flexDirection: "column",
+  fontFamily: "'DM Sans', sans-serif",
+  background: "linear-gradient(160deg, #c8b8f8 0%, #b8c8f8 35%, #d4b8f8 65%, #f0b8e8 100%)",
+  overflow: "hidden",
+}}>
 
         {/* Background texture orbs for depth */}
         <div style={{ position: "absolute", inset: 0, pointerEvents: "none", zIndex: 0 }}>
