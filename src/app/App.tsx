@@ -90,7 +90,8 @@ export default function App() {
 
   return (
     <div style={{
-      display: "flex", height: "100vh", background: "#F5F6FA",
+      display: "flex", height: "100vh",
+      background: "linear-gradient(135deg, #ede9f8 0%, #F5F6FA 20%, #F5F6FA 80%, #F5F6FA 100%)",
       fontFamily: "'Plus Jakarta Sans', sans-serif", overflow: "hidden"
     }}>
       <Sidebar active={screen} onNav={setScreen} />
