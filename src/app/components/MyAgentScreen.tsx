@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from "react";
-import { Lock, Send, CheckCircle, XCircle, Bot, RotateCcw, Plus, X, FlaskConical, Shield, Sparkles, ChevronRight, Loader2, Activity } from "lucide-react";
+import { Lock, Send, CheckCircle, XCircle, Bot, RotateCcw, Plus, X, FlaskConical, Shield, Sparkles, ChevronRight, Loader2, Activity, ChevronDown } from "lucide-react";
 import { supabase } from "../supabaseClient";
 
 const CHAT_WEBHOOK = "https://rosegoldprojectai2.app.n8n.cloud/webhook/9d8cb518-ca82-48b8-b31d-c6ce4011d9a3";
@@ -30,17 +30,26 @@ interface Criteria {
   selected: boolean;
 }
 
-// ─── New: scenario result from Supabase ───
 interface ScenarioResult {
   id: string;
   scenario_id: string;
   criteria_id: string | null;
+  input_message: string | null;
   agent_response: string | null;
   content_score: number | null;
   behavior_score: number | null;
   final_score: number | null;
   issues: string[];
+  summary: string | null;
+  status: string | null;
   created_at: string;
+}
+
+interface TestRun {
+  id: string;
+  status: string;
+  current_step: string | null;
+  final_score: number | null;
 }
 
 function getNow() {
@@ -59,7 +68,6 @@ async function fetchPrompt(userId: string): Promise<AgentPrompt | null> {
   return data ?? null;
 }
 
-// ─── Glass card wrapper ───
 function GlassCard({ children, style }: { children: React.ReactNode; style?: React.CSSProperties }) {
   return (
     <div style={{
@@ -68,12 +76,7 @@ function GlassCard({ children, style }: { children: React.ReactNode; style?: Rea
       WebkitBackdropFilter: "blur(32px) saturate(180%)",
       border: "1px solid rgba(255,255,255,0.75)",
       borderRadius: 20,
-      boxShadow: `
-        inset 0 1.5px 0 rgba(255,255,255,0.9),
-        inset 0 -1px 0 rgba(255,255,255,0.08),
-        0 4px 32px rgba(99,102,241,0.08),
-        0 1px 4px rgba(0,0,0,0.04)
-      `,
+      boxShadow: `inset 0 1.5px 0 rgba(255,255,255,0.9), inset 0 -1px 0 rgba(255,255,255,0.08), 0 4px 32px rgba(99,102,241,0.08), 0 1px 4px rgba(0,0,0,0.04)`,
       ...style,
     }}>
       {children}
@@ -81,12 +84,11 @@ function GlassCard({ children, style }: { children: React.ReactNode; style?: Rea
   );
 }
 
-// ─── Score Ring ───
 function ScoreRing({ score }: { score: number }) {
   const r = 42;
   const circ = 2 * Math.PI * r;
   const fill = (score / 100) * circ;
-  const color = score >= 90 ? "#059669" : score >= 70 ? "#D97706" : "#DC2626";
+  const color = score >= 80 ? "#059669" : score >= 60 ? "#D97706" : "#DC2626";
   return (
     <div style={{ position: "relative", width: 100, height: 100, flexShrink: 0 }}>
       <svg width="100" height="100" viewBox="0 0 100 100">
@@ -107,8 +109,7 @@ function PassBadge({ pass }: { pass: boolean }) {
   return (
     <span style={{
       display: "inline-flex", alignItems: "center", gap: 4,
-      fontSize: 10, fontWeight: 700, padding: "3px 10px",
-      borderRadius: 20, flexShrink: 0,
+      fontSize: 10, fontWeight: 700, padding: "3px 10px", borderRadius: 20, flexShrink: 0,
       background: pass ? "rgba(5,150,105,0.1)" : "rgba(220,38,38,0.08)",
       color: pass ? "#059669" : "#DC2626",
       border: `1px solid ${pass ? "rgba(5,150,105,0.2)" : "rgba(220,38,38,0.15)"}`,
@@ -143,8 +144,7 @@ function CheckCard({ label, note, pass }: { label: string; note: string; pass: b
     <div style={{
       background: "rgba(255,255,255,0.62)", backdropFilter: "blur(24px)",
       WebkitBackdropFilter: "blur(24px)", border: "1px solid rgba(255,255,255,0.82)",
-      borderRadius: 16, padding: "18px 16px",
-      display: "flex", flexDirection: "column", gap: 10,
+      borderRadius: 16, padding: "18px 16px", display: "flex", flexDirection: "column", gap: 10,
       boxShadow: "inset 0 1.5px 0 rgba(255,255,255,0.95), 0 2px 12px rgba(99,102,241,0.04)",
     }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
@@ -171,12 +171,11 @@ function CheckCard({ label, note, pass }: { label: string; note: string; pass: b
   );
 }
 
-// ─── Full Report ───
 function FullReport({ prompt }: { prompt: AgentPrompt }) {
   const report = typeof prompt.scoring_report === "string"
     ? JSON.parse(prompt.scoring_report)
     : prompt.scoring_report;
-  const color = prompt.score >= 90 ? "#059669" : "#D97706";
+  const color = prompt.score >= 80 ? "#059669" : "#D97706";
   const summaryItems = [
     { label: "IOE Structure", value: report?.summary?.ioe_structure ?? "—" },
     { label: "Pitfalls", value: report?.summary?.pitfalls ?? "—" },
@@ -209,8 +208,7 @@ function FullReport({ prompt }: { prompt: AgentPrompt }) {
             {summaryItems.map((s, i) => (
               <div key={i} style={{
                 background: "rgba(255,255,255,0.6)", backdropFilter: "blur(12px)",
-                borderRadius: 12, padding: "10px 12px",
-                border: "1px solid rgba(255,255,255,0.8)",
+                borderRadius: 12, padding: "10px 12px", border: "1px solid rgba(255,255,255,0.8)",
                 boxShadow: "inset 0 1px 0 rgba(255,255,255,0.9)",
               }}>
                 <div style={{ fontSize: 9, color: "rgba(99,102,241,0.55)", textTransform: "uppercase" as const, letterSpacing: "0.8px", marginBottom: 4, fontWeight: 700 }}>{s.label}</div>
@@ -227,8 +225,7 @@ function FullReport({ prompt }: { prompt: AgentPrompt }) {
             <div style={{ fontSize: 14, fontWeight: 700, color: "#111827" }}>{section.title}</div>
             <span style={{
               fontSize: 11, fontWeight: 700, padding: "2px 10px", borderRadius: 20,
-              background: "rgba(99,102,241,0.08)", color: "#4F46E5",
-              border: "1px solid rgba(99,102,241,0.15)",
+              background: "rgba(99,102,241,0.08)", color: "#4F46E5", border: "1px solid rgba(99,102,241,0.15)",
             }}>{section.score}/{section.max}</span>
           </div>
           <div>
@@ -285,7 +282,6 @@ function FullReport({ prompt }: { prompt: AgentPrompt }) {
   );
 }
 
-// ─── Chat bubble ───
 function Bubble({ msg }: { msg: Message }) {
   const isUser = msg.role === "user";
   return (
@@ -305,17 +301,12 @@ function Bubble({ msg }: { msg: Message }) {
         <div style={{
           padding: "10px 14px",
           borderRadius: isUser ? "16px 16px 4px 16px" : "16px 16px 16px 4px",
-          background: isUser
-            ? "linear-gradient(135deg, #6D28D9, #4F46E5)"
-            : "rgba(255,255,255,0.75)",
+          background: isUser ? "linear-gradient(135deg, #6D28D9, #4F46E5)" : "rgba(255,255,255,0.75)",
           backdropFilter: isUser ? "none" : "blur(20px)",
           border: isUser ? "none" : "1px solid rgba(255,255,255,0.8)",
-          boxShadow: isUser
-            ? "0 2px 12px rgba(99,102,241,0.25)"
-            : "inset 0 1px 0 rgba(255,255,255,0.9), 0 2px 8px rgba(0,0,0,0.04)",
+          boxShadow: isUser ? "0 2px 12px rgba(99,102,241,0.25)" : "inset 0 1px 0 rgba(255,255,255,0.9), 0 2px 8px rgba(0,0,0,0.04)",
           fontSize: 13, fontWeight: isUser ? 500 : 400,
-          color: isUser ? "#fff" : "#111827",
-          lineHeight: 1.55, whiteSpace: "pre-wrap" as const,
+          color: isUser ? "#fff" : "#111827", lineHeight: 1.55, whiteSpace: "pre-wrap" as const,
         }}>
           {msg.content}
         </div>
@@ -330,7 +321,6 @@ const AGENT_TYPES = [
   { id: "followup", label: "Follow Up Agent" },
 ] as const;
 
-// ─── Test Agent tab ───
 function TestAgent({ prompt, userId, messages, setMessages }: {
   prompt: AgentPrompt; userId: string;
   messages: Message[]; setMessages: React.Dispatch<React.SetStateAction<Message[]>>;
@@ -341,9 +331,7 @@ function TestAgent({ prompt, userId, messages, setMessages }: {
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, loading]);
+  useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages, loading]);
 
   async function send() {
     const text = input.trim();
@@ -363,9 +351,7 @@ function TestAgent({ prompt, userId, messages, setMessages }: {
       setMessages(prev => [...prev, { role: "agent", content: reply, time: getNow() }]);
     } catch {
       setMessages(prev => [...prev, { role: "agent", content: "Something went wrong. Please try again.", time: getNow() }]);
-    } finally {
-      setLoading(false);
-    }
+    } finally { setLoading(false); }
   }
 
   return (
@@ -405,15 +391,13 @@ function TestAgent({ prompt, userId, messages, setMessages }: {
               <Bot size={13} color="#7C3AED" />
             </div>
             <div style={{
-              padding: "10px 14px",
-              background: "rgba(255,255,255,0.75)", backdropFilter: "blur(20px)",
-              border: "1px solid rgba(255,255,255,0.85)",
-              borderRadius: "16px 16px 16px 4px",
+              padding: "10px 14px", background: "rgba(255,255,255,0.75)", backdropFilter: "blur(20px)",
+              border: "1px solid rgba(255,255,255,0.85)", borderRadius: "16px 16px 16px 4px",
               boxShadow: "inset 0 1px 0 rgba(255,255,255,0.9)",
             }}>
               <div style={{ display: "flex", gap: 4 }}>
-                {[0, 1, 2].map(i => (
-                  <div key={i} style={{ width: 6, height: 6, borderRadius: "50%", background: "rgba(99,102,241,0.35)", animation: `agentbounce 1.2s ease-in-out ${i * 0.2}s infinite` }} />
+                {[0,1,2].map(i => (
+                  <div key={i} style={{ width: 6, height: 6, borderRadius: "50%", background: "rgba(99,102,241,0.35)", animation: `agentbounce 1.2s ease-in-out ${i*0.2}s infinite` }} />
                 ))}
               </div>
             </div>
@@ -424,34 +408,21 @@ function TestAgent({ prompt, userId, messages, setMessages }: {
 
       <div style={{ paddingBottom: 8, display: "flex", flexDirection: "column", alignItems: "center", gap: 12 }}>
         <div style={{
-          width: "100%",
-          background: "rgba(255,255,255,0.58)",
-          backdropFilter: "blur(40px) saturate(200%)",
-          WebkitBackdropFilter: "blur(40px) saturate(200%)",
-          border: "1px solid rgba(255,255,255,0.85)",
-          borderRadius: 18,
-          boxShadow: `inset 0 1.5px 0 rgba(255,255,255,0.98), inset 0 -1px 0 rgba(255,255,255,0.1), 0 8px 32px rgba(99,102,241,0.08), 0 2px 8px rgba(0,0,0,0.04)`,
-          display: "flex", alignItems: "center", gap: 10,
-          padding: "10px 14px",
+          width: "100%", background: "rgba(255,255,255,0.58)", backdropFilter: "blur(40px) saturate(200%)",
+          WebkitBackdropFilter: "blur(40px) saturate(200%)", border: "1px solid rgba(255,255,255,0.85)",
+          borderRadius: 18, boxShadow: `inset 0 1.5px 0 rgba(255,255,255,0.98), 0 8px 32px rgba(99,102,241,0.08)`,
+          display: "flex", alignItems: "center", gap: 10, padding: "10px 14px",
         }}>
-          <input
-            ref={inputRef}
-            value={input}
-            onChange={e => setInput(e.target.value)}
+          <input ref={inputRef} value={input} onChange={e => setInput(e.target.value)}
             onKeyDown={e => e.key === "Enter" && !e.shiftKey && send()}
             placeholder="Type a message..."
-            style={{
-              flex: 1, border: "none", background: "transparent",
-              fontSize: 13, color: "#1A1916", outline: "none",
-              fontFamily: "'DM Sans',sans-serif", fontWeight: 400,
-            }}
+            style={{ flex: 1, border: "none", background: "transparent", fontSize: 13, color: "#1A1916", outline: "none", fontFamily: "'DM Sans',sans-serif" }}
           />
           <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
             {messages.length > 0 && (
               <button onClick={() => { setMessages([]); setInput(""); }} style={{
-                display: "flex", alignItems: "center", gap: 4,
-                fontSize: 11, fontWeight: 600, color: "rgba(99,102,241,0.5)",
-                background: "transparent", border: "none", cursor: "pointer",
+                display: "flex", alignItems: "center", gap: 4, fontSize: 11, fontWeight: 600,
+                color: "rgba(99,102,241,0.5)", background: "transparent", border: "none", cursor: "pointer",
                 fontFamily: "'DM Sans',sans-serif", padding: "4px 6px",
               }}>
                 <RotateCcw size={10} /> Reset
@@ -462,24 +433,20 @@ function TestAgent({ prompt, userId, messages, setMessages }: {
               background: input.trim() && !loading ? "linear-gradient(135deg, #6D28D9, #4F46E5)" : "rgba(99,102,241,0.08)",
               border: `1px solid ${input.trim() && !loading ? "transparent" : "rgba(99,102,241,0.15)"}`,
               cursor: input.trim() && !loading ? "pointer" : "default",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              transition: "all .2s", flexShrink: 0,
+              display: "flex", alignItems: "center", justifyContent: "center", transition: "all .2s",
               boxShadow: input.trim() && !loading ? "0 4px 12px rgba(99,102,241,0.3)" : "none",
             }}>
               <Send size={13} color={input.trim() && !loading ? "#fff" : "rgba(99,102,241,0.3)"} />
             </button>
           </div>
         </div>
-
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           {AGENT_TYPES.map(agent => {
             const isActive = activeAgent === agent.id;
             return (
               <button key={agent.id} onClick={() => { setActiveAgent(agent.id as "booking" | "followup"); setMessages([]); }} style={{
-                display: "flex", alignItems: "center", gap: 6,
-                padding: "7px 16px", borderRadius: 20, cursor: "pointer",
-                fontFamily: "'DM Sans',sans-serif", fontSize: 12, fontWeight: 600,
-                transition: "all 0.2s", border: "1px solid",
+                display: "flex", alignItems: "center", gap: 6, padding: "7px 16px", borderRadius: 20, cursor: "pointer",
+                fontFamily: "'DM Sans',sans-serif", fontSize: 12, fontWeight: 600, transition: "all 0.2s", border: "1px solid",
                 background: isActive ? "rgba(255,255,255,0.72)" : "rgba(255,255,255,0.25)",
                 backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)",
                 borderColor: isActive ? "rgba(139,92,246,0.3)" : "rgba(255,255,255,0.5)",
@@ -498,11 +465,8 @@ function TestAgent({ prompt, userId, messages, setMessages }: {
   );
 }
 
-// ─── Criteria Card ───
 function CriteriaCard({ criteria, onToggle, onRemove }: {
-  criteria: Criteria;
-  onToggle: (id: string) => void;
-  onRemove?: (id: string) => void;
+  criteria: Criteria; onToggle: (id: string) => void; onRemove?: (id: string) => void;
 }) {
   const isUniversal = criteria.type === "universal";
   const isAI = criteria.type === "ai";
@@ -522,13 +486,10 @@ function CriteriaCard({ criteria, onToggle, onRemove }: {
       background: criteria.selected ? "linear-gradient(145deg, rgba(255,255,255,0.82), rgba(255,255,255,0.6))" : "rgba(255,255,255,0.35)",
       backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)",
       border: `1px solid ${criteria.selected ? c.border : "rgba(255,255,255,0.5)"}`,
-      borderRadius: 16, padding: 16,
-      display: "flex", flexDirection: "column", gap: 10,
+      borderRadius: 16, padding: 16, display: "flex", flexDirection: "column", gap: 10,
       boxShadow: criteria.selected ? `inset 0 1px 0 rgba(255,255,255,0.9), 0 4px 16px ${c.bg}` : "inset 0 1px 0 rgba(255,255,255,0.7)",
-      opacity: criteria.selected ? 1 : 0.65,
-      transition: "all 0.2s",
-      cursor: isUniversal ? "default" : "pointer",
-      position: "relative" as const,
+      opacity: criteria.selected ? 1 : 0.65, transition: "all 0.2s",
+      cursor: isUniversal ? "default" : "pointer", position: "relative" as const,
     }} onClick={() => !isUniversal && onToggle(criteria.id)}>
       <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 8 }}>
         <div style={{
@@ -541,8 +502,7 @@ function CriteriaCard({ criteria, onToggle, onRemove }: {
         <div style={{ display: "flex", alignItems: "center", gap: 6, marginLeft: "auto" }}>
           <span style={{
             fontSize: 9, fontWeight: 700, padding: "2px 8px", borderRadius: 20,
-            background: c.labelBg, color: c.labelColor,
-            border: `1px solid ${c.border}`, letterSpacing: "0.5px",
+            background: c.labelBg, color: c.labelColor, border: `1px solid ${c.border}`, letterSpacing: "0.5px",
           }}>{c.label}</span>
           {isUniversal && (
             <div style={{
@@ -570,8 +530,7 @@ function CriteriaCard({ criteria, onToggle, onRemove }: {
           width: 14, height: 14, borderRadius: 4,
           background: criteria.selected ? (isUniversal ? "rgba(139,92,246,0.8)" : isAI ? "rgba(8,145,178,0.8)" : "rgba(5,150,105,0.8)") : "rgba(255,255,255,0.5)",
           border: `1.5px solid ${criteria.selected ? c.border : "rgba(200,200,200,0.5)"}`,
-          display: "flex", alignItems: "center", justifyContent: "center",
-          transition: "all 0.15s",
+          display: "flex", alignItems: "center", justifyContent: "center", transition: "all 0.15s",
         }}>
           {criteria.selected && <CheckCircle size={8} color="#fff" />}
         </div>
@@ -583,84 +542,125 @@ function CriteriaCard({ criteria, onToggle, onRemove }: {
   );
 }
 
-// ─── Scenario Result Row ───
+// ─── Expandable Scenario Result Row ───
 function ScenarioResultRow({ result, index }: { result: ScenarioResult; index: number }) {
+  const [expanded, setExpanded] = useState(false);
   const score = result.final_score ?? 0;
-  const passed = score >= 0.75;
-  const scoreColor = score >= 0.90 ? "#059669" : score >= 0.75 ? "#D97706" : "#DC2626";
+  const passed = result.status === "pass";
+  const scoreColor = score >= 80 ? "#059669" : score >= 60 ? "#D97706" : "#DC2626";
   const issues: string[] = Array.isArray(result.issues) ? result.issues : [];
+  const memorySnapshot = result as any;
 
   return (
     <div style={{
-      display: "flex", alignItems: "flex-start", gap: 14, padding: "14px 20px",
       borderBottom: "1px solid rgba(255,255,255,0.5)",
       background: index % 2 === 0 ? "rgba(255,255,255,0.2)" : "transparent",
       animation: "fadeInRow 0.4s ease both",
     }}>
-      {/* Score pill */}
-      <div style={{
-        display: "flex", flexDirection: "column", alignItems: "center", gap: 2, flexShrink: 0,
-      }}>
-        <div style={{
-          width: 42, height: 42, borderRadius: "50%",
-          border: `2.5px solid ${scoreColor}`,
-          display: "flex", alignItems: "center", justifyContent: "center",
-          background: `${scoreColor}12`,
-        }}>
-          <span style={{ fontSize: 11, fontWeight: 800, color: scoreColor }}>
-            {Math.round(score * 100)}
-          </span>
-        </div>
-        <span style={{ fontSize: 9, color: "rgba(60,40,120,0.4)", fontWeight: 600 }}>
-          {passed ? "Pass" : "Fail"}
-        </span>
-      </div>
-
-      {/* Content */}
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6, flexWrap: "wrap" as const }}>
-          <span style={{ fontSize: 11, fontWeight: 700, color: "#111827" }}>Scenario {index + 1}</span>
-          <div style={{ display: "flex", gap: 6 }}>
-            <span style={{
-              fontSize: 9, fontWeight: 600, padding: "2px 7px", borderRadius: 20,
-              background: "rgba(99,102,241,0.07)", color: "#4F46E5",
-              border: "1px solid rgba(99,102,241,0.15)",
-            }}>Content {Math.round((result.content_score ?? 0) * 100)}</span>
-            <span style={{
-              fontSize: 9, fontWeight: 600, padding: "2px 7px", borderRadius: 20,
-              background: "rgba(8,145,178,0.06)", color: "#0891B2",
-              border: "1px solid rgba(8,145,178,0.15)",
-            }}>Behavior {Math.round((result.behavior_score ?? 0) * 100)}</span>
-          </div>
-        </div>
-
-        {result.agent_response && (
+      {/* Main row */}
+      <div
+        onClick={() => setExpanded(!expanded)}
+        style={{ display: "flex", alignItems: "flex-start", gap: 14, padding: "14px 20px", cursor: "pointer" }}
+      >
+        {/* Score circle */}
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2, flexShrink: 0 }}>
           <div style={{
-            fontSize: 11, color: "rgba(60,40,120,0.65)", lineHeight: 1.55,
-            background: "rgba(255,255,255,0.5)", borderRadius: 8, padding: "7px 10px",
-            border: "1px solid rgba(255,255,255,0.7)", marginBottom: 6,
+            width: 44, height: 44, borderRadius: "50%",
+            border: `2.5px solid ${scoreColor}`,
+            display: "flex", alignItems: "center", justifyContent: "center",
+            background: `${scoreColor}12`,
           }}>
-            "{result.agent_response.slice(0, 120)}{result.agent_response.length > 120 ? "..." : ""}"
+            <span style={{ fontSize: 12, fontWeight: 800, color: scoreColor }}>{Math.round(score)}</span>
           </div>
-        )}
+          <span style={{ fontSize: 9, color: scoreColor, fontWeight: 700 }}>{passed ? "Pass" : "Fail"}</span>
+        </div>
 
-        {issues.length > 0 && (
-          <div style={{ display: "flex", flexWrap: "wrap" as const, gap: 4 }}>
-            {issues.map((issue, i) => (
-              <span key={i} style={{
-                fontSize: 9, fontWeight: 600, padding: "2px 8px", borderRadius: 20,
-                background: "rgba(220,38,38,0.06)", color: "#DC2626",
-                border: "1px solid rgba(220,38,38,0.15)",
-              }}>{issue}</span>
-            ))}
+        {/* Content */}
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 5, flexWrap: "wrap" as const }}>
+            <span style={{ fontSize: 11, fontWeight: 700, color: "#111827" }}>Scenario {index + 1}</span>
+            <span style={{
+              fontSize: 9, fontWeight: 600, padding: "2px 7px", borderRadius: 20,
+              background: "rgba(99,102,241,0.07)", color: "#4F46E5", border: "1px solid rgba(99,102,241,0.15)",
+            }}>Content {Math.round(result.content_score ?? 0)}</span>
+            <span style={{
+              fontSize: 9, fontWeight: 600, padding: "2px 7px", borderRadius: 20,
+              background: "rgba(8,145,178,0.06)", color: "#0891B2", border: "1px solid rgba(8,145,178,0.15)",
+            }}>Behavior {Math.round(result.behavior_score ?? 0)}</span>
           </div>
-        )}
+
+          {/* Summary */}
+          {result.summary && (
+            <div style={{ fontSize: 11, color: "rgba(60,40,120,0.65)", lineHeight: 1.55, marginBottom: 5 }}>
+              {result.summary}
+            </div>
+          )}
+
+          {/* Issues */}
+          {issues.length > 0 && (
+            <div style={{ display: "flex", flexWrap: "wrap" as const, gap: 4 }}>
+              {issues.map((issue, i) => (
+                <span key={i} style={{
+                  fontSize: 9, fontWeight: 600, padding: "2px 8px", borderRadius: 20,
+                  background: "rgba(220,38,38,0.06)", color: "#DC2626", border: "1px solid rgba(220,38,38,0.15)",
+                }}>{issue}</span>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Expand toggle */}
+        <div style={{ flexShrink: 0, transition: "transform 0.2s", transform: expanded ? "rotate(180deg)" : "rotate(0deg)" }}>
+          <ChevronDown size={14} color="rgba(99,102,241,0.4)" />
+        </div>
       </div>
+
+      {/* Expanded log */}
+      {expanded && (
+        <div style={{ padding: "0 20px 16px", display: "flex", flexDirection: "column", gap: 10 }}>
+          {/* Lead message */}
+          {result.input_message && (
+            <div style={{
+              background: "rgba(99,102,241,0.05)", borderRadius: 10, padding: "10px 14px",
+              border: "1px solid rgba(99,102,241,0.12)",
+            }}>
+              <div style={{ fontSize: 9, fontWeight: 700, color: "#4F46E5", textTransform: "uppercase" as const, letterSpacing: "0.6px", marginBottom: 5 }}>
+                📩 Lead Message
+              </div>
+              <div style={{ fontSize: 12, color: "#111827", lineHeight: 1.55 }}>{result.input_message}</div>
+            </div>
+          )}
+
+          {/* Agent response */}
+          {result.agent_response && (
+            <div style={{
+              background: "rgba(5,150,105,0.04)", borderRadius: 10, padding: "10px 14px",
+              border: "1px solid rgba(5,150,105,0.12)",
+            }}>
+              <div style={{ fontSize: 9, fontWeight: 700, color: "#059669", textTransform: "uppercase" as const, letterSpacing: "0.6px", marginBottom: 5 }}>
+                🤖 Agent Response
+              </div>
+              <div style={{ fontSize: 12, color: "#111827", lineHeight: 1.55 }}>{result.agent_response}</div>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
 
-// ─── Bulk Testing tab — fully wired ───
+// ─── Step label helper ───
+function getStepLabel(step: string | null, resultsCount: number, total: number): string {
+  switch (step) {
+    case "generating_scenarios": return "Generating test scenarios...";
+    case "running_scenarios": return `Running scenarios (${resultsCount}/${total})...`;
+    case "scoring": return `Scoring responses (${resultsCount}/${total})...`;
+    case "complete": return "All done!";
+    default: return "Initializing...";
+  }
+}
+
+// ─── Bulk Testing tab ───
 function BulkTesting({ userId, prompt }: { userId: string; prompt: AgentPrompt }) {
   const [criteria, setCriteria] = useState<Criteria[]>([]);
   const [customInput, setCustomInput] = useState("");
@@ -669,14 +669,18 @@ function BulkTesting({ userId, prompt }: { userId: string; prompt: AgentPrompt }
   const [running, setRunning] = useState(false);
   const [runStatus, setRunStatus] = useState<"idle" | "running" | "done" | "error">("idle");
 
-  // Live results state
   const [activeTestRunId, setActiveTestRunId] = useState<string | null>(null);
   const [results, setResults] = useState<ScenarioResult[]>([]);
   const [totalScenarios, setTotalScenarios] = useState(0);
+  const [testRun, setTestRun] = useState<TestRun | null>(null);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const criteriaLoadedRef = useRef(false);
 
-  // ── 1. Fetch universal criteria from Supabase on mount ──
+  // ── Load universal criteria once ──
   useEffect(() => {
+    if (criteriaLoadedRef.current) return;
+    criteriaLoadedRef.current = true;
+
     async function loadUniversal() {
       const { data, error } = await supabase
         .from("universal_criteria")
@@ -685,10 +689,7 @@ function BulkTesting({ userId, prompt }: { userId: string; prompt: AgentPrompt }
 
       if (!error && data) {
         setCriteria(data.map(row => ({
-          id: row.id,
-          text: row.criteria_text,
-          type: "universal" as const,
-          selected: true,
+          id: row.id, text: row.criteria_text, type: "universal" as const, selected: true,
         })));
       }
       setLoadingCriteria(false);
@@ -696,70 +697,43 @@ function BulkTesting({ userId, prompt }: { userId: string; prompt: AgentPrompt }
     loadUniversal();
   }, []);
 
-  // ── 2. Fetch AI-generated criteria from webhook after universal loaded ──
-  useEffect(() => {
-    if (loadingCriteria) return;
-    async function loadAICriteria() {
-      try {
-        const res = await fetch(CRITERIA_WEBHOOK, {
-          method: "POST", headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ user_id: userId }),
-        });
-        const data = await res.json();
-        const aiList: string[] = data?.criteria ?? data?.output ?? [];
-        if (Array.isArray(aiList) && aiList.length > 0) {
-          setCriteria(prev => [
-            ...prev,
-            ...aiList.map((text: string, i: number) => ({
-              id: `ai_${i}_${Date.now()}`,
-              text,
-              type: "ai" as const,
-              selected: true,
-            })),
-          ]);
-        }
-      } catch {
-        // silently fail — universal criteria still show
-      }
-    }
-    loadAICriteria();
-  }, [loadingCriteria, userId]);
-
-  // ── 3. Poll scenario_results while test is running ──
+  // ── Poll test_run status + scenario_results while running ──
   useEffect(() => {
     if (!activeTestRunId) return;
 
-    async function pollResults() {
-      const { data } = await supabase
+    async function poll() {
+      // Poll test_run for current_step
+      const { data: runData } = await supabase
+        .from("test_runs")
+        .select("id, status, current_step, final_score")
+        .eq("id", activeTestRunId)
+        .single();
+
+      if (runData) setTestRun(runData as TestRun);
+
+      // Poll scenario_results
+      const { data: resultsData } = await supabase
         .from("scenario_results")
         .select("*")
         .eq("test_run_id", activeTestRunId)
         .order("created_at", { ascending: true });
 
-      if (data) {
-        setResults(data as ScenarioResult[]);
-        // Stop polling when all scenarios are done
-        if (data.length >= totalScenarios && totalScenarios > 0) {
-          clearInterval(pollRef.current!);
-          pollRef.current = null;
-          setRunning(false);
-          setRunStatus("done");
-          // Update test_run status in Supabase
-          await supabase
-            .from("test_runs")
-            .update({ status: "complete" })
-            .eq("id", activeTestRunId);
-        }
+      if (resultsData) setResults(resultsData as ScenarioResult[]);
+
+      // Stop polling when complete
+      if (runData?.status === "complete") {
+        clearInterval(pollRef.current!);
+        pollRef.current = null;
+        setRunning(false);
+        setRunStatus("done");
       }
     }
 
-    pollRef.current = setInterval(pollResults, 3000);
-    pollResults(); // immediate first fetch
+    pollRef.current = setInterval(poll, 3000);
+    poll();
 
-    return () => {
-      if (pollRef.current) clearInterval(pollRef.current);
-    };
-  }, [activeTestRunId, totalScenarios]);
+    return () => { if (pollRef.current) clearInterval(pollRef.current); };
+  }, [activeTestRunId]);
 
   function toggleCriteria(id: string) {
     setCriteria(prev => prev.map(c => c.id === id ? { ...c, selected: !c.selected } : c));
@@ -777,7 +751,6 @@ function BulkTesting({ userId, prompt }: { userId: string; prompt: AgentPrompt }
     setAddingCustom(false);
   }
 
-  // ── 4. Run bulk test: insert test_run → send webhook ──
   async function runBulkTest() {
     const selected = criteria.filter(c => c.selected);
     if (selected.length === 0) return;
@@ -785,51 +758,34 @@ function BulkTesting({ userId, prompt }: { userId: string; prompt: AgentPrompt }
     setRunning(true);
     setRunStatus("running");
     setResults([]);
+    setTestRun(null);
 
     try {
-      // Insert test_run row in Supabase
       const { data: runData, error: runError } = await supabase
         .from("test_runs")
         .insert({
-          workspace_id: userId,
-          agent_id: prompt.id,
-          agent_type: "booking", // default — can be made dynamic later
-          status: "running",
-          attempt_number: 1,
+          workspace_id: userId, agent_id: prompt.id, agent_type: "booking",
+          status: "running", attempt_number: 1,
         })
-        .select("id")
-        .single();
+        .select("id").single();
 
       if (runError || !runData) throw new Error("Failed to create test run");
 
       const testRunId = runData.id;
 
-      // Insert selected_criteria rows
       const criteriaRows = selected.map(c => ({
-        test_run_id: testRunId,
-        workspace_id: userId,
-        type: c.type,
-        criteria_text: c.text,
+        test_run_id: testRunId, workspace_id: userId, type: c.type, criteria_text: c.text,
       }));
 
-      const { error: criteriaError } = await supabase
-        .from("selected_criteria")
-        .insert(criteriaRows);
+      await supabase.from("selected_criteria").insert(criteriaRows);
 
-      if (criteriaError) throw new Error("Failed to save selected criteria");
-
-      // Calculate expected scenario count (1 scenario per criteria + edge cases)
-      // n8n will generate ~20 scenarios — we set a reasonable max to know when polling is done
-      setTotalScenarios(selected.length * 2); // rough estimate, n8n controls actual count
+      setTotalScenarios(selected.length * 2);
       setActiveTestRunId(testRunId);
 
-      // Fire n8n webhook
       await fetch(BULK_WEBHOOK, {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          user_id: userId,
-          agent_id: prompt.id,
-          test_run_id: testRunId,
+          user_id: userId, agent_id: prompt.id, test_run_id: testRunId,
           criteria: selected.map(c => ({ id: c.id, text: c.text, type: c.type })),
         }),
       });
@@ -840,16 +796,13 @@ function BulkTesting({ userId, prompt }: { userId: string; prompt: AgentPrompt }
     }
   }
 
-  // Aggregate score from results
-  const avgScore = results.length > 0
-    ? results.reduce((sum, r) => sum + (r.final_score ?? 0), 0) / results.length
-    : null;
-
+  const finalScore = testRun?.final_score ?? null;
   const selectedCount = criteria.filter(c => c.selected).length;
+  const stepLabel = getStepLabel(testRun?.current_step ?? null, results.length, totalScenarios);
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-      {/* Header card */}
+      {/* Header */}
       <GlassCard style={{ padding: "18px 22px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16 }}>
         <div>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
@@ -868,64 +821,63 @@ function BulkTesting({ userId, prompt }: { userId: string; prompt: AgentPrompt }
           }}>
             {selectedCount} selected
           </div>
-          <button
-            onClick={runBulkTest}
-            disabled={running || selectedCount === 0}
-            style={{
-              display: "flex", alignItems: "center", gap: 6,
-              padding: "9px 20px", borderRadius: 12, border: "none",
-              background: selectedCount > 0 && !running ? "linear-gradient(135deg, #6D28D9, #4F46E5)" : "rgba(255,255,255,0.4)",
-              color: selectedCount > 0 && !running ? "#fff" : "rgba(99,102,241,0.4)",
-              fontSize: 13, fontWeight: 700, cursor: selectedCount > 0 && !running ? "pointer" : "default",
-              fontFamily: "'DM Sans',sans-serif",
-              boxShadow: selectedCount > 0 && !running ? "0 4px 16px rgba(99,102,241,0.3)" : "none",
-              transition: "all 0.2s",
-            }}
-          >
+          <button onClick={runBulkTest} disabled={running || selectedCount === 0} style={{
+            display: "flex", alignItems: "center", gap: 6, padding: "9px 20px", borderRadius: 12, border: "none",
+            background: selectedCount > 0 && !running ? "linear-gradient(135deg, #6D28D9, #4F46E5)" : "rgba(255,255,255,0.4)",
+            color: selectedCount > 0 && !running ? "#fff" : "rgba(99,102,241,0.4)",
+            fontSize: 13, fontWeight: 700, cursor: selectedCount > 0 && !running ? "pointer" : "default",
+            fontFamily: "'DM Sans',sans-serif",
+            boxShadow: selectedCount > 0 && !running ? "0 4px 16px rgba(99,102,241,0.3)" : "none",
+            transition: "all 0.2s",
+          }}>
             {running ? <Loader2 size={14} style={{ animation: "spin 1s linear infinite" }} /> : <ChevronRight size={14} />}
             {running ? "Running..." : "Run Test"}
           </button>
         </div>
       </GlassCard>
 
-      {/* Status banners */}
+      {/* Running status banner */}
       {runStatus === "running" && (
-        <GlassCard style={{ padding: "12px 20px", display: "flex", alignItems: "center", gap: 10, background: "rgba(99,102,241,0.06)", border: "1px solid rgba(99,102,241,0.2)" }}>
-          <Activity size={16} color="#4F46E5" style={{ animation: "pulse 1.5s ease-in-out infinite" }} />
-          <div style={{ flex: 1 }}>
-            <span style={{ fontSize: 13, fontWeight: 600, color: "#4F46E5" }}>
-              Test running — {results.length} scenario{results.length !== 1 ? "s" : ""} completed
-            </span>
-            <div style={{ marginTop: 6, height: 4, borderRadius: 4, background: "rgba(99,102,241,0.12)", overflow: "hidden" }}>
-              <div style={{
-                height: "100%", borderRadius: 4,
-                background: "linear-gradient(90deg, #6D28D9, #4F46E5)",
-                width: totalScenarios > 0 ? `${Math.min((results.length / totalScenarios) * 100, 95)}%` : "10%",
-                transition: "width 0.5s ease",
-              }} />
-            </div>
+        <GlassCard style={{ padding: "14px 20px", background: "rgba(99,102,241,0.06)", border: "1px solid rgba(99,102,241,0.2)" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
+            <Activity size={16} color="#4F46E5" style={{ animation: "pulse 1.5s ease-in-out infinite" }} />
+            <span style={{ fontSize: 13, fontWeight: 600, color: "#4F46E5" }}>{stepLabel}</span>
+          </div>
+          {/* Progress bar */}
+          <div style={{ height: 4, borderRadius: 4, background: "rgba(99,102,241,0.12)", overflow: "hidden" }}>
+            <div style={{
+              height: "100%", borderRadius: 4,
+              background: "linear-gradient(90deg, #6D28D9, #4F46E5)",
+              width: testRun?.current_step === "generating_scenarios"
+                ? "15%"
+                : testRun?.current_step === "running_scenarios" && totalScenarios > 0
+                ? `${Math.min(15 + (results.length / totalScenarios) * 75, 90)}%`
+                : "5%",
+              transition: "width 0.6s ease",
+            }} />
           </div>
         </GlassCard>
       )}
 
-      {runStatus === "done" && avgScore !== null && (
-        <GlassCard style={{ padding: "14px 20px", display: "flex", alignItems: "center", gap: 14 }}>
+      {/* Done verdict */}
+      {runStatus === "done" && finalScore !== null && (
+        <GlassCard style={{ padding: "16px 20px", display: "flex", alignItems: "center", gap: 16 }}>
           <div style={{
-            width: 48, height: 48, borderRadius: "50%", flexShrink: 0,
-            border: `3px solid ${avgScore >= 0.9 ? "#059669" : avgScore >= 0.75 ? "#D97706" : "#DC2626"}`,
+            width: 52, height: 52, borderRadius: "50%", flexShrink: 0,
+            border: `3px solid ${finalScore >= 80 ? "#059669" : finalScore >= 60 ? "#D97706" : "#DC2626"}`,
             display: "flex", alignItems: "center", justifyContent: "center",
-            background: `${avgScore >= 0.9 ? "#059669" : avgScore >= 0.75 ? "#D97706" : "#DC2626"}12`,
+            background: `${finalScore >= 80 ? "#059669" : finalScore >= 60 ? "#D97706" : "#DC2626"}12`,
           }}>
-            <span style={{ fontSize: 13, fontWeight: 800, color: avgScore >= 0.9 ? "#059669" : avgScore >= 0.75 ? "#D97706" : "#DC2626" }}>
-              {Math.round(avgScore * 100)}
+            <span style={{ fontSize: 14, fontWeight: 800, color: finalScore >= 80 ? "#059669" : finalScore >= 60 ? "#D97706" : "#DC2626" }}>
+              {Math.round(finalScore)}
             </span>
           </div>
           <div>
-            <div style={{ fontSize: 13, fontWeight: 700, color: "#111827", marginBottom: 2 }}>
-              {avgScore >= 0.9 ? "✓ Agent approved — ready to publish" : avgScore >= 0.75 ? "⚠ Needs improvement — review issues below" : "✗ Agent blocked — significant issues found"}
+            <div style={{ fontSize: 13, fontWeight: 700, color: "#111827", marginBottom: 3 }}>
+              {finalScore >= 80 ? "✓ Agent approved — ready to publish" : finalScore >= 60 ? "⚠ Needs improvement — review issues below" : "✗ Agent blocked — significant issues found"}
             </div>
             <div style={{ fontSize: 11, color: "rgba(60,40,120,0.5)" }}>
-              {results.length} scenarios tested · Average score {Math.round(avgScore * 100)}/100
+              {results.length} scenarios tested · Average score {Math.round(finalScore)}/100
             </div>
           </div>
         </GlassCard>
@@ -938,7 +890,7 @@ function BulkTesting({ userId, prompt }: { userId: string; prompt: AgentPrompt }
         </GlassCard>
       )}
 
-      {/* Loading state */}
+      {/* Loading criteria */}
       {loadingCriteria && (
         <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "4px 0" }}>
           <Loader2 size={14} color="rgba(99,102,241,0.5)" style={{ animation: "spin 1s linear infinite" }} />
@@ -957,15 +909,11 @@ function BulkTesting({ userId, prompt }: { userId: string; prompt: AgentPrompt }
             border: "1.5px solid rgba(5,150,105,0.3)", borderRadius: 16, padding: 16,
             display: "flex", flexDirection: "column", gap: 10,
           }}>
-            <textarea
-              autoFocus
-              value={customInput}
-              onChange={e => setCustomInput(e.target.value)}
+            <textarea autoFocus value={customInput} onChange={e => setCustomInput(e.target.value)}
               placeholder="Describe your custom criteria..."
               style={{
-                border: "1px solid rgba(255,255,255,0.7)", borderRadius: 10,
-                padding: "8px 10px", fontSize: 12, color: "#111827",
-                outline: "none", fontFamily: "'DM Sans',sans-serif",
+                border: "1px solid rgba(255,255,255,0.7)", borderRadius: 10, padding: "8px 10px",
+                fontSize: 12, color: "#111827", outline: "none", fontFamily: "'DM Sans',sans-serif",
                 background: "rgba(255,255,255,0.7)", resize: "none", minHeight: 72,
               }}
             />
@@ -973,26 +921,22 @@ function BulkTesting({ userId, prompt }: { userId: string; prompt: AgentPrompt }
               <button onClick={addCustom} style={{
                 flex: 1, padding: "7px 0", borderRadius: 8, border: "none",
                 background: "linear-gradient(135deg, #059669, #0D9488)",
-                color: "#fff", fontSize: 12, fontWeight: 700, cursor: "pointer",
-                fontFamily: "'DM Sans',sans-serif",
+                color: "#fff", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "'DM Sans',sans-serif",
               }}>Add</button>
               <button onClick={() => { setAddingCustom(false); setCustomInput(""); }} style={{
-                flex: 1, padding: "7px 0", borderRadius: 8,
-                border: "1px solid rgba(255,255,255,0.7)",
+                flex: 1, padding: "7px 0", borderRadius: 8, border: "1px solid rgba(255,255,255,0.7)",
                 background: "rgba(255,255,255,0.5)", color: "rgba(60,40,120,0.6)",
                 fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "'DM Sans',sans-serif",
               }}>Cancel</button>
             </div>
           </div>
         ) : (
-          <div
-            onClick={() => setAddingCustom(true)}
-            style={{
-              background: "rgba(255,255,255,0.25)", backdropFilter: "blur(12px)",
-              border: "1.5px dashed rgba(99,102,241,0.25)", borderRadius: 16, padding: 16,
-              display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
-              gap: 8, cursor: "pointer", minHeight: 120, transition: "all 0.2s",
-            }}
+          <div onClick={() => setAddingCustom(true)} style={{
+            background: "rgba(255,255,255,0.25)", backdropFilter: "blur(12px)",
+            border: "1.5px dashed rgba(99,102,241,0.25)", borderRadius: 16, padding: 16,
+            display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+            gap: 8, cursor: "pointer", minHeight: 120, transition: "all 0.2s",
+          }}
             onMouseEnter={e => (e.currentTarget.style.background = "rgba(255,255,255,0.45)")}
             onMouseLeave={e => (e.currentTarget.style.background = "rgba(255,255,255,0.25)")}
           >
@@ -1008,13 +952,15 @@ function BulkTesting({ userId, prompt }: { userId: string; prompt: AgentPrompt }
         )}
       </div>
 
-      {/* Live results feed */}
+      {/* Live results */}
       {results.length > 0 && (
         <GlassCard style={{ overflow: "hidden" }}>
           <div style={{ padding: "14px 20px", borderBottom: "1px solid rgba(255,255,255,0.5)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
             <div>
               <div style={{ fontSize: 14, fontWeight: 700, color: "#111827" }}>Live Results</div>
-              <div style={{ fontSize: 11, color: "rgba(99,102,241,0.55)", marginTop: 2 }}>Results appear as each scenario completes</div>
+              <div style={{ fontSize: 11, color: "rgba(99,102,241,0.55)", marginTop: 2 }}>
+                Click any row to see the full conversation log
+              </div>
             </div>
             {running && (
               <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
@@ -1075,8 +1021,7 @@ export function MyAgentScreen({ userId }: { userId: string }) {
       </div>
 
       <div style={{
-        padding: "36px 40px", width: "100%",
-        fontFamily: "'DM Sans', sans-serif",
+        padding: "36px 40px", width: "100%", fontFamily: "'DM Sans', sans-serif",
         background: "linear-gradient(135deg, #EEF0FA 0%, #F0F1F8 40%, #EBF0FF 100%)",
         minHeight: "100vh", position: "relative", zIndex: 1,
       }}>
@@ -1097,9 +1042,8 @@ export function MyAgentScreen({ userId }: { userId: string }) {
         }}>
           {tabs.map(t => (
             <button key={t.id} onClick={() => setTab(t.id)} style={{
-              padding: "8px 22px", borderRadius: 9, border: "none",
-              fontSize: 12, fontWeight: 700, cursor: "pointer",
-              fontFamily: "'DM Sans',sans-serif", transition: "all .15s",
+              padding: "8px 22px", borderRadius: 9, border: "none", fontSize: 12, fontWeight: 700,
+              cursor: "pointer", fontFamily: "'DM Sans',sans-serif", transition: "all .15s",
               background: tab === t.id ? "rgba(255,255,255,0.85)" : "transparent",
               color: tab === t.id ? "#3730a3" : "rgba(60,40,120,0.5)",
               boxShadow: tab === t.id ? "inset 0 1px 0 rgba(255,255,255,0.9), 0 2px 8px rgba(99,102,241,0.1)" : "none",
