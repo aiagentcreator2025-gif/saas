@@ -400,52 +400,50 @@ function PhaseLiveTesting({ testRunId, totalExpected, onComplete }: {
 
   useEffect(() => {
     async function poll() {
-      // Fetch test run
-      const { data: runData } = await supabase
-        .from("test_runs")
-        .select("id, status, current_step, final_score, completed_scenarios")
-        .eq("id", testRunId)
-        .single();
+  const { data: runData } = await supabase
+    .from("test_runs")
+    .select("id, status, current_step, final_score, completed_scenarios")
+    .eq("id", testRunId)
+    .single();
 
-      if (runData) {
-        setTestRun(runData as TestRun);
-        if (runData.current_step === "running_scenarios" || runData.current_step === "complete") {
-          setStage("testing");
-        }
-      }
-
-      // Fetch scenarios from scenario_memory
-      const { data: scenData } = await supabase
-        .from("scenario_memory")
-        .select("*")
-        .eq("test_run_id", testRunId)
-        .order("created_at", { ascending: true });
-
-      if (scenData) setScenarios(scenData as ScenarioMemoryRow[]);
-
-      // Fetch results
-      const { data: resData } = await supabase
-        .from("scenario_results")
-        .select("*")
-        .eq("test_run_id", testRunId)
-        .order("created_at", { ascending: true });
-
-      if (resData) setResults(resData as ScenarioResult[]);
-
-      // Done?
-      if (runData?.current_step === "complete" && !completedRef.current) {
-        completedRef.current = true;
-        clearInterval(pollRef.current!);
-
-        // Final fetch
-        const { data: finalScenarios } = await supabase.from("scenario_memory").select("*").eq("test_run_id", testRunId).order("created_at", { ascending: true });
-        const { data: finalResults } = await supabase.from("scenario_results").select("*").eq("test_run_id", testRunId).order("created_at", { ascending: true });
-
-        setTimeout(() => {
-          onComplete(runData as TestRun, (finalResults ?? []) as ScenarioResult[]);
-        }, 2000); // let last typewriter finish
-      }
+  if (runData) {
+    setTestRun(runData as TestRun);
+    if (runData.current_step === "running_scenarios" || runData.current_step === "complete") {
+      setStage("testing");
     }
+  }
+
+  const { data: scenData } = await supabase
+    .from("scenario_memory")
+    .select("*")
+    .eq("test_run_id", testRunId)
+    .order("created_at", { ascending: true });
+
+  if (scenData) setScenarios(scenData as ScenarioMemoryRow[]);
+
+  const { data: resData } = await supabase
+    .from("scenario_results")
+    .select("*")
+    .eq("test_run_id", testRunId)
+    .order("created_at", { ascending: true });
+
+  if (resData) setResults(resData as ScenarioResult[]);
+
+  if (runData?.current_step === "complete" && !completedRef.current) {
+    completedRef.current = true;
+    clearInterval(pollRef.current!);
+
+    const { data: finalScenarios } = await supabase.from("scenario_memory").select("*").eq("test_run_id", testRunId).order("created_at", { ascending: true });
+    const { data: finalResults } = await supabase.from("scenario_results").select("*").eq("test_run_id", testRunId).order("created_at", { ascending: true });
+
+    if (finalScenarios) setScenarios(finalScenarios as ScenarioMemoryRow[]);
+    if (finalResults) setResults(finalResults as ScenarioResult[]);
+
+    setTimeout(() => {
+      onComplete(runData as TestRun, (finalResults ?? []) as ScenarioResult[]);
+    }, 3500);
+  }
+}
 
     pollRef.current = setInterval(poll, 2500);
     poll();
