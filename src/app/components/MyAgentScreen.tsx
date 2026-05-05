@@ -722,7 +722,7 @@ function BulkTesting({ userId, prompt }: { userId: string; prompt: AgentPrompt }
       if (resultsData) setResults(resultsData as ScenarioResult[]);
 
       // Stop polling when complete
-      if (runData?.status === "complete") {
+      if (runData?.current_step === "complete") {
         // Do one final fetch to make sure we have ALL results
         const { data: finalResults } = await supabase
           .from("scenario_results")
