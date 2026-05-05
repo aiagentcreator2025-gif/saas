@@ -2,9 +2,9 @@ import { useEffect, useState, useRef } from "react";
 import { Lock, Send, CheckCircle, XCircle, Bot, RotateCcw, Plus, X, FlaskConical, Shield, Sparkles, ChevronRight, Loader2, Activity, ChevronDown } from "lucide-react";
 import { supabase } from "../supabaseClient";
 
-const CHAT_WEBHOOK = "https://rosegoldprojectai2.app.n8n.cloud/webhook/9d8cb518-ca82-48b8-b31d-c6ce4011d9a3";
-const CRITERIA_WEBHOOK = "https://rosegoldprojectai2.app.n8n.cloud/webhook/4d529467-d018-4ed1-97aa-fc9e4bacf35b";
-const BULK_WEBHOOK = "https://rosegoldprojectai2.app.n8n.cloud/webhook/30b16e34-147b-47e2-be94-1eb8b3382d6c";
+const CHAT_WEBHOOK = "https://rosegoldprojectai3.app.n8n.cloud/webhook/9503fe0e-e0b1-448a-b062-5b33a88bbd57";
+const CRITERIA_WEBHOOK = "https://rosegoldprojectai3.app.n8n.cloud/webhook/656e3432-f8bd-4dd9-aa0f-551b872b63db";
+const BULK_WEBHOOK = "https://rosegoldprojectai3.app.n8n.cloud/webhook/69e2536c-9bfe-4bcc-b6cf-d28aaec6865d";
 
 interface AgentPrompt {
   id: string;
@@ -884,7 +884,9 @@ function BulkTesting({ userId, prompt }: { userId: string; prompt: AgentPrompt }
           </div>
           <div>
             <div style={{ fontSize: 13, fontWeight: 700, color: "#111827", marginBottom: 3 }}>
-              {finalScore >= 80 ? "✓ Agent approved — ready to publish" : finalScore >= 60 ? "⚠ Needs improvement — review issues below" : "✗ Agent blocked — significant issues found"}
+              {testRun?.status === "approved" ? "✓ Agent approved — ready to publish" 
+                : testRun?.status === "needs_improvement" ? "⚠ Needs improvement — review issues below" 
+                : "✗ Agent blocked — significant issues found"}
             </div>
             <div style={{ fontSize: 11, color: "rgba(60,40,120,0.5)" }}>
               {results.length} scenarios tested · Average score {Math.round(finalScore)}/100
