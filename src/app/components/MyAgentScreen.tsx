@@ -650,12 +650,13 @@ function ScenarioResultRow({ result, index }: { result: ScenarioResult; index: n
 }
 
 // ─── Step label helper ───
-function getStepLabel(step: string | null, resultsCount: number, total: number): string {
-  switch (step) {
+function getStepLabel(testRun: TestRun | null, resultsCount: number, total: number): string {
+  if (!testRun) return "Initializing...";
+  if (testRun.status === "complete") return "All done!";
+  switch (testRun.current_step) {
     case "generating_scenarios": return "Generating test scenarios...";
     case "running_scenarios": return `Running scenarios (${resultsCount}/${total})...`;
     case "scoring": return `Scoring responses (${resultsCount}/${total})...`;
-    case "complete": return "All done!";
     default: return "Initializing...";
   }
 }
@@ -702,7 +703,7 @@ function BulkTesting({ userId, prompt }: { userId: string; prompt: AgentPrompt }
     if (!activeTestRunId) return;
 
     async function poll() {
-      // Poll test_run for current_step
+      // Poll test_run for current_step + status
       const { data: runData } = await supabase
         .from("test_runs")
         .select("id, status, current_step, final_score")
@@ -722,6 +723,15 @@ function BulkTesting({ userId, prompt }: { userId: string; prompt: AgentPrompt }
 
       // Stop polling when complete
       if (runData?.status === "complete") {
+        // Do one final fetch to make sure we have ALL results
+        const { data: finalResults } = await supabase
+          .from("scenario_results")
+          .select("*")
+          .eq("test_run_id", activeTestRunId)
+          .order("created_at", { ascending: true });
+
+        if (finalResults) setResults(finalResults as ScenarioResult[]);
+
         clearInterval(pollRef.current!);
         pollRef.current = null;
         setRunning(false);
@@ -798,7 +808,7 @@ function BulkTesting({ userId, prompt }: { userId: string; prompt: AgentPrompt }
 
   const finalScore = testRun?.final_score ?? null;
   const selectedCount = criteria.filter(c => c.selected).length;
-  const stepLabel = getStepLabel(testRun?.current_step ?? null, results.length, totalScenarios);
+  const stepLabel = getStepLabel(testRun, results.length, totalScenarios);
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
