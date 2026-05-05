@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from "react";
-import { Lock, Send, CheckCircle, XCircle, Bot, RotateCcw, Plus, X, FlaskConical, Shield, Sparkles, ChevronRight, Loader2, Activity, ChevronDown } from "lucide-react";
+import { Lock, Send, CheckCircle, XCircle, Bot, RotateCcw, Plus, X, Shield, Sparkles, ChevronRight, Loader2, Activity, ChevronDown } from "lucide-react";
 import { supabase } from "../supabaseClient";
+import { BulkTesting } from "./BulkTesting";
 
 const CHAT_WEBHOOK = "https://rosegoldprojectai3.app.n8n.cloud/webhook/9503fe0e-e0b1-448a-b062-5b33a88bbd57";
 const CRITERIA_WEBHOOK = "https://rosegoldprojectai3.app.n8n.cloud/webhook/656e3432-f8bd-4dd9-aa0f-551b872b63db";
@@ -998,9 +999,23 @@ export function MyAgentScreen({ userId }: { userId: string }) {
   const [prompt, setPrompt] = useState<AgentPrompt | null>(null);
   const [loading, setLoading] = useState(true);
   const [messages, setMessages] = useState<Message[]>([]);
+  const [universalCriteria, setUniversalCriteria] = useState<any[]>([]);
 
   useEffect(() => {
     fetchPrompt(userId).then(p => { setPrompt(p); setLoading(false); });
+
+    // Load universal criteria once at top level
+    supabase
+      .from("universal_criteria")
+      .select("id, criteria_text")
+      .order("created_at", { ascending: true })
+      .then(({ data }) => {
+        if (data) {
+          setUniversalCriteria(data.map(row => ({
+            id: row.id, text: row.criteria_text, type: "universal" as const, selected: true,
+          })));
+        }
+      });
   }, [userId]);
 
   const hr = new Date().getHours();
@@ -1020,6 +1035,12 @@ export function MyAgentScreen({ userId }: { userId: string }) {
         @keyframes spin { to { transform: rotate(360deg); } }
         @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
         @keyframes fadeInRow { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
+        @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+        @keyframes slideInScenario { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+        @keyframes fadeInScore { from{opacity:0;transform:scale(0.9)} to{opacity:1;transform:scale(1)} }
+        @keyframes dotPulse { 0%,100%{opacity:0.3;transform:scale(1)} 50%{opacity:1;transform:scale(1.3)} }
+        @keyframes dotBounce { 0%,80%,100%{transform:translateY(0)} 40%{transform:translateY(-5px)} }
+        @keyframes cursorBlink { 0%,100%{opacity:1} 50%{opacity:0} }
         * { box-sizing: border-box; }
         ::-webkit-scrollbar { width: 4px; }
         ::-webkit-scrollbar-thumb { background: rgba(139,92,246,0.2); border-radius: 4px; }
@@ -1077,7 +1098,7 @@ export function MyAgentScreen({ userId }: { userId: string }) {
         ) : tab === "report" ? (
           <FullReport prompt={prompt} />
         ) : (
-          <BulkTesting userId={userId} prompt={prompt} />
+          <BulkTesting userId={userId} prompt={prompt} universalCriteria={universalCriteria} />
         )}
       </div>
     </>
