@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Lock, Plus, X, FlaskConical, Shield, Sparkles, ChevronRight, Loader2, CheckCircle, XCircle, RotateCcw } from "lucide-react";
 import { supabase } from "../supabaseClient";
 
@@ -39,46 +39,100 @@ interface TestRun {
   completed_scenarios: number | null;
 }
 
-// ─── Typewriter hook ───
-function useTypewriter(text: string, speed = 18, startDelay = 800) {
+// ─── Sort scenarios by scenario_id number (scen_001 < scen_002 etc) ───
+function sortByScenarioId<T extends { scenario_id: string }>(arr: T[]): T[] {
+  return [...arr].sort((a, b) => {
+    const numA = parseInt(a.scenario_id.split("_")[1] || "0", 10);
+    const numB = parseInt(b.scenario_id.split("_")[1] || "0", 10);
+    return numA - numB;
+  });
+}
+
+// ─── Typewriter hook with queue support ───
+function useTypewriter(text: string, speed = 14, delay = 0) {
   const [displayed, setDisplayed] = useState("");
   const [done, setDone] = useState(false);
-  const [started, setStarted] = useState(false);
+  const iRef = useRef(0);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     setDisplayed("");
     setDone(false);
-    setStarted(false);
-    const delayTimer = setTimeout(() => {
-      setStarted(true);
-    }, startDelay);
-    return () => clearTimeout(delayTimer);
-  }, [text, startDelay]);
+    iRef.current = 0;
 
-  useEffect(() => {
-    if (!started || !text) return;
-    if (displayed.length >= text.length) { setDone(true); return; }
-    const timer = setTimeout(() => {
-      setDisplayed(text.slice(0, displayed.length + 1));
-    }, speed);
-    return () => clearTimeout(timer);
-  }, [started, displayed, text, speed]);
+    if (!text) { setDone(true); return; }
 
-  return { displayed, done, started };
+    const startTimer = setTimeout(() => {
+      function tick() {
+        iRef.current += 1;
+        setDisplayed(text.slice(0, iRef.current));
+        if (iRef.current >= text.length) {
+          setDone(true);
+        } else {
+          timerRef.current = setTimeout(tick, speed);
+        }
+      }
+      tick();
+    }, delay);
+
+    return () => {
+      clearTimeout(startTimer);
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+  }, [text, speed, delay]);
+
+  return { displayed, done };
 }
 
-// ─── Single scenario live card ───
-function LiveScenarioCard({ scenario, result, index, isLatest }: {
+// ─── Single generating line — queued by index ───
+function GeneratingLine({ text, index, visibleUpTo }: { text: string; index: number; visibleUpTo: number }) {
+  const isVisible = index < visibleUpTo;
+  const { displayed, done } = useTypewriter(isVisible ? text : "", 13, 0);
+
+  if (!isVisible) return null;
+
+  return (
+    <div style={{
+      display: "flex", alignItems: "center", gap: 8, marginBottom: 6,
+      animation: "slideInRow 0.3s ease both",
+    }}>
+      <span style={{ fontSize: 11, color: "rgba(99,102,241,0.4)", fontFamily: "monospace", minWidth: 20 }}>
+        {String(index + 1).padStart(2, "0")}
+      </span>
+      <span style={{ fontSize: 12, color: done ? "rgba(255,255,255,0.75)" : "rgba(255,255,255,0.45)", fontFamily: "monospace", flex: 1 }}>
+        {displayed}
+        {!done && (
+          <span style={{
+            display: "inline-block", width: 6, height: 12,
+            background: "#6366F1", marginLeft: 2, verticalAlign: "middle",
+            animation: "cursorBlink 0.6s ease-in-out infinite",
+          }} />
+        )}
+      </span>
+      {done && <span style={{ fontSize: 9, color: "rgba(16,185,129,0.6)", fontWeight: 700 }}>✓</span>}
+    </div>
+  );
+}
+
+// ─── Single scenario live card — queued by index ───
+function LiveScenarioCard({ scenario, result, index, visibleUpTo }: {
   scenario: ScenarioMemoryRow;
   result?: ScenarioResult;
   index: number;
-  isLatest: boolean;
+  visibleUpTo: number;
 }) {
+  const isVisible = index < visibleUpTo;
   const hasResult = !!result;
   const agentText = result?.agent_response ?? "";
-  const { displayed: agentTyped, done: agentDone, started: agentStarted } = useTypewriter(
-    agentText, 12, hasResult ? 600 : 99999
+
+  // Only typewrite when card is visible AND result arrived
+  const { displayed: agentTyped, done: agentDone } = useTypewriter(
+    isVisible && hasResult ? agentText : "",
+    11,
+    isVisible && hasResult ? 800 : 0
   );
+
+  if (!isVisible) return null;
 
   const score = result?.final_score ?? null;
   const passed = result?.status === "pass";
@@ -89,10 +143,8 @@ function LiveScenarioCard({ scenario, result, index, isLatest }: {
       animation: "slideInScenario 0.5s cubic-bezier(0.16,1,0.3,1) both",
       marginBottom: 16,
     }}>
-      {/* Scenario header */}
-      <div style={{
-        display: "flex", alignItems: "center", gap: 10, marginBottom: 8,
-      }}>
+      {/* Scenario header row */}
+      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
         <div style={{
           width: 24, height: 24, borderRadius: "50%", flexShrink: 0,
           background: hasResult
@@ -112,10 +164,7 @@ function LiveScenarioCard({ scenario, result, index, isLatest }: {
             : "rgba(99,102,241,0.1)",
         }} />
         {hasResult && agentDone && (
-          <div style={{
-            display: "flex", alignItems: "center", gap: 5,
-            animation: "fadeInScore 0.4s ease both",
-          }}>
+          <div style={{ animation: "fadeInScore 0.4s ease both" }}>
             <div style={{
               padding: "3px 10px", borderRadius: 20,
               background: passed ? "rgba(16,185,129,0.1)" : "rgba(239,68,68,0.08)",
@@ -130,7 +179,7 @@ function LiveScenarioCard({ scenario, result, index, isLatest }: {
         )}
         {!hasResult && (
           <div style={{ display: "flex", gap: 3 }}>
-            {[0,1,2].map(i => (
+            {[0, 1, 2].map(i => (
               <div key={i} style={{
                 width: 4, height: 4, borderRadius: "50%",
                 background: "rgba(99,102,241,0.3)",
@@ -145,8 +194,7 @@ function LiveScenarioCard({ scenario, result, index, isLatest }: {
       <div style={{
         background: "rgba(15,15,25,0.85)",
         border: "1px solid rgba(255,255,255,0.06)",
-        borderRadius: 14,
-        overflow: "hidden",
+        borderRadius: 14, overflow: "hidden",
         backdropFilter: "blur(20px)",
       }}>
         {/* Lead message */}
@@ -182,10 +230,14 @@ function LiveScenarioCard({ scenario, result, index, isLatest }: {
               transition: "all 0.4s ease",
             }}>A</div>
             <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 9, color: hasResult ? (passed ? "rgba(16,185,129,0.6)" : "rgba(239,68,68,0.5)") : "rgba(99,102,241,0.35)", fontWeight: 600, marginBottom: 4, letterSpacing: "0.5px", textTransform: "uppercase" as const }}>Agent</div>
+              <div style={{
+                fontSize: 9,
+                color: hasResult ? (passed ? "rgba(16,185,129,0.6)" : "rgba(239,68,68,0.5)") : "rgba(99,102,241,0.35)",
+                fontWeight: 600, marginBottom: 4, letterSpacing: "0.5px", textTransform: "uppercase" as const,
+              }}>Agent</div>
               {!hasResult ? (
                 <div style={{ display: "flex", gap: 5, alignItems: "center", padding: "4px 0" }}>
-                  {[0,1,2].map(i => (
+                  {[0, 1, 2].map(i => (
                     <div key={i} style={{
                       width: 7, height: 7, borderRadius: "50%",
                       background: "rgba(99,102,241,0.25)",
@@ -196,7 +248,14 @@ function LiveScenarioCard({ scenario, result, index, isLatest }: {
               ) : (
                 <div style={{ fontSize: 13, color: "rgba(255,255,255,0.75)", lineHeight: 1.6, whiteSpace: "pre-wrap" as const }}>
                   {agentTyped}
-                  {!agentDone && <span style={{ display: "inline-block", width: 2, height: 14, background: "#6366F1", marginLeft: 2, animation: "cursorBlink 0.7s ease-in-out infinite", verticalAlign: "middle" }} />}
+                  {!agentDone && (
+                    <span style={{
+                      display: "inline-block", width: 2, height: 14,
+                      background: "#6366F1", marginLeft: 2,
+                      animation: "cursorBlink 0.7s ease-in-out infinite",
+                      verticalAlign: "middle",
+                    }} />
+                  )}
                 </div>
               )}
             </div>
@@ -226,31 +285,241 @@ function LiveScenarioCard({ scenario, result, index, isLatest }: {
   );
 }
 
-// ─── Scenario generation line ───
-function GeneratingLine({ text, index }: { text: string; index: number }) {
-  const { displayed, done } = useTypewriter(text, 14, index * 120);
+// ─── Phase 2: Live Testing ───
+function PhaseLiveTesting({ testRunId, totalExpected, onComplete }: {
+  testRunId: string;
+  totalExpected: number;
+  onComplete: (testRun: TestRun, results: ScenarioResult[]) => void;
+}) {
+  const [scenarios, setScenarios] = useState<ScenarioMemoryRow[]>([]);
+  const [results, setResults] = useState<ScenarioResult[]>([]);
+  const [testRun, setTestRun] = useState<TestRun | null>(null);
+  const [stage, setStage] = useState<"generating" | "testing">("generating");
+
+  // Queue control — how many items are revealed so far
+  const [visibleScenarios, setVisibleScenarios] = useState(0);
+  const [visibleResults, setVisibleResults] = useState(0);
+
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const bottomRef = useRef<HTMLDivElement>(null);
+  const completedRef = useRef(false);
+
+  // Reveal scenarios one by one with a delay between each
+  useEffect(() => {
+    if (scenarios.length === 0) return;
+    if (visibleScenarios >= scenarios.length) return;
+    const timer = setTimeout(() => {
+      setVisibleScenarios(v => v + 1);
+    }, visibleScenarios === 0 ? 200 : 700); // first one fast, then stagger
+    return () => clearTimeout(timer);
+  }, [scenarios.length, visibleScenarios]);
+
+  // Reveal results one by one — only show next when previous typewriter is roughly done
+  useEffect(() => {
+    if (results.length === 0) return;
+    if (visibleResults >= results.length) return;
+    const timer = setTimeout(() => {
+      setVisibleResults(v => v + 1);
+    }, visibleResults === 0 ? 300 : 2800); // stagger by ~2.8s to let typewriter play
+    return () => clearTimeout(timer);
+  }, [results.length, visibleResults]);
+
+  // Auto scroll to bottom
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [visibleScenarios, visibleResults]);
+
+  useEffect(() => {
+    async function poll() {
+      const { data: runData } = await supabase
+        .from("test_runs")
+        .select("id, status, current_step, final_score, completed_scenarios")
+        .eq("id", testRunId)
+        .single();
+
+      if (runData) {
+        setTestRun(runData as TestRun);
+        if (runData.current_step === "running_scenarios" || runData.current_step === "complete") {
+          setStage("testing");
+        }
+      }
+
+      const { data: scenData } = await supabase
+        .from("scenario_memory")
+        .select("*")
+        .eq("test_run_id", testRunId)
+        .order("scenario_id", { ascending: true });
+
+      if (scenData) setScenarios(sortByScenarioId(scenData as ScenarioMemoryRow[]));
+
+      const { data: resData } = await supabase
+        .from("scenario_results")
+        .select("*")
+        .eq("test_run_id", testRunId)
+        .order("scenario_id", { ascending: true });
+
+      if (resData) setResults(sortByScenarioId(resData as ScenarioResult[]));
+
+      if (runData?.current_step === "complete" && !completedRef.current) {
+        completedRef.current = true;
+        clearInterval(pollRef.current!);
+
+        const { data: finalScenarios } = await supabase
+          .from("scenario_memory").select("*")
+          .eq("test_run_id", testRunId).order("scenario_id", { ascending: true });
+        const { data: finalResults } = await supabase
+          .from("scenario_results").select("*")
+          .eq("test_run_id", testRunId).order("scenario_id", { ascending: true });
+
+        if (finalScenarios) setScenarios(sortByScenarioId(finalScenarios as ScenarioMemoryRow[]));
+        if (finalResults) setResults(sortByScenarioId(finalResults as ScenarioResult[]));
+
+        // Wait for all typewriters to finish before switching to report
+        const totalDelay = 3500 + (finalResults?.length ?? 0) * 200;
+        setTimeout(() => {
+          onComplete(runData as TestRun, (finalResults ?? []) as ScenarioResult[]);
+        }, totalDelay);
+      }
+    }
+
+    pollRef.current = setInterval(poll, 2500);
+    poll();
+    return () => { if (pollRef.current) clearInterval(pollRef.current); };
+  }, [testRunId]);
+
+  const resultMap = new Map(results.map(r => [r.scenario_id, r]));
+  const completedCount = results.filter(r => r.final_score !== null).length;
+  const progress = stage === "generating"
+    ? scenarios.length > 0 ? Math.min((scenarios.length / totalExpected) * 40, 38) : 5
+    : 40 + Math.min((completedCount / totalExpected) * 58, 57);
+
+  const stageLabel = stage === "generating"
+    ? `Generating scenarios... (${scenarios.length}/${totalExpected})`
+    : `Testing agent live... (${completedCount}/${scenarios.length})`;
+
   return (
     <div style={{
-      display: "flex", alignItems: "center", gap: 8, marginBottom: 6,
-      animation: "fadeIn 0.3s ease both",
-      animationDelay: `${index * 0.08}s`,
+      background: "rgba(8,8,18,0.96)", borderRadius: 20, overflow: "hidden",
+      border: "1px solid rgba(255,255,255,0.06)",
+      boxShadow: "0 24px 80px rgba(0,0,0,0.4)",
+      minHeight: 500,
     }}>
-      <span style={{ fontSize: 11, color: "rgba(99,102,241,0.4)", fontFamily: "monospace", minWidth: 16 }}>
-        {String(index + 1).padStart(2, "0")}
-      </span>
-      <span style={{ fontSize: 12, color: done ? "rgba(255,255,255,0.7)" : "rgba(255,255,255,0.45)", fontFamily: "monospace" }}>
-        {displayed}
-        {!done && <span style={{ animation: "cursorBlink 0.6s ease-in-out infinite", display: "inline-block", width: 6, height: 12, background: "#6366F1", marginLeft: 2, verticalAlign: "middle" }} />}
-      </span>
-      {done && (
-        <span style={{ fontSize: 9, color: "rgba(16,185,129,0.6)", fontWeight: 700, marginLeft: "auto" }}>✓</span>
-      )}
+      {/* Top bar */}
+      <div style={{
+        padding: "16px 24px",
+        borderBottom: "1px solid rgba(255,255,255,0.05)",
+        background: "rgba(255,255,255,0.02)",
+        display: "flex", alignItems: "center", gap: 14,
+      }}>
+        <div style={{ display: "flex", gap: 6 }}>
+          {["#FF5F57", "#FEBC2E", "#28C840"].map((c, i) => (
+            <div key={i} style={{ width: 10, height: 10, borderRadius: "50%", background: c, opacity: 0.8 }} />
+          ))}
+        </div>
+        <div style={{ flex: 1 }}>
+          <div style={{ fontSize: 11, color: "rgba(255,255,255,0.35)", fontFamily: "monospace", marginBottom: 6 }}>
+            {stageLabel}
+          </div>
+          <div style={{ height: 3, background: "rgba(255,255,255,0.06)", borderRadius: 3, overflow: "hidden" }}>
+            <div style={{
+              height: "100%", borderRadius: 3,
+              background: "linear-gradient(90deg, #6366F1, #8B5CF6, #06B6D4)",
+              width: `${progress}%`,
+              transition: "width 0.8s cubic-bezier(0.4,0,0.2,1)",
+              boxShadow: "0 0 12px rgba(99,102,241,0.6)",
+            }} />
+          </div>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#10B981", animation: "pulse 1.5s ease-in-out infinite" }} />
+          <span style={{ fontSize: 10, color: "rgba(16,185,129,0.7)", fontWeight: 600, fontFamily: "monospace" }}>LIVE</span>
+        </div>
+      </div>
+
+      {/* Content */}
+      <div style={{ padding: "20px 24px", maxHeight: 600, overflowY: "auto" as const }}>
+
+        {/* Generating phase */}
+        {scenarios.length > 0 && (
+          <div style={{ marginBottom: stage === "testing" ? 24 : 0 }}>
+            <div style={{
+              fontSize: 10, color: "rgba(99,102,241,0.5)", fontWeight: 700,
+              letterSpacing: "1px", textTransform: "uppercase" as const,
+              marginBottom: 12, fontFamily: "monospace",
+            }}>
+              ⚡ Scenario Generation
+            </div>
+            <div style={{
+              background: "rgba(99,102,241,0.04)", border: "1px solid rgba(99,102,241,0.1)",
+              borderRadius: 10, padding: "12px 16px",
+            }}>
+              {scenarios.map((s, i) => (
+                <GeneratingLine
+                  key={s.id}
+                  text={s.input_message}
+                  index={i}
+                  visibleUpTo={visibleScenarios}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Testing phase */}
+        {stage === "testing" && scenarios.length > 0 && (
+          <div>
+            <div style={{
+              fontSize: 10, color: "rgba(16,185,129,0.5)", fontWeight: 700,
+              letterSpacing: "1px", textTransform: "uppercase" as const,
+              marginBottom: 16, fontFamily: "monospace",
+            }}>
+              🤖 Live Agent Testing
+            </div>
+            {scenarios.map((s, i) => {
+              const result = resultMap.get(s.scenario_id);
+              return (
+                <LiveScenarioCard
+                  key={s.scenario_id}
+                  scenario={s}
+                  result={result}
+                  index={i}
+                  visibleUpTo={visibleResults}
+                />
+              );
+            })}
+          </div>
+        )}
+
+        {/* Empty state */}
+        {scenarios.length === 0 && (
+          <div style={{
+            display: "flex", flexDirection: "column",
+            alignItems: "center", justifyContent: "center",
+            padding: "60px 20px", gap: 12,
+          }}>
+            <div style={{ display: "flex", gap: 6 }}>
+              {[0, 1, 2].map(i => (
+                <div key={i} style={{
+                  width: 8, height: 8, borderRadius: "50%",
+                  background: "rgba(99,102,241,0.3)",
+                  animation: `dotBounce 1.4s ease-in-out ${i * 0.2}s infinite`,
+                }} />
+              ))}
+            </div>
+            <div style={{ fontSize: 12, color: "rgba(255,255,255,0.2)", fontFamily: "monospace" }}>
+              Initializing test engine...
+            </div>
+          </div>
+        )}
+
+        <div ref={bottomRef} />
+      </div>
     </div>
   );
 }
 
 // ─── Phase 1: Criteria Selection ───
-function PhaseSelectCriteria({ criteria, setCriteria, onRun, running, userId }: {
+function PhaseSelectCriteria({ criteria, setCriteria, onRun, running }: {
   criteria: Criteria[];
   setCriteria: React.Dispatch<React.SetStateAction<Criteria[]>>;
   onRun: () => void;
@@ -278,7 +547,6 @@ function PhaseSelectCriteria({ criteria, setCriteria, onRun, running, userId }: 
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-      {/* Header */}
       <div style={{
         background: "linear-gradient(145deg, rgba(255,255,255,0.72), rgba(255,255,255,0.45))",
         backdropFilter: "blur(32px)", WebkitBackdropFilter: "blur(32px)",
@@ -317,7 +585,6 @@ function PhaseSelectCriteria({ criteria, setCriteria, onRun, running, userId }: 
         </div>
       </div>
 
-      {/* Criteria grid */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 12 }}>
         {criteria.map(c => {
           const col = colorMap[c.type];
@@ -380,187 +647,6 @@ function PhaseSelectCriteria({ criteria, setCriteria, onRun, running, userId }: 
   );
 }
 
-// ─── Phase 2: Live Testing ───
-function PhaseLiveTesting({ testRunId, totalExpected, onComplete }: {
-  testRunId: string;
-  totalExpected: number;
-  onComplete: (testRun: TestRun, results: ScenarioResult[]) => void;
-}) {
-  const [scenarios, setScenarios] = useState<ScenarioMemoryRow[]>([]);
-  const [results, setResults] = useState<ScenarioResult[]>([]);
-  const [testRun, setTestRun] = useState<TestRun | null>(null);
-  const [stage, setStage] = useState<"generating" | "testing">("generating");
-  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const bottomRef = useRef<HTMLDivElement>(null);
-  const completedRef = useRef(false);
-
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [scenarios, results]);
-
-  useEffect(() => {
-    async function poll() {
-  const { data: runData } = await supabase
-    .from("test_runs")
-    .select("id, status, current_step, final_score, completed_scenarios")
-    .eq("id", testRunId)
-    .single();
-
-  if (runData) {
-    setTestRun(runData as TestRun);
-    if (runData.current_step === "running_scenarios" || runData.current_step === "complete") {
-      setStage("testing");
-    }
-  }
-
-  const { data: scenData } = await supabase
-    .from("scenario_memory")
-    .select("*")
-    .eq("test_run_id", testRunId)
-    .order("created_at", { ascending: true });
-
-  if (scenData) setScenarios(scenData as ScenarioMemoryRow[]);
-
-  const { data: resData } = await supabase
-    .from("scenario_results")
-    .select("*")
-    .eq("test_run_id", testRunId)
-    .order("created_at", { ascending: true });
-
-  if (resData) setResults(resData as ScenarioResult[]);
-
-  if (runData?.current_step === "complete" && !completedRef.current) {
-    completedRef.current = true;
-    clearInterval(pollRef.current!);
-
-    const { data: finalScenarios } = await supabase.from("scenario_memory").select("*").eq("test_run_id", testRunId).order("created_at", { ascending: true });
-    const { data: finalResults } = await supabase.from("scenario_results").select("*").eq("test_run_id", testRunId).order("created_at", { ascending: true });
-
-    if (finalScenarios) setScenarios(finalScenarios as ScenarioMemoryRow[]);
-    if (finalResults) setResults(finalResults as ScenarioResult[]);
-
-    setTimeout(() => {
-      onComplete(runData as TestRun, (finalResults ?? []) as ScenarioResult[]);
-    }, 3500);
-  }
-}
-
-    pollRef.current = setInterval(poll, 2500);
-    poll();
-    return () => { if (pollRef.current) clearInterval(pollRef.current); };
-  }, [testRunId]);
-
-  const resultMap = new Map(results.map(r => [r.scenario_id, r]));
-  const completedCount = results.filter(r => r.final_score !== null).length;
-  const progress = stage === "generating"
-    ? scenarios.length > 0 ? Math.min((scenarios.length / totalExpected) * 40, 38) : 5
-    : 40 + Math.min((completedCount / totalExpected) * 58, 57);
-
-  const stageLabel = stage === "generating"
-    ? `Generating scenarios... (${scenarios.length}/${totalExpected})`
-    : `Testing agent live... (${completedCount}/${scenarios.length})`;
-
-  return (
-    <div style={{
-      background: "rgba(8,8,18,0.96)", borderRadius: 20, overflow: "hidden",
-      border: "1px solid rgba(255,255,255,0.06)",
-      boxShadow: "0 24px 80px rgba(0,0,0,0.4)",
-      minHeight: 500,
-    }}>
-      {/* Top bar */}
-      <div style={{
-        padding: "16px 24px",
-        borderBottom: "1px solid rgba(255,255,255,0.05)",
-        background: "rgba(255,255,255,0.02)",
-        display: "flex", alignItems: "center", gap: 14,
-      }}>
-        <div style={{ display: "flex", gap: 6 }}>
-          {["#FF5F57","#FEBC2E","#28C840"].map((c,i) => (
-            <div key={i} style={{ width: 10, height: 10, borderRadius: "50%", background: c, opacity: 0.8 }} />
-          ))}
-        </div>
-        <div style={{ flex: 1 }}>
-          <div style={{ fontSize: 11, color: "rgba(255,255,255,0.35)", fontFamily: "monospace", marginBottom: 6 }}>
-            {stageLabel}
-          </div>
-          <div style={{ height: 3, background: "rgba(255,255,255,0.06)", borderRadius: 3, overflow: "hidden" }}>
-            <div style={{
-              height: "100%", borderRadius: 3,
-              background: "linear-gradient(90deg, #6366F1, #8B5CF6, #06B6D4)",
-              width: `${progress}%`,
-              transition: "width 0.8s cubic-bezier(0.4,0,0.2,1)",
-              boxShadow: "0 0 12px rgba(99,102,241,0.6)",
-            }} />
-          </div>
-        </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-          <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#10B981", animation: "pulse 1.5s ease-in-out infinite" }} />
-          <span style={{ fontSize: 10, color: "rgba(16,185,129,0.7)", fontWeight: 600, fontFamily: "monospace" }}>LIVE</span>
-        </div>
-      </div>
-
-      {/* Content */}
-      <div style={{ padding: "20px 24px", maxHeight: 560, overflowY: "auto" as const }}>
-
-        {/* Generating phase */}
-        {scenarios.length > 0 && (
-          <div style={{ marginBottom: stage === "testing" ? 24 : 0 }}>
-            <div style={{ fontSize: 10, color: "rgba(99,102,241,0.5)", fontWeight: 700, letterSpacing: "1px", textTransform: "uppercase" as const, marginBottom: 12, fontFamily: "monospace" }}>
-              ⚡ Scenario Generation
-            </div>
-            <div style={{
-              background: "rgba(99,102,241,0.04)", border: "1px solid rgba(99,102,241,0.1)",
-              borderRadius: 10, padding: "12px 16px",
-            }}>
-              {scenarios.map((s, i) => (
-                <GeneratingLine key={s.id} text={s.input_message} index={i} />
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Testing phase */}
-        {stage === "testing" && scenarios.length > 0 && (
-          <div>
-            <div style={{ fontSize: 10, color: "rgba(16,185,129,0.5)", fontWeight: 700, letterSpacing: "1px", textTransform: "uppercase" as const, marginBottom: 16, fontFamily: "monospace" }}>
-              🤖 Live Agent Testing
-            </div>
-            {scenarios.map((s, i) => {
-              const result = resultMap.get(s.scenario_id);
-              const isLatest = i === results.length; // the one currently being tested
-              return (
-                <LiveScenarioCard
-                  key={s.scenario_id}
-                  scenario={s}
-                  result={result}
-                  index={i}
-                  isLatest={isLatest}
-                />
-              );
-            })}
-          </div>
-        )}
-
-        {/* Empty state */}
-        {scenarios.length === 0 && (
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "60px 20px", gap: 12 }}>
-            <div style={{ display: "flex", gap: 6 }}>
-              {[0,1,2].map(i => (
-                <div key={i} style={{ width: 8, height: 8, borderRadius: "50%", background: "rgba(99,102,241,0.3)", animation: `dotBounce 1.4s ease-in-out ${i*0.2}s infinite` }} />
-              ))}
-            </div>
-            <div style={{ fontSize: 12, color: "rgba(255,255,255,0.2)", fontFamily: "monospace" }}>
-              Initializing test engine...
-            </div>
-          </div>
-        )}
-
-        <div ref={bottomRef} />
-      </div>
-    </div>
-  );
-}
-
 // ─── Phase 3: Final Report ───
 function PhaseFinalReport({ testRun, results, onRetest }: {
   testRun: TestRun;
@@ -577,12 +663,12 @@ function PhaseFinalReport({ testRun, results, onRetest }: {
     blocked: { label: "✗ Agent Blocked", sub: "Significant issues found", color: "#EF4444", bg: "rgba(239,68,68,0.06)", border: "rgba(239,68,68,0.18)" },
   }[verdict];
 
-  const passCount = results.filter(r => r.status === "pass").length;
-  const failCount = results.filter(r => r.status === "fail").length;
+  const sortedResults = sortByScenarioId(results);
+  const passCount = sortedResults.filter(r => r.status === "pass").length;
+  const failCount = sortedResults.filter(r => r.status === "fail").length;
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 16, animation: "fadeIn 0.6s ease both" }}>
-      {/* Score header */}
       <div style={{
         background: "linear-gradient(145deg, rgba(255,255,255,0.75), rgba(255,255,255,0.5))",
         backdropFilter: "blur(32px)", WebkitBackdropFilter: "blur(32px)",
@@ -591,7 +677,6 @@ function PhaseFinalReport({ testRun, results, onRetest }: {
         boxShadow: "inset 0 1.5px 0 rgba(255,255,255,0.9), 0 8px 40px rgba(99,102,241,0.1)",
         display: "flex", alignItems: "center", gap: 28,
       }}>
-        {/* Score ring */}
         <div style={{ position: "relative", width: 100, height: 100, flexShrink: 0 }}>
           {(() => {
             const r = 42; const circ = 2 * Math.PI * r; const fill = (score / 100) * circ;
@@ -611,7 +696,6 @@ function PhaseFinalReport({ testRun, results, onRetest }: {
         </div>
 
         <div style={{ flex: 1 }}>
-          {/* Verdict badge */}
           <div style={{
             display: "inline-flex", alignItems: "center", gap: 8, padding: "8px 16px", borderRadius: 12, marginBottom: 14,
             background: verdictConfig.bg, border: `1px solid ${verdictConfig.border}`,
@@ -619,11 +703,9 @@ function PhaseFinalReport({ testRun, results, onRetest }: {
             <span style={{ fontSize: 14, fontWeight: 800, color: verdictConfig.color }}>{verdictConfig.label}</span>
             <span style={{ fontSize: 11, color: verdictConfig.color, opacity: 0.7 }}>— {verdictConfig.sub}</span>
           </div>
-
-          {/* Stats row */}
           <div style={{ display: "flex", gap: 12 }}>
             {[
-              { label: "Scenarios", value: results.length, color: "#4F46E5" },
+              { label: "Scenarios", value: sortedResults.length, color: "#4F46E5" },
               { label: "Passed", value: passCount, color: "#10B981" },
               { label: "Failed", value: failCount, color: "#EF4444" },
               { label: "Avg Score", value: `${Math.round(score)}`, color: scoreColor },
@@ -640,7 +722,6 @@ function PhaseFinalReport({ testRun, results, onRetest }: {
           </div>
         </div>
 
-        {/* Retest button */}
         <button onClick={onRetest} style={{
           display: "flex", alignItems: "center", gap: 7, padding: "10px 20px", borderRadius: 12, border: "1px solid rgba(99,102,241,0.2)",
           background: "rgba(99,102,241,0.06)", color: "#4F46E5",
@@ -654,7 +735,6 @@ function PhaseFinalReport({ testRun, results, onRetest }: {
         </button>
       </div>
 
-      {/* Results list */}
       <div style={{
         background: "linear-gradient(145deg, rgba(255,255,255,0.68), rgba(255,255,255,0.42))",
         backdropFilter: "blur(32px)", WebkitBackdropFilter: "blur(32px)",
@@ -668,14 +748,14 @@ function PhaseFinalReport({ testRun, results, onRetest }: {
           </div>
         </div>
 
-        {results.map((result, i) => {
+        {sortedResults.map((result, i) => {
           const isExpanded = expandedId === result.id;
           const passed = result.status === "pass";
           const sc = result.final_score ?? 0;
           const sc_color = sc >= 80 ? "#10B981" : sc >= 60 ? "#F59E0B" : "#EF4444";
 
           return (
-            <div key={result.id} style={{ borderBottom: i < results.length - 1 ? "1px solid rgba(255,255,255,0.5)" : "none" }}>
+            <div key={result.id} style={{ borderBottom: i < sortedResults.length - 1 ? "1px solid rgba(255,255,255,0.5)" : "none" }}>
               <div onClick={() => setExpandedId(isExpanded ? null : result.id)} style={{
                 display: "flex", alignItems: "flex-start", gap: 14, padding: "14px 22px",
                 cursor: "pointer", transition: "background 0.15s",
@@ -684,7 +764,6 @@ function PhaseFinalReport({ testRun, results, onRetest }: {
                 onMouseEnter={e => { e.currentTarget.style.background = "rgba(255,255,255,0.35)"; }}
                 onMouseLeave={e => { e.currentTarget.style.background = i % 2 === 0 ? "rgba(255,255,255,0.15)" : "transparent"; }}
               >
-                {/* Score */}
                 <div style={{
                   width: 44, height: 44, borderRadius: "50%", flexShrink: 0,
                   border: `2.5px solid ${sc_color}`, background: `${sc_color}12`,
@@ -730,7 +809,6 @@ function PhaseFinalReport({ testRun, results, onRetest }: {
                 </div>
               </div>
 
-              {/* Expanded log */}
               {isExpanded && (
                 <div style={{ padding: "0 22px 16px", display: "flex", flexDirection: "column", gap: 8, animation: "fadeIn 0.2s ease both" }}>
                   {result.input_message && (
@@ -769,7 +847,6 @@ export function BulkTesting({ userId, prompt, universalCriteria }: {
   const [finalResults, setFinalResults] = useState<ScenarioResult[]>([]);
   const [starting, setStarting] = useState(false);
 
-  // Sync universal criteria when they load
   useEffect(() => {
     if (universalCriteria.length > 0) setCriteria(universalCriteria);
   }, [universalCriteria]);
@@ -809,7 +886,7 @@ export function BulkTesting({ userId, prompt, universalCriteria }: {
 
   function handleComplete(testRun: TestRun, results: ScenarioResult[]) {
     setFinalTestRun(testRun);
-    setFinalResults(results);
+    setFinalResults(sortByScenarioId(results));
     setPhase("report");
   }
 
