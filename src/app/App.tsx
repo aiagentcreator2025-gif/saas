@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { Sidebar } from "./components/Sidebar";
 import { DashboardScreen } from "./components/DashboardScreen";
-import { LeadFlowScreen } from "./components/LeadFlowScreen";
 import { CalendarScreen, SettingsScreen } from "./components/CalendarScreen";
 import { LeadListScreen } from "./components/LeadListScreen";
 import { ConversationScreen } from "./components/ConversationScreen";
@@ -31,7 +30,6 @@ export default function App() {
         setAuthState("onboarding");
       } else {
         setAuthState("ready");
-        // Check if agent is certified
         const { data: prompt } = await supabase
           .from("generated_prompts")
           .select("agent_certified")
@@ -77,7 +75,6 @@ export default function App() {
     return () => clearTimeout(timer);
   }, [authState]);
 
-  // Called by MyAgentScreen when user clicks "I'm satisfied"
   const handleAgentCertified = async () => {
     if (!userId) return;
     await supabase
