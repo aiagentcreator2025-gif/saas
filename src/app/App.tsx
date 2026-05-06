@@ -9,14 +9,16 @@ import { AuthScreen } from "./components/AuthScreen";
 import { OnboardingScreen } from "./components/OnboardingScreen";
 import { NotificationPopup } from "./components/NotificationPopup";
 import { MyAgentScreen } from "./components/MyAgentScreen";
+import { MyWorkflowsScreen } from "./components/MyWorkflowsScreen";
 import { supabase } from "./supabaseClient";
 
-export type Screen = "dashboard" | "leadflow" | "calendar" | "settings" | "leadlist" | "conversations" | "my-agent";
+export type Screen = "dashboard" | "my-agent" | "my-workflows" | "calendar" | "settings" | "leadlist" | "conversations";
 
 export default function App() {
   const [screen, setScreen] = useState<Screen>("dashboard");
   const [authState, setAuthState] = useState<"loading" | "unauthenticated" | "onboarding" | "ready">("loading");
   const [userId, setUserId] = useState<string>("");
+  const [agentCertified, setAgentCertified] = useState(false);
 
   const checkAccount = async (userId: string) => {
     try {
@@ -29,6 +31,15 @@ export default function App() {
         setAuthState("onboarding");
       } else {
         setAuthState("ready");
+        // Check if agent is certified
+        const { data: prompt } = await supabase
+          .from("generated_prompts")
+          .select("agent_certified")
+          .eq("user_id", userId)
+          .eq("status", "approved")
+          .eq("agent_certified", true)
+          .maybeSingle();
+        setAgentCertified(!!prompt);
       }
     } catch {
       setAuthState("onboarding");
@@ -48,23 +59,14 @@ export default function App() {
   useEffect(() => {
     const init = async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.user) {
-        setAuthState("unauthenticated");
-        return;
-      }
+      if (!session?.user) { setAuthState("unauthenticated"); return; }
       setUserId(session.user.id);
       await checkAccount(session.user.id);
     };
     init();
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (!session?.user) {
-        setAuthState("unauthenticated");
-        return;
-      }
-      setTimeout(() => {
-        setUserId(session.user!.id);
-        checkAccount(session.user!.id);
-      }, 0);
+      if (!session?.user) { setAuthState("unauthenticated"); return; }
+      setTimeout(() => { setUserId(session.user!.id); checkAccount(session.user!.id); }, 0);
     });
     return () => subscription.unsubscribe();
   }, []);
@@ -75,12 +77,19 @@ export default function App() {
     return () => clearTimeout(timer);
   }, [authState]);
 
+  // Called by MyAgentScreen when user clicks "I'm satisfied"
+  const handleAgentCertified = async () => {
+    if (!userId) return;
+    await supabase
+      .from("generated_prompts")
+      .update({ agent_certified: true })
+      .eq("user_id", userId)
+      .eq("status", "approved");
+    setAgentCertified(true);
+  };
+
   if (authState === "loading") return (
-    <div style={{
-      minHeight: "100vh", display: "flex", alignItems: "center",
-      justifyContent: "center", background: "#F9F9F8",
-      fontFamily: "'DM Sans', sans-serif", color: "#8A8680", fontSize: 13
-    }}>
+    <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#F9F9F8", fontFamily: "'DM Sans', sans-serif", color: "#8A8680", fontSize: 13 }}>
       Loading...
     </div>
   );
@@ -94,15 +103,15 @@ export default function App() {
       background: "linear-gradient(135deg, #ede9f8 0%, #F5F6FA 20%, #F5F6FA 80%, #F5F6FA 100%)",
       fontFamily: "'Plus Jakarta Sans', sans-serif", overflow: "hidden"
     }}>
-      <Sidebar active={screen} onNav={setScreen} />
+      <Sidebar active={screen} onNav={setScreen} agentCertified={agentCertified} />
       <div style={{ flex: 1, overflowY: "auto" }}>
         {screen === "dashboard"     && <DashboardScreen />}
-        {screen === "leadflow"      && <LeadFlowScreen />}
+        {screen === "my-agent"      && <MyAgentScreen userId={userId} onAgentCertified={handleAgentCertified} />}
+        {screen === "my-workflows"  && <MyWorkflowsScreen userId={userId} agentCertified={agentCertified} />}
         {screen === "calendar"      && <CalendarScreen />}
         {screen === "settings"      && <SettingsScreen />}
         {screen === "leadlist"      && <LeadListScreen />}
         {screen === "conversations" && <ConversationScreen />}
-        {screen === "my-agent"      && <MyAgentScreen userId={userId} />}
       </div>
       <NotificationPopup userId={userId} />
     </div>
