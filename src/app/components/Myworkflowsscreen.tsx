@@ -147,7 +147,6 @@ function WorkflowsIntroScreen({ onContinue }: { onContinue: () => void }) {
       background: "linear-gradient(135deg, #f0f4ff 0%, #e8eaf6 40%, #f5f0ff 100%)",
       position: "relative", overflow: "hidden", fontFamily: "'Plus Jakarta Sans', sans-serif",
     }}>
-      {/* Background orbs */}
       <div style={{ position: "absolute", top: -200, left: -200, width: 600, height: 600, borderRadius: "50%", background: "radial-gradient(circle, rgba(79,70,229,0.12) 0%, transparent 70%)", pointerEvents: "none" }} />
       <div style={{ position: "absolute", bottom: -150, right: -150, width: 500, height: 500, borderRadius: "50%", background: "radial-gradient(circle, rgba(124,58,237,0.10) 0%, transparent 70%)", pointerEvents: "none" }} />
 
@@ -160,7 +159,6 @@ function WorkflowsIntroScreen({ onContinue }: { onContinue: () => void }) {
         boxShadow: "0 8px 32px rgba(79,70,229,0.08), inset 0 1px 0 rgba(255,255,255,0.9)",
         animation: "wfIntroFadeUp 0.6s ease forwards",
       }}>
-        {/* Left */}
         <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
           <div style={{
             display: "inline-flex", alignItems: "center", gap: 6,
@@ -172,10 +170,7 @@ function WorkflowsIntroScreen({ onContinue }: { onContinue: () => void }) {
             <Zap size={10} strokeWidth={2.5} /> Your Agent's Workspace
           </div>
 
-          <div style={{
-            fontSize: 42, fontWeight: 800, color: "#0f1117",
-            lineHeight: 1.1, letterSpacing: "-1.2px", marginBottom: 16,
-          }}>
+          <div style={{ fontSize: 42, fontWeight: 800, color: "#0f1117", lineHeight: 1.1, letterSpacing: "-1.2px", marginBottom: 16 }}>
             Your agent is hired —<br />
             <span style={{ background: "linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
               now set up his workspace.
@@ -194,11 +189,7 @@ function WorkflowsIntroScreen({ onContinue }: { onContinue: () => void }) {
               "Publish and go live in minutes",
             ].map((text, i) => (
               <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 13, fontWeight: 500, color: "#374151" }}>
-                <div style={{
-                  width: 22, height: 22, borderRadius: "50%",
-                  background: "linear-gradient(135deg, #4F46E5, #7C3AED)",
-                  display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
-                }}>
+                <div style={{ width: 22, height: 22, borderRadius: "50%", background: "linear-gradient(135deg, #4F46E5, #7C3AED)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                   <Check size={11} color="#fff" strokeWidth={3} />
                 </div>
                 {text}
@@ -225,7 +216,6 @@ function WorkflowsIntroScreen({ onContinue }: { onContinue: () => void }) {
           </button>
         </div>
 
-        {/* Right — illustration */}
         <div style={{ flexShrink: 0, width: 420, height: 320, display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
           <img src={WORKFLOWS_IMG} alt="Your workspace" style={{ width: "100%", height: "100%", objectFit: "contain", objectPosition: "center bottom" }} />
         </div>
@@ -243,8 +233,7 @@ function LockedWorkflows() {
       fontFamily: "'Plus Jakarta Sans', sans-serif",
     }}>
       <div style={{
-        maxWidth: 480, width: "90%", textAlign: "center",
-        padding: "56px 48px",
+        maxWidth: 480, width: "90%", textAlign: "center", padding: "56px 48px",
         background: "rgba(255,255,255,0.5)", backdropFilter: "blur(32px)",
         WebkitBackdropFilter: "blur(32px)",
         borderRadius: 28, border: "1px solid rgba(255,255,255,0.7)",
@@ -594,15 +583,9 @@ export function MyWorkflowsScreen({ userId, agentCertified }: { userId: string; 
   const [publishing, setPublishing] = useState(false);
   const [publishDone, setPublishDone] = useState(false);
 
-  // If not certified — show locked state regardless
-  if (!agentCertified) return (
-    <>
-      <style>{GLOBAL_STYLES}</style>
-      <LockedWorkflows />
-    </>
-  );
-
+  // All hooks first — no early returns before this
   useEffect(() => {
+    if (!agentCertified) return;
     const load = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session?.user) return;
@@ -610,9 +593,12 @@ export function MyWorkflowsScreen({ userId, agentCertified }: { userId: string; 
       if (data) setConfig(prev => ({ ...prev, ...Object.fromEntries(Object.keys(EMPTY_CONFIG).map(k => [k, (data as any)[k] ?? (EMPTY_CONFIG as any)[k]])) }));
     };
     load();
-  }, []);
+  }, [agentCertified]);
 
-  const onChange = useCallback((key: keyof AutomationConfig, value: string | string[]) => { setConfig(prev => ({ ...prev, [key]: value })); setSaved(false); }, []);
+  const onChange = useCallback((key: keyof AutomationConfig, value: string | string[]) => {
+    setConfig(prev => ({ ...prev, [key]: value }));
+    setSaved(false);
+  }, []);
 
   const onSave = async () => {
     setSaving(true); setSaved(false);
@@ -636,6 +622,14 @@ export function MyWorkflowsScreen({ userId, agentCertified }: { userId: string; 
     } catch (e) { console.error("Webhook error:", e); }
     setPublishing(false);
   };
+
+  // Early return AFTER all hooks
+  if (!agentCertified) return (
+    <>
+      <style>{GLOBAL_STYLES}</style>
+      <LockedWorkflows />
+    </>
+  );
 
   const editorProps = { config, onChange, onSave, onPublish, saving, saved, publishing, publishDone };
 
