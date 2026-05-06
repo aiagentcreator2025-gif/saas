@@ -329,19 +329,22 @@ const GLOBAL_STYLES = `
     height: 300px;
     border-radius: 24px;
     overflow: hidden;
-    background: rgba(255,255,255,0.3);
+    background: #F0EDE6;
     border: 1px solid rgba(255,255,255,0.6);
     box-shadow:
       0 20px 60px rgba(79,70,229,0.1),
       inset 0 1px 0 rgba(255,255,255,0.8);
     position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
   .lf-intro-right img {
     width: 100%;
     height: 100%;
-    object-fit: cover;
-    object-position: center;
+    object-fit: contain;
+    object-position: center bottom;
   }
 
   /* ── Floating glass orbs ── */
@@ -476,16 +479,16 @@ const GLOBAL_STYLES = `
 
 // ─── Agent Images ─────────────────────────────────────────────────────────────
 export const BookingAgent = ({ style }: { style?: React.CSSProperties }) => (
-  <div style={{ width:"100%", height:"100%", backgroundImage:`url(${BASE}bookingflow.png)`, backgroundSize:"cover", backgroundRepeat:"no-repeat", backgroundPosition:"center", ...style }} />
+  <img src={`${BASE}bookingflow.png`} alt="Booking Flow" style={{ width:"100%", height:"100%", objectFit:"contain", objectPosition:"center bottom", ...style }} />
 );
 export const FollowUpAutomation = ({ style }: { style?: React.CSSProperties }) => (
-  <div style={{ width:"100%", height:"100%", backgroundImage:`url(${BASE}followupautomation3.png)`, backgroundSize:"cover", backgroundRepeat:"no-repeat", backgroundPosition:"center", ...style }} />
+  <img src={`${BASE}followupautomation3.png`} alt="Follow Up Automation" style={{ width:"100%", height:"100%", objectFit:"contain", objectPosition:"center bottom", ...style }} />
 );
 export const FollowUpAgent = ({ style }: { style?: React.CSSProperties }) => (
-  <div style={{ width:"100%", height:"100%", backgroundImage:`url(${BASE}followupagent3.png)`, backgroundSize:"cover", backgroundRepeat:"no-repeat", backgroundPosition:"center", ...style }} />
+  <img src={`${BASE}followupagent3.png`} alt="Follow Up Agent" style={{ width:"100%", height:"100%", objectFit:"contain", objectPosition:"center bottom", ...style }} />
 );
 export const FollowUpFlow = ({ style }: { style?: React.CSSProperties }) => (
-  <div style={{ width:"100%", height:"100%", backgroundImage:`url(${BASE}followupflow.png)`, backgroundSize:"cover", backgroundRepeat:"no-repeat", backgroundPosition:"center", ...style }} />
+  <img src={`${BASE}followupflow.png`} alt="Follow Up Flow" style={{ width:"100%", height:"100%", objectFit:"contain", objectPosition:"center bottom", ...style }} />
 );
 
 // ─── INTRO SCREEN ─────────────────────────────────────────────────────────────
@@ -520,7 +523,7 @@ function IntroScreen({ onContinue }: { onContinue: () => void }) {
               "Greet & qualify every lead instantly on WhatsApp",
               "Deliver your lead magnet automatically",
               "Book calls 24/7 without lifting a finger",
-              "Re-engage cold leads with smart follow-ups",
+              "Follow up after booking to ensure show-ups",
             ].map((text, i) => (
               <div key={i} className="lf-intro-pill">
                 <div className="lf-intro-pill-dot">
@@ -545,13 +548,7 @@ function IntroScreen({ onContinue }: { onContinue: () => void }) {
             src={`${BASE}wholeteam.png`}
             alt="Your AI team"
           />
-          {/* Glass overlay shimmer */}
-          <div style={{
-            position: "absolute",
-            inset: 0,
-            background: "linear-gradient(135deg, rgba(255,255,255,0.15) 0%, transparent 50%, rgba(79,70,229,0.04) 100%)",
-            pointerEvents: "none",
-          }} />
+
         </div>
       </div>
     </div>
@@ -580,7 +577,7 @@ function FlowCardNew({
             <img
               src={agentImgUrl}
               alt={title}
-              style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "top center" }}
+              style={{ width: "100%", height: "100%", objectFit: "contain", objectPosition: "center bottom" }}
             />
           </div>
           <div style={{
@@ -703,8 +700,8 @@ function PreviewScreen({ title, subtitle, description, accentColor, accentBg, st
           <button className="lf-back-btn" onClick={onBack}><ArrowLeft size={13} strokeWidth={1.8} /> {backLabel}</button>
         </div>
         <div style={{ padding:"0 24px 24px", display:"flex", flexDirection:"column", alignItems:"center", borderBottom:"1px solid #F3F4F6" }}>
-          <div style={{ width:"100%", height:200, borderRadius:14, overflow:"hidden", border:"1px solid #E5E7EB" }}>
-            <div style={{ width:"100%", height:"100%" }}>{agent}</div>
+          <div style={{ width:"100%", height:200, borderRadius:14, overflow:"hidden", border:"1px solid #E5E7EB", background:"#F0EDE6", display:"flex", alignItems:"center", justifyContent:"center" }}>
+            <div style={{ width:"100%", height:"100%", display:"flex", alignItems:"center", justifyContent:"center" }}>{agent}</div>
           </div>
           <div style={{ marginTop:16, textAlign:"center" }}>
             <div style={{ fontSize:20, fontWeight:800, color:"#111827", letterSpacing:"-0.3px", marginBottom:2 }}>{title}</div>
