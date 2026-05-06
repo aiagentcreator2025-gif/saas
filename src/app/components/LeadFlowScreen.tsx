@@ -325,18 +325,11 @@ const GLOBAL_STYLES = `
 
   .lf-intro-right {
     flex-shrink: 0;
-    width: 380px;
-    height: 300px;
-    border-radius: 24px;
-    overflow: hidden;
-    background: #F0EDE6;
-    border: 1px solid rgba(255,255,255,0.6);
-    box-shadow:
-      0 20px 60px rgba(79,70,229,0.1),
-      inset 0 1px 0 rgba(255,255,255,0.8);
+    width: 420px;
+    height: 320px;
     position: relative;
     display: flex;
-    align-items: center;
+    align-items: flex-end;
     justify-content: center;
   }
 
@@ -545,7 +538,7 @@ function IntroScreen({ onContinue }: { onContinue: () => void }) {
         {/* RIGHT — illustration */}
         <div className="lf-intro-right">
           <img
-            src={`${BASE}wholeteam2.png`}
+            src={`${BASE}wholeteam.png`}
             alt="Your AI team"
           />
 
