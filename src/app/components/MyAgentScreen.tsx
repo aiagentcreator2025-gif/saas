@@ -426,6 +426,10 @@ function PreviewScreen({ type, onStart, onBack }: { type: "booking" | "followup"
     { icon: <Star size={14} strokeWidth={2} />, title: "Recovers leads", desc: "Turns cold leads back into active conversations" },
   ];
 
+  const headerImg = isBooking
+    ? "https://raw.githubusercontent.com/aiagentcreator2025-gif/saas/main/public/facebooking1.png"
+    : "https://raw.githubusercontent.com/aiagentcreator2025-gif/saas/main/public/facefollowupagent.png";
+
   return (
     <div style={{ minHeight: "100vh", background: "#F4F5FA", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 40 }}>
       <div className="ma-fade-up" style={{ maxWidth: 720, width: "100%", background: "#fff", borderRadius: 28, border: `1px solid ${border}`, overflow: "hidden", boxShadow: "0 4px 24px rgba(0,0,0,0.06)" }}>
@@ -435,8 +439,8 @@ function PreviewScreen({ type, onStart, onBack }: { type: "booking" | "followup"
             <ArrowLeft size={13} strokeWidth={1.8} /> Back
           </button>
           <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-            <div style={{ width: 80, height: 80, borderRadius: 20, overflow: "hidden" }}>
-              {isBooking ? <Calendar size={24} strokeWidth={1.5} /> : <MessageSquare size={24} strokeWidth={1.5} />}
+            <div style={{ width: 80, height: 80, borderRadius: 20, overflow: "hidden", flexShrink: 0, background: bg, border: `1px solid ${border}` }}>
+              <img src={headerImg} alt="" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
             </div>
             <div>
               <div style={{ fontSize: 24, fontWeight: 800, color: "#111827", letterSpacing: "-0.4px" }}>
@@ -469,7 +473,6 @@ function PreviewScreen({ type, onStart, onBack }: { type: "booking" | "followup"
             ))}
           </div>
 
-          {/* What you'll configure */}
           <div style={{ padding: "16px 20px", background: "#F9FAFB", borderRadius: 12, border: "1px solid #E5E7EB", marginBottom: 28 }}>
             <div style={{ fontSize: 11, fontWeight: 700, color: "#9CA3AF", textTransform: "uppercase" as const, letterSpacing: "0.8px", marginBottom: 12 }}>What you'll configure</div>
             <div style={{ display: "flex", gap: 12 }}>
