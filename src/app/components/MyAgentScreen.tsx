@@ -309,7 +309,7 @@ function IntroScreen({ onContinue }: { onContinue: () => void }) {
         <div style={{ width: 320, height: 320, flexShrink: 0, position: "relative" }}>
           <div style={{ width: "100%", height: "100%", borderRadius: 24, background: "linear-gradient(135deg, #EEF2FF 0%, #F5F3FF 100%)", border: "1px solid rgba(79,70,229,0.12)", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
             <img
-              src="https://raw.githubusercontent.com/aiagentcreator2025-gif/saas/main/public/myagent.png"
+              src="https://raw.githubusercontent.com/aiagentcreator2025-gif/saas/main/public/wholeteam2.png"
               alt="AI Agent"
               style={{ width: "100%", height: "100%", objectFit: "contain", objectPosition: "center bottom" }}
               onError={(e) => {
