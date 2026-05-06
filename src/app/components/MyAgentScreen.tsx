@@ -354,7 +354,7 @@ function ChooseTypeScreen({ onSelect, onBack }: { onSelect: (t: "booking" | "fol
           {[
             {
               type: "booking" as const,
-              icon: <Calendar size={28} strokeWidth={1.5} />,
+              icon: <img src="https://raw.githubusercontent.com/aiagentcreator2025-gif/saas/main/public/bookingflow.png" style={{ width: 40, height: 40, objectFit: "contain" }} />,
               label: "Booking Agent",
               tagline: "Qualifies leads & books calls",
               desc: "Your agent greets every lead, qualifies them with your script, delivers your lead magnet, and books a call — all automatically.",
