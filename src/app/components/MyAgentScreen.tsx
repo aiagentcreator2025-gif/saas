@@ -354,7 +354,7 @@ function ChooseTypeScreen({ onSelect, onBack }: { onSelect: (t: "booking" | "fol
           {[
             {
               type: "booking" as const,
-              icon: <img src="https://raw.githubusercontent.com/aiagentcreator2025-gif/saas/main/public/bookingflow.png" style={{ width: 40, height: 40, objectFit: "contain" }} />,
+              icon: <img src="https://raw.githubusercontent.com/aiagentcreator2025-gif/saas/main/public/bookingflow.png" style={{ width: 40, height: 40, objectFit: "cover" }} />,
               label: "Booking Agent",
               tagline: "Qualifies leads & books calls",
               desc: "Your agent greets every lead, qualifies them with your script, delivers your lead magnet, and books a call — all automatically.",
@@ -363,7 +363,7 @@ function ChooseTypeScreen({ onSelect, onBack }: { onSelect: (t: "booking" | "fol
             },
             {
               type: "followup" as const,
-              icon: <MessageSquare size={28} strokeWidth={1.5} />,
+              icon: <img src="https://raw.githubusercontent.com/aiagentcreator2025-gif/saas/main/public/followupagent3.png" style={{ width: 40, height: 40, objectFit: "cover" }} />,
               label: "Follow-Up Agent",
               tagline: "Re-engages cold leads",
               desc: "Your agent automatically follows up with leads who didn't respond — bringing them back into the conversation at the right moment.",
@@ -382,9 +382,9 @@ function ChooseTypeScreen({ onSelect, onBack }: { onSelect: (t: "booking" | "fol
               onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = "translateY(-4px)"; (e.currentTarget as HTMLElement).style.boxShadow = `0 16px 40px ${card.color}25`; }}
               onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = ""; (e.currentTarget as HTMLElement).style.boxShadow = "0 2px 12px rgba(0,0,0,0.05)"; }}
             >
-              <div style={{ width: 56, height: 56, borderRadius: 16, background: card.bg, border: `1px solid ${card.border}`, display: "flex", alignItems: "center", justifyContent: "center", color: card.color, marginBottom: 20 }}>
-                {card.icon}
-              </div>
+              <div style={{ width: 80, height: 80, borderRadius: 20, overflow: "hidden", marginBottom: 20 }}>
+  {card.icon}
+</div>
               <div style={{ fontSize: 20, fontWeight: 800, color: "#111827", marginBottom: 4 }}>{card.label}</div>
               <div style={{ fontSize: 12, color: card.color, fontWeight: 600, marginBottom: 14 }}>{card.tagline}</div>
               <p style={{ fontSize: 13, color: "#6B7280", lineHeight: 1.7, marginBottom: 20 }}>{card.desc}</p>
@@ -435,7 +435,7 @@ function PreviewScreen({ type, onStart, onBack }: { type: "booking" | "followup"
             <ArrowLeft size={13} strokeWidth={1.8} /> Back
           </button>
           <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-            <div style={{ width: 56, height: 56, borderRadius: 16, background: bg, border: `1px solid ${border}`, display: "flex", alignItems: "center", justifyContent: "center", color }}>
+            <div style={{ width: 80, height: 80, borderRadius: 20, overflow: "hidden" }}>
               {isBooking ? <Calendar size={24} strokeWidth={1.5} /> : <MessageSquare size={24} strokeWidth={1.5} />}
             </div>
             <div>
