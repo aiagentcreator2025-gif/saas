@@ -693,8 +693,8 @@ function PreviewScreen({ title, subtitle, description, accentColor, accentBg, st
           <button className="lf-back-btn" onClick={onBack}><ArrowLeft size={13} strokeWidth={1.8} /> {backLabel}</button>
         </div>
         <div style={{ padding:"0 24px 24px", display:"flex", flexDirection:"column", alignItems:"center", borderBottom:"1px solid #F3F4F6" }}>
-          <div style={{ width:"100%", height:200, borderRadius:14, overflow:"hidden", border:"1px solid #E5E7EB", background:"#F0EDE6", display:"flex", alignItems:"center", justifyContent:"center" }}>
-            <div style={{ width:"100%", height:"100%", display:"flex", alignItems:"center", justifyContent:"center" }}>{agent}</div>
+          <div style={{ width:"100%", height:200, display:"flex", alignItems:"flex-end", justifyContent:"center" }}>
+            {agent}
           </div>
           <div style={{ marginTop:16, textAlign:"center" }}>
             <div style={{ fontSize:20, fontWeight:800, color:"#111827", letterSpacing:"-0.3px", marginBottom:2 }}>{title}</div>
