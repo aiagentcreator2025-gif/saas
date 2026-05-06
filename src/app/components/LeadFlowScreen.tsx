@@ -545,7 +545,7 @@ function IntroScreen({ onContinue }: { onContinue: () => void }) {
         {/* RIGHT — illustration */}
         <div className="lf-intro-right">
           <img
-            src={`${BASE}wholeteam.png`}
+            src={`${BASE}wholeteam1.png`}
             alt="Your AI team"
           />
 
