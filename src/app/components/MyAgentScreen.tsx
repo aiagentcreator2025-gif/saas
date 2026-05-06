@@ -427,8 +427,8 @@ function PreviewScreen({ type, onStart, onBack }: { type: "booking" | "followup"
   ];
 
   const headerImg = isBooking
-    ? "https://raw.githubusercontent.com/aiagentcreator2025-gif/saas/main/public/facebooking1.png"
-    : "https://raw.githubusercontent.com/aiagentcreator2025-gif/saas/main/public/facefollowupagent.png";
+    ? "https://raw.githubusercontent.com/aiagentcreator2025-gif/saas/main/public/bookingflow.png"
+    : "https://raw.githubusercontent.com/aiagentcreator2025-gif/saas/main/public/followupagent3.png";
 
   return (
     <div style={{ minHeight: "100vh", background: "#F4F5FA", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 40 }}>
