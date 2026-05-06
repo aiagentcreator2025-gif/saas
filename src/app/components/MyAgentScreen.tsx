@@ -311,7 +311,7 @@ function IntroScreen({ onContinue }: { onContinue: () => void }) {
             <img
               src="https://raw.githubusercontent.com/aiagentcreator2025-gif/saas/main/public/wholeteam2.png"
               alt="AI Agent"
-              style={{ width: "100%", height: "100%", objectFit: "contain", objectPosition: "center bottom" }}
+             style={{ width: "100%", height: "100%", objectFit: "contain", objectPosition: "center center" }}
               onError={(e) => {
                 const el = e.currentTarget as HTMLImageElement;
                 el.style.display = "none";
