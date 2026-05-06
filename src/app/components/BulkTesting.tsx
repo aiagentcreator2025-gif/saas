@@ -834,10 +834,11 @@ function PhaseFinalReport({ testRun, results, onRetest }: {
 }
 
 // ─── Main BulkTesting component ───
-export function BulkTesting({ userId, prompt, universalCriteria }: {
+export function BulkTesting({ userId, prompt, universalCriteria, onComplete }: {
   userId: string;
   prompt: AgentPrompt;
   universalCriteria: Criteria[];
+  onComplete?: () => void;
 }) {
   const [phase, setPhase] = useState<"select" | "live" | "report">("select");
   const [criteria, setCriteria] = useState<Criteria[]>(universalCriteria);
@@ -884,10 +885,12 @@ export function BulkTesting({ userId, prompt, universalCriteria }: {
     }
   }
 
-  function handleComplete(testRun: TestRun, results: ScenarioResult[]) {
+  function handleLiveComplete(testRun: TestRun, results: ScenarioResult[]) {
     setFinalTestRun(testRun);
     setFinalResults(sortByScenarioId(results));
     setPhase("report");
+    // Notify parent that test is done → show satisfaction screen
+    onComplete?.();
   }
 
   function handleRetest() {
@@ -912,7 +915,7 @@ export function BulkTesting({ userId, prompt, universalCriteria }: {
         <PhaseLiveTesting
           testRunId={activeTestRunId}
           totalExpected={totalExpected}
-          onComplete={handleComplete}
+          onComplete={handleLiveComplete}
         />
       )}
       {phase === "report" && finalTestRun && (
