@@ -179,7 +179,7 @@ export function Sidebar({ active, onNav, agentCertified }: Props) {
                   <div style={{ color: "rgba(255,255,255,0.6)" }}>Approve your agent in My Agent first</div>
                   {/* Arrow */}
                   <div style={{
-                    position: "absolute", left: -5, top: "50%", transform: "translateY(-50%)",
+                    position: "absolute", left: -5, top: "50%",
                     width: 8, height: 8, background: "rgba(17,24,39,0.92)",
                     border: "1px solid rgba(255,255,255,0.1)", borderRight: "none", borderTop: "none",
                     transform: "translateY(-50%) rotate(45deg)",
