@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import {
   Plus, Settings, Zap, MessageSquare, Gift, Phone,
   Calendar, ArrowLeft, Clock, Bot, MessageCircle, ChevronRight,
-  Wifi, Type, Link, Check, Loader2, ZoomIn, ZoomOut, Move,
+  Wifi, Type, Link, Check, Loader2, ZoomIn, ZoomOut, Move, ArrowRight,
 } from "lucide-react";
 import { supabase } from "../supabaseClient";
 
@@ -10,6 +10,7 @@ const N8N_WEBHOOK = "https://rosegoldprojectai2.app.n8n.cloud/webhook/ea72ec64-9
 const BASE = "https://raw.githubusercontent.com/aiagentcreator2025-gif/saas/main/public/";
 
 type View =
+  | "intro"
   | "home"
   | "lead-flow-preview"
   | "lead-flow"
@@ -144,6 +145,242 @@ const GLOBAL_STYLES = `
     min-height: 100vh;
   }
 
+  /* ── Intro Screen ── */
+  .lf-intro-root {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #f0f4ff 0%, #e8eaf6 40%, #f5f0ff 100%);
+    position: relative;
+    overflow: hidden;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+  }
+
+  .lf-intro-root::before {
+    content: '';
+    position: absolute;
+    top: -200px; left: -200px;
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(79,70,229,0.12) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .lf-intro-root::after {
+    content: '';
+    position: absolute;
+    bottom: -150px; right: -150px;
+    width: 500px; height: 500px;
+    background: radial-gradient(circle, rgba(124,58,237,0.10) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .lf-intro-noise {
+    position: absolute;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.025'/%3E%3C/svg%3E");
+    pointer-events: none;
+    opacity: 0.4;
+  }
+
+  .lf-intro-card {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    gap: 64px;
+    max-width: 1000px;
+    width: 90%;
+    padding: 56px 60px;
+    background: rgba(255,255,255,0.45);
+    backdrop-filter: blur(32px) saturate(180%);
+    -webkit-backdrop-filter: blur(32px) saturate(180%);
+    border-radius: 32px;
+    border: 1px solid rgba(255,255,255,0.7);
+    box-shadow:
+      0 8px 32px rgba(79,70,229,0.08),
+      0 2px 8px rgba(0,0,0,0.04),
+      inset 0 1px 0 rgba(255,255,255,0.9);
+    animation: introFadeUp 0.6s ease forwards;
+  }
+
+  @keyframes introFadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .lf-intro-left {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .lf-intro-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 14px;
+    border-radius: 100px;
+    background: rgba(79,70,229,0.08);
+    border: 1px solid rgba(79,70,229,0.15);
+    font-size: 11px;
+    font-weight: 700;
+    color: #4F46E5;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+    width: fit-content;
+  }
+
+  .lf-intro-headline {
+    font-size: 42px;
+    font-weight: 800;
+    color: #0f1117;
+    line-height: 1.1;
+    letter-spacing: -1.2px;
+    margin-bottom: 16px;
+  }
+
+  .lf-intro-headline span {
+    background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .lf-intro-sub {
+    font-size: 15px;
+    color: #6B7280;
+    line-height: 1.75;
+    margin-bottom: 36px;
+    max-width: 380px;
+  }
+
+  .lf-intro-pills {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 40px;
+  }
+
+  .lf-intro-pill {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #374151;
+  }
+
+  .lf-intro-pill-dot {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #4F46E5, #7C3AED);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .lf-intro-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 15px 32px;
+    border-radius: 16px;
+    border: none;
+    background: linear-gradient(135deg, #4F46E5 0%, #6D28D9 100%);
+    color: #fff;
+    font-size: 15px;
+    font-weight: 700;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    cursor: pointer;
+    transition: all 0.25s;
+    box-shadow: 0 8px 24px rgba(79,70,229,0.3), 0 2px 8px rgba(79,70,229,0.2);
+    width: fit-content;
+    letter-spacing: -0.2px;
+  }
+
+  .lf-intro-cta:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 14px 36px rgba(79,70,229,0.35), 0 4px 12px rgba(79,70,229,0.25);
+  }
+
+  .lf-intro-cta:active { transform: translateY(0); }
+
+  .lf-intro-arrow {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s;
+  }
+
+  .lf-intro-cta:hover .lf-intro-arrow { transform: translateX(3px); }
+
+  .lf-intro-right {
+    flex-shrink: 0;
+    width: 380px;
+    height: 300px;
+    border-radius: 24px;
+    overflow: hidden;
+    background: rgba(255,255,255,0.3);
+    border: 1px solid rgba(255,255,255,0.6);
+    box-shadow:
+      0 20px 60px rgba(79,70,229,0.1),
+      inset 0 1px 0 rgba(255,255,255,0.8);
+    position: relative;
+  }
+
+  .lf-intro-right img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+  }
+
+  /* ── Floating glass orbs ── */
+  .lf-orb {
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+  }
+  .lf-orb-1 {
+    width: 120px; height: 120px;
+    top: 60px; right: 80px;
+    background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.6), rgba(79,70,229,0.08));
+    border: 1px solid rgba(255,255,255,0.5);
+    backdrop-filter: blur(8px);
+    animation: orbFloat 6s ease-in-out infinite;
+  }
+  .lf-orb-2 {
+    width: 70px; height: 70px;
+    bottom: 80px; left: 60px;
+    background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.5), rgba(124,58,237,0.06));
+    border: 1px solid rgba(255,255,255,0.4);
+    backdrop-filter: blur(6px);
+    animation: orbFloat 8s ease-in-out infinite reverse;
+  }
+  .lf-orb-3 {
+    width: 45px; height: 45px;
+    top: 140px; left: 180px;
+    background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.4), rgba(79,70,229,0.05));
+    border: 1px solid rgba(255,255,255,0.3);
+    backdrop-filter: blur(4px);
+    animation: orbFloat 10s ease-in-out infinite;
+  }
+
+  @keyframes orbFloat {
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    33%  { transform: translateY(-12px) rotate(3deg); }
+    66%  { transform: translateY(-6px) rotate(-2deg); }
+  }
+
   /* ── Back button ── */
   .lf-back-btn {
     display: inline-flex; align-items: center; gap: 6px;
@@ -239,19 +476,89 @@ const GLOBAL_STYLES = `
 
 // ─── Agent Images ─────────────────────────────────────────────────────────────
 export const BookingAgent = ({ style }: { style?: React.CSSProperties }) => (
-  <div style={{ width:"100%", height:"100%", backgroundImage:`url(${BASE}booking4.png)`, backgroundSize:"cover", backgroundRepeat:"no-repeat", backgroundPosition:"center", ...style }} />
+  <div style={{ width:"100%", height:"100%", backgroundImage:`url(${BASE}bookingflow.png)`, backgroundSize:"cover", backgroundRepeat:"no-repeat", backgroundPosition:"center", ...style }} />
 );
 export const FollowUpAutomation = ({ style }: { style?: React.CSSProperties }) => (
-  <div style={{ width:"100%", height:"100%", backgroundImage:`url(${BASE}followupautomation.png)`, backgroundSize:"cover", backgroundRepeat:"no-repeat", backgroundPosition:"center", ...style }} />
+  <div style={{ width:"100%", height:"100%", backgroundImage:`url(${BASE}followupautomation3.png)`, backgroundSize:"cover", backgroundRepeat:"no-repeat", backgroundPosition:"center", ...style }} />
 );
 export const FollowUpAgent = ({ style }: { style?: React.CSSProperties }) => (
-  <div style={{ width:"100%", height:"100%", backgroundImage:`url(${BASE}followupagent.png)`, backgroundSize:"cover", backgroundRepeat:"no-repeat", backgroundPosition:"center", ...style }} />
+  <div style={{ width:"100%", height:"100%", backgroundImage:`url(${BASE}followupagent3.png)`, backgroundSize:"cover", backgroundRepeat:"no-repeat", backgroundPosition:"center", ...style }} />
 );
 export const FollowUpFlow = ({ style }: { style?: React.CSSProperties }) => (
-  <div style={{ width:"100%", height:"100%", backgroundImage:`url(${BASE}followup6.png)`, backgroundSize:"cover", backgroundRepeat:"no-repeat", backgroundPosition:"center", ...style }} />
+  <div style={{ width:"100%", height:"100%", backgroundImage:`url(${BASE}followupflow.png)`, backgroundSize:"cover", backgroundRepeat:"no-repeat", backgroundPosition:"center", ...style }} />
 );
 
-// ─── Flow Card — TRUE marketplace vertical style ──────────────────────────────
+// ─── INTRO SCREEN ─────────────────────────────────────────────────────────────
+function IntroScreen({ onContinue }: { onContinue: () => void }) {
+  return (
+    <div className="lf-intro-root">
+      <div className="lf-intro-noise" />
+      <div className="lf-orb lf-orb-1" />
+      <div className="lf-orb lf-orb-2" />
+      <div className="lf-orb lf-orb-3" />
+
+      <div className="lf-intro-card">
+        {/* LEFT */}
+        <div className="lf-intro-left">
+          <div className="lf-intro-badge">
+            <Zap size={10} strokeWidth={2.5} />
+            AI-Powered Flows
+          </div>
+
+          <div className="lf-intro-headline">
+            Boost your<br />
+            <span>business</span> on<br />
+            autopilot
+          </div>
+
+          <div className="lf-intro-sub">
+            Your AI agents handle every lead — qualifying, nurturing, and booking calls while you focus on what matters.
+          </div>
+
+          <div className="lf-intro-pills">
+            {[
+              "Greet & qualify every lead instantly on WhatsApp",
+              "Deliver your lead magnet automatically",
+              "Book calls 24/7 without lifting a finger",
+              "Re-engage cold leads with smart follow-ups",
+            ].map((text, i) => (
+              <div key={i} className="lf-intro-pill">
+                <div className="lf-intro-pill-dot">
+                  <Check size={11} color="#fff" strokeWidth={3} />
+                </div>
+                {text}
+              </div>
+            ))}
+          </div>
+
+          <button className="lf-intro-cta" onClick={onContinue}>
+            Explore your flows
+            <div className="lf-intro-arrow">
+              <ArrowRight size={14} strokeWidth={2.5} />
+            </div>
+          </button>
+        </div>
+
+        {/* RIGHT — illustration */}
+        <div className="lf-intro-right">
+          <img
+            src={`${BASE}wholeteam.png`}
+            alt="Your AI team"
+          />
+          {/* Glass overlay shimmer */}
+          <div style={{
+            position: "absolute",
+            inset: 0,
+            background: "linear-gradient(135deg, rgba(255,255,255,0.15) 0%, transparent 50%, rgba(79,70,229,0.04) 100%)",
+            pointerEvents: "none",
+          }} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Flow Card ────────────────────────────────────────────────────────────────
 function FlowCardNew({
   bgColor, title, description, agentImgUrl,
   accentColor, accentBg, stepCount, onClick,
@@ -263,11 +570,7 @@ function FlowCardNew({
 }) {
   return (
     <div className="lf-flow-card" onClick={onClick}>
-
-      {/* BOTTOM: card content */}
       <div style={{ padding: "16px 18px 18px", display: "flex", flexDirection: "column", flex: 1 }}>
-
-        {/* Icon + badge row — like marketplace top-left icon */}
         <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
           <div style={{
             width: 38, height: 38, borderRadius: 10,
@@ -289,21 +592,15 @@ function FlowCardNew({
             ⚡ {stepCount}
           </div>
         </div>
-
-        {/* Title */}
         <div style={{
           fontSize: 15, fontWeight: 800, color: "#111827",
           letterSpacing: "-0.3px", lineHeight: 1.2, marginBottom: 6,
         }}>
           {title}
         </div>
-
-        {/* Description */}
         <div style={{ fontSize: 12, color: "#6B7280", lineHeight: 1.7, marginBottom: 14, flex: 1 }}>
           {description}
         </div>
-
-        {/* Footer — configure CTA like marketplace "Free" / price row */}
         <div style={{
           display: "flex", alignItems: "center", justifyContent: "space-between",
           paddingTop: 12, borderTop: "1px solid #F3F4F6",
@@ -767,32 +1064,11 @@ function FlowEditor({ title, subtitle, steps, onBack, backLabel="Back", config, 
 function HomeScreen({ onSelect }: { onSelect: (v: View) => void }) {
   return (
     <div style={{ flex:1, overflowY:"auto", padding:"32px 32px 40px", background:"#EDEEF5" }}>
-
-      {/* Page header */}
       <div className="lf-animate" style={{ marginBottom:28 }}>
         <div style={{ fontSize:24, fontWeight:800, color:"#111827", letterSpacing:"-0.5px", marginBottom:4 }}>Lead Flow</div>
         <div style={{ fontSize:13, color:"#9CA3AF" }}>Build and manage your automation flows</div>
       </div>
 
-      
-{/* ── BANNER ── */}
-<div className="lf-animate-delay-1" style={{ marginBottom: 32 }}>
-  <img
-    src={`${BASE}banner9.png`}
-    alt="Automate your leads"
-    width={1400}
-    height={300}
-    style={{
-      width: "100%",
-      height: "auto",
-      display: "block",
-      borderRadius: 20,
-      imageRendering: "crisp-edges",
-    }}
-  />
-</div>
-      
-      {/* Your Flows */}
       <div className="lf-animate-delay-2">
         <div style={{ marginBottom:18 }}>
           <div style={{ fontSize:17, fontWeight:800, color:"#111827", letterSpacing:"-0.3px", marginBottom:3 }}>Your Flows</div>
@@ -801,10 +1077,10 @@ function HomeScreen({ onSelect }: { onSelect: (v: View) => void }) {
         <div style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:20 }}>
           <FlowCardNew
             bgColor="#EEE9FF"
-            title="Lead Flow"
+            title="Booking Flow"
             description="Greet every lead, deliver your lead magnet, and book calls — fully automated on WhatsApp."
             bullets={[]}
-            agentImgUrl={`${BASE}booking4.png`}
+            agentImgUrl={`${BASE}bookingflow.png`}
             accentColor="#4F46E5"
             accentBg="#EEF2FF"
             stepCount="8 Steps"
@@ -815,7 +1091,7 @@ function HomeScreen({ onSelect }: { onSelect: (v: View) => void }) {
             title="Follow-Up Flow"
             description="Re-engage leads after booking and confirm calls to maximise show-up rates with AI."
             bullets={[]}
-            agentImgUrl={`${BASE}followup6.png`}
+            agentImgUrl={`${BASE}followupflow.png`}
             accentColor="#D97706"
             accentBg="#FEF3C7"
             stepCount="2 Flows"
@@ -842,7 +1118,7 @@ function FollowUpHome({ onSelect, onBack }: { onSelect: (v: View) => void; onBac
           title="Follow-Up Automation"
           description="Send scheduled follow-up messages at the perfect time. Set your delay and let it run automatically."
           bullets={[]}
-          agentImgUrl={`${BASE}followupautomation.png`}
+          agentImgUrl={`${BASE}followupautomation3.png`}
           accentColor="#D97706"
           accentBg="#FEF3C7"
           stepCount="Scheduled"
@@ -853,7 +1129,7 @@ function FollowUpHome({ onSelect, onBack }: { onSelect: (v: View) => void; onBac
           title="Follow-Up Agent"
           description="AI agent takes over when a lead replies — responding intelligently to guide them toward booking."
           bullets={[]}
-          agentImgUrl={`${BASE}followupagent.png`}
+          agentImgUrl={`${BASE}followupagent3.png`}
           accentColor="#2563EB"
           accentBg="#DBEAFE"
           stepCount="AI Agent"
@@ -866,7 +1142,7 @@ function FollowUpHome({ onSelect, onBack }: { onSelect: (v: View) => void; onBac
 
 // ─── Main export ──────────────────────────────────────────────────────────────
 export function LeadFlowScreen() {
-  const [view, setView] = useState<View>("home");
+  const [view, setView] = useState<View>("intro");
   const [config, setConfig] = useState<AutomationConfig>(EMPTY_CONFIG);
   const [userId, setUserId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -940,27 +1216,28 @@ export function LeadFlowScreen() {
       <style>{GLOBAL_STYLES}</style>
       <div className="lf-root" style={{ flex:1, display:"flex", flexDirection:"column", height:"100%", overflow:"hidden" }}>
 
+        {view === "intro" && <IntroScreen onContinue={() => setView("home")} />}
         {view === "home" && <HomeScreen onSelect={setView} />}
         {view === "followup-home" && <FollowUpHome onSelect={setView} onBack={() => setView("home")} />}
 
         {view === "lead-flow-preview" && (
           <div style={{ flex:1, display:"flex", flexDirection:"column", overflow:"hidden" }}>
             <PreviewScreen
-              title="Lead Flow" subtitle="Your main lead automation sequence"
+              title="Booking Flow" subtitle="Your main lead automation sequence"
               description="Set up the full sequence that greets every lead, qualifies them, delivers your lead magnet, and books the call — completely on autopilot."
               accentColor="#4F46E5" accentBg="#EEF2FF"
               stats={[{ label:"Steps", value:"8" }, { label:"Automated", value:"100%" }, { label:"Channel", value:"WA" }]}
               howItWorks={leadHowItWorks}
               agent={<div style={{ width:"100%", height:"100%" }}><BookingAgent /></div>}
               steps={LEAD_FLOW_STEPS}
-              onStart={() => setView("lead-flow")} onBack={() => setView("home")} backLabel="Back to Lead Flow"
+              onStart={() => setView("lead-flow")} onBack={() => setView("home")} backLabel="Back to Flows"
             />
           </div>
         )}
 
         {view === "lead-flow" && (
           <div style={{ flex:1, display:"flex", flexDirection:"column", overflow:"hidden" }}>
-            <FlowEditor title="Lead Flow" subtitle="Your main lead automation sequence" steps={LEAD_FLOW_STEPS} onBack={() => setView("lead-flow-preview")} backLabel="Back to Preview" {...editorProps} />
+            <FlowEditor title="Booking Flow" subtitle="Your main lead automation sequence" steps={LEAD_FLOW_STEPS} onBack={() => setView("lead-flow-preview")} backLabel="Back to Preview" {...editorProps} />
           </div>
         )}
 
