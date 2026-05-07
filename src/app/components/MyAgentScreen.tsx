@@ -145,7 +145,7 @@ export function MyAgentScreen({ userId, onAgentCertified }: Props) {
     await onSave();
     // Fire n8n to generate the prompt
     try {
-      await fetch("https://rosegoldprojectai2.app.n8n.cloud/webhook/generate-agent-prompt", {
+      await fetch("https://rosegoldprojectai3.app.n8n.cloud/webhook/ea72ec64-9444-495a-ae04-babcb9e90cdd", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ user_id: userId, agent_type: agentType, config }),
