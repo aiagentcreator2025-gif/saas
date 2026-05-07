@@ -2,12 +2,14 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import {
   Bot, ChevronRight, ArrowLeft, Sparkles, FlaskConical,
   MessageSquare, CheckCircle, Settings, Loader2, Check,
-  Zap, Shield, Star, Lock, Calendar, Brain
+  Zap, Shield, Star, Lock, Calendar, Brain, Activity
 } from "lucide-react";
 import { supabase } from "../supabaseClient";
 import { BulkTesting } from "./BulkTesting";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
+type AppState = "loading" | "no-agents" | "one-agent" | "both-agents";
+
 type View =
   | "intro"
   | "choose-type"
@@ -16,7 +18,7 @@ type View =
   | "build"
   | "test-intro"
   | "testing"
-  | "satisfied";
+  | "agent-show";
 
 interface AgentConfig {
   agent_name: string;
@@ -25,6 +27,24 @@ interface AgentConfig {
   primary_service: string;
   target_audience: string;
   main_goal: string;
+}
+
+interface AgentRow {
+  id: string;
+  agent_type: "booking" | "followup";
+  agent_name: string | null;
+  status: string;
+  certified: boolean;
+  prompt: string | null;
+  agent_config: AgentConfig | null;
+}
+
+interface AnalyticsRow {
+  agent_id: string;
+  leads_treated: number;
+  leads_booked: number;
+  leads_pending: number;
+  health_score: number;
 }
 
 const WRITING_STYLES = [
@@ -42,6 +62,8 @@ const EMPTY_CONFIG: AgentConfig = {
   target_audience: "",
   main_goal: "",
 };
+
+const BASE = "https://raw.githubusercontent.com/aiagentcreator2025-gif/saas/main/public/";
 
 // ─── Global Styles ────────────────────────────────────────────────────────────
 const STYLES = `
@@ -64,10 +86,14 @@ const STYLES = `
   .ma-node:hover { transform: translateX(3px); box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
   .ma-node.active { box-shadow: 0 0 0 3px rgba(79,70,229,0.15); }
   .ma-connector { display: flex; flex-direction: column; align-items: center; margin: 4px 0; }
+  .ma-agent-card { border-radius: 20px; border: 1.5px solid #E5E7EB; background: #fff; padding: 24px; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 12px rgba(0,0,0,0.04); }
+  .ma-agent-card:hover { transform: translateY(-3px); box-shadow: 0 12px 32px rgba(79,70,229,0.12); }
   @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
   @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
   @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
   @keyframes successPop { 0% { transform: scale(0.8); opacity: 0; } 60% { transform: scale(1.05); } 100% { transform: scale(1); opacity: 1; } }
+  @keyframes livePulse { 0%,100% { opacity:1; transform:scale(1); } 50% { opacity:0.6; transform:scale(0.85); } }
   .ma-fade-up { animation: fadeUp 0.4s ease forwards; }
   .ma-fade-up-1 { animation: fadeUp 0.4s ease 0.08s forwards; opacity: 0; }
   .ma-fade-up-2 { animation: fadeUp 0.4s ease 0.16s forwards; opacity: 0; }
@@ -76,7 +102,7 @@ const STYLES = `
   ::-webkit-scrollbar-thumb { background: #D1D5DB; border-radius: 4px; }
 `;
 
-// ─── Agent Steps (brain only) ─────────────────────────────────────────────────
+// ─── Agent Steps ──────────────────────────────────────────────────────────────
 const AGENT_STEPS = [
   { id: "identity", label: "Agent Identity", sublabel: "Name & personality", color: "#4F46E5", bg: "#EEF2FF", border: "#C7D2FE", icon: <Bot size={15} strokeWidth={1.5} /> },
   { id: "style", label: "Writing Style", sublabel: "How your agent communicates", color: "#7C3AED", bg: "#F5F3FF", border: "#DDD6FE", icon: <MessageSquare size={15} strokeWidth={1.5} /> },
@@ -91,8 +117,12 @@ interface Props {
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 export function MyAgentScreen({ userId, onAgentCertified }: Props) {
+  const [appState, setAppState] = useState<AppState>("loading");
+  const [agents, setAgents] = useState<AgentRow[]>([]);
+  const [analytics, setAnalytics] = useState<AnalyticsRow[]>([]);
   const [view, setView] = useState<View>("intro");
   const [agentType, setAgentType] = useState<"booking" | "followup" | null>(null);
+  const [selectedAgent, setSelectedAgent] = useState<AgentRow | null>(null);
   const [config, setConfig] = useState<AgentConfig>(EMPTY_CONFIG);
   const [activeStep, setActiveStep] = useState("identity");
   const [saving, setSaving] = useState(false);
@@ -101,12 +131,52 @@ export function MyAgentScreen({ userId, onAgentCertified }: Props) {
   const [published, setPublished] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
 
-  // Load existing config from Supabase on mount
+  // ─── State Detection ───────────────────────────────────────────────────────
+  const detectState = useCallback(async () => {
+    if (!userId) return;
+
+    const { data: agentRows } = await supabase
+      .from("agents")
+      .select("*")
+      .eq("user_id", userId);
+
+    const rows = (agentRows || []) as AgentRow[];
+    setAgents(rows);
+
+    // Load analytics for all agents
+    if (rows.length > 0) {
+      const agentIds = rows.map(a => a.id);
+      const { data: analyticsRows } = await supabase
+        .from("agent_analytics")
+        .select("*")
+        .in("agent_id", agentIds);
+      setAnalytics((analyticsRows || []) as AnalyticsRow[]);
+    }
+
+    const certifiedCount = rows.filter(a => a.certified).length;
+
+    if (rows.length === 0) {
+      setAppState("no-agents");
+      setView("intro");
+    } else if (certifiedCount < 2) {
+      setAppState("one-agent");
+      setView("intro");
+    } else {
+      setAppState("both-agents");
+      setView("intro");
+    }
+  }, [userId]);
+
+  useEffect(() => {
+    detectState();
+  }, [detectState]);
+
+  // Load business data for config prefill
   useEffect(() => {
     if (!userId) return;
     supabase
       .from("accounts_leadflow")
-      .select("business_name, service, target_audience, main_goal")
+      .select("service, target_audience, main_goal")
       .eq("user_id", userId)
       .maybeSingle()
       .then(({ data }) => {
@@ -121,6 +191,8 @@ export function MyAgentScreen({ userId, onAgentCertified }: Props) {
       });
   }, [userId]);
 
+  const totalLeads = analytics.reduce((sum, a) => sum + (a.leads_treated || 0), 0);
+
   const onChange = (field: keyof AgentConfig, val: string) => {
     setConfig(prev => ({ ...prev, [field]: val }));
     setSaved(false);
@@ -128,13 +200,14 @@ export function MyAgentScreen({ userId, onAgentCertified }: Props) {
 
   const onSave = async () => {
     setSaving(true);
-    await supabase.from("generated_prompts").upsert({
+    await supabase.from("agents").upsert({
       user_id: userId,
       agent_type: agentType,
       agent_config: config,
+      agent_name: config.agent_name,
       status: "draft",
       updated_at: new Date().toISOString(),
-    }, { onConflict: "user_id" });
+    }, { onConflict: "user_id,agent_type" });
     setSaving(false);
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
@@ -143,7 +216,6 @@ export function MyAgentScreen({ userId, onAgentCertified }: Props) {
   const onPublish = async () => {
     setPublishing(true);
     await onSave();
-    // Fire n8n to generate the prompt
     try {
       await fetch("https://rosegoldprojectai3.app.n8n.cloud/webhook/ea72ec64-9444-495a-ae04-babcb9e90cdd", {
         method: "POST",
@@ -151,98 +223,203 @@ export function MyAgentScreen({ userId, onAgentCertified }: Props) {
         body: JSON.stringify({ user_id: userId, agent_type: agentType, config }),
       });
     } catch (e) { console.error(e); }
-    await supabase.from("generated_prompts").upsert({
+    await supabase.from("agents").upsert({
       user_id: userId,
       agent_type: agentType,
       agent_config: config,
-      status: "approved",
+      agent_name: config.agent_name,
+      status: "built",
       updated_at: new Date().toISOString(),
-    }, { onConflict: "user_id" });
+    }, { onConflict: "user_id,agent_type" });
     setPublishing(false);
     setPublished(true);
     setTimeout(() => setView("test-intro"), 1200);
   };
 
   const handleSatisfied = async () => {
+    if (!agentType) return;
     await supabase
-      .from("generated_prompts")
-      .update({ agent_certified: true })
+      .from("agents")
+      .update({ certified: true, status: "certified" })
       .eq("user_id", userId)
-      .eq("status", "approved");
+      .eq("agent_type", agentType);
     setShowSuccess(true);
-    setTimeout(() => {
+    setTimeout(async () => {
+      await detectState();
       onAgentCertified();
     }, 2200);
   };
+
+  // ─── Loading ───────────────────────────────────────────────────────────────
+  if (appState === "loading") {
+    return (
+      <>
+        <style>{STYLES}</style>
+        <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#F4F5FA" }}>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 16 }}>
+            <Loader2 size={32} color="#4F46E5" style={{ animation: "spin 1s linear infinite" }} />
+            <div style={{ fontSize: 13, color: "#9CA3AF", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Loading your agents...</div>
+          </div>
+        </div>
+      </>
+    );
+  }
 
   return (
     <>
       <style>{STYLES}</style>
       <div className="ma-root" style={{ flex: 1, height: "100%", overflow: "hidden", display: "flex", flexDirection: "column" }}>
 
-        {/* Success overlay */}
         {showSuccess && <SuccessOverlay />}
 
-        {view === "intro" && <IntroScreen onContinue={() => setView("choose-type")} />}
-        {view === "choose-type" && (
-          <ChooseTypeScreen
-            onSelect={(type) => { setAgentType(type); setView(type === "booking" ? "preview-booking" : "preview-followup"); }}
-            onBack={() => setView("intro")}
-          />
+        {/* ── STATE 1: NO AGENTS ── */}
+        {appState === "no-agents" && (
+          <>
+            {view === "intro" && <IntroScreen state="no-agents" agents={[]} totalLeads={0} onContinue={() => setView("choose-type")} />}
+            {view === "choose-type" && (
+              <ChooseTypeScreen
+                agents={[]}
+                onSelect={(type) => { setAgentType(type); setView(type === "booking" ? "preview-booking" : "preview-followup"); }}
+                onBack={() => setView("intro")}
+              />
+            )}
+            {view === "preview-booking" && <PreviewScreen type="booking" onStart={() => setView("build")} onBack={() => setView("choose-type")} />}
+            {view === "preview-followup" && <PreviewScreen type="followup" onStart={() => setView("build")} onBack={() => setView("choose-type")} />}
+            {view === "build" && (
+              <BuildScreen agentType={agentType!} config={config} activeStep={activeStep}
+                setActiveStep={setActiveStep} onChange={onChange} onSave={onSave} onPublish={onPublish}
+                saving={saving} saved={saved} publishing={publishing} published={published}
+                onBack={() => setView(agentType === "booking" ? "preview-booking" : "preview-followup")} />
+            )}
+            {view === "test-intro" && <TestIntroScreen onContinue={() => setView("testing")} onBack={() => setView("build")} />}
+            {view === "testing" && (
+              <BulkTesting userId={userId} onComplete={() => {}} onSatisfied={handleSatisfied} onBack={() => setView("test-intro")} />
+            )}
+          </>
         )}
-        {view === "preview-booking" && (
-          <PreviewScreen
-            type="booking"
-            onStart={() => setView("build")}
-            onBack={() => setView("choose-type")}
-          />
+
+        {/* ── STATE 2: ONE AGENT BUILT ── */}
+        {appState === "one-agent" && (
+          <>
+            {view === "intro" && <IntroScreen state="one-agent" agents={agents} totalLeads={totalLeads} onContinue={() => setView("choose-type")} />}
+            {view === "choose-type" && (
+              <ChooseTypeScreen
+                agents={agents}
+                onSelect={(type) => {
+                  const existing = agents.find(a => a.agent_type === type);
+                  if (existing && existing.certified) {
+                    setSelectedAgent(existing);
+                    setView("agent-show");
+                  } else {
+                    setAgentType(type);
+                    setView(type === "booking" ? "preview-booking" : "preview-followup");
+                  }
+                }}
+                onBack={() => setView("intro")}
+              />
+            )}
+            {view === "preview-booking" && <PreviewScreen type="booking" onStart={() => setView("build")} onBack={() => setView("choose-type")} />}
+            {view === "preview-followup" && <PreviewScreen type="followup" onStart={() => setView("build")} onBack={() => setView("choose-type")} />}
+            {view === "build" && (
+              <BuildScreen agentType={agentType!} config={config} activeStep={activeStep}
+                setActiveStep={setActiveStep} onChange={onChange} onSave={onSave} onPublish={onPublish}
+                saving={saving} saved={saved} publishing={publishing} published={published}
+                onBack={() => setView(agentType === "booking" ? "preview-booking" : "preview-followup")} />
+            )}
+            {view === "test-intro" && <TestIntroScreen onContinue={() => setView("testing")} onBack={() => setView("build")} />}
+            {view === "testing" && (
+              <BulkTesting userId={userId} onComplete={() => {}} onSatisfied={handleSatisfied} onBack={() => setView("test-intro")} />
+            )}
+            {view === "agent-show" && selectedAgent && (
+              <AgentShowScreen
+                agent={selectedAgent}
+                analytics={analytics.find(a => a.agent_id === selectedAgent.id) || null}
+                userId={userId}
+                onBack={() => setView("choose-type")}
+                onSatisfied={handleSatisfied}
+              />
+            )}
+          </>
         )}
-        {view === "preview-followup" && (
-          <PreviewScreen
-            type="followup"
-            onStart={() => setView("build")}
-            onBack={() => setView("choose-type")}
-          />
-        )}
-        {view === "build" && (
-          <BuildScreen
-            agentType={agentType!}
-            config={config}
-            activeStep={activeStep}
-            setActiveStep={setActiveStep}
-            onChange={onChange}
-            onSave={onSave}
-            onPublish={onPublish}
-            saving={saving}
-            saved={saved}
-            publishing={publishing}
-            published={published}
-            onBack={() => setView(agentType === "booking" ? "preview-booking" : "preview-followup")}
-          />
-        )}
-        {view === "test-intro" && (
-          <TestIntroScreen
-            onContinue={() => setView("testing")}
-            onBack={() => setView("build")}
-          />
-        )}
-        {view === "testing" && (
-          <BulkTesting
-            userId={userId}
-            onComplete={(testRun, results) => {
-              // BulkTesting handles satisfaction internally, we wire the callback
-            }}
-            onSatisfied={handleSatisfied}
-            onBack={() => setView("test-intro")}
-          />
+
+        {/* ── STATE 3: BOTH AGENTS BUILT ── */}
+        {appState === "both-agents" && (
+          <>
+            {view === "intro" && <IntroScreen state="both-agents" agents={agents} totalLeads={totalLeads} onContinue={() => setView("choose-type")} />}
+            {view === "choose-type" && (
+              <ChooseTypeScreen
+                agents={agents}
+                onSelect={(type) => {
+                  const existing = agents.find(a => a.agent_type === type);
+                  if (existing) {
+                    setSelectedAgent(existing);
+                    setView("agent-show");
+                  }
+                }}
+                onBack={() => setView("intro")}
+              />
+            )}
+            {view === "agent-show" && selectedAgent && (
+              <AgentShowScreen
+                agent={selectedAgent}
+                analytics={analytics.find(a => a.agent_id === selectedAgent.id) || null}
+                userId={userId}
+                onBack={() => setView("choose-type")}
+                onSatisfied={handleSatisfied}
+              />
+            )}
+          </>
         )}
       </div>
     </>
   );
 }
 
-// ─── Intro Screen ─────────────────────────────────────────────────────────────
-function IntroScreen({ onContinue }: { onContinue: () => void }) {
+// ─── Intro Screen (adapts to state) ──────────────────────────────────────────
+function IntroScreen({ state, agents, totalLeads, onContinue }: {
+  state: AppState; agents: AgentRow[]; totalLeads: number; onContinue: () => void;
+}) {
+  const certifiedAgent = agents.find(a => a.certified);
+
+  const content = {
+    "no-agents": {
+      badge: "Build Your AI Employee",
+      title: <>Meet your new<br /><span style={{ background: "linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>AI employee.</span></>,
+      desc: "You're about to build an AI agent that handles your leads 24/7 — qualifying them, answering questions, and booking calls. Like a real employee, but never sleeps.",
+      cta: "Let's build my agent",
+      steps: [
+        { icon: <Brain size={14} strokeWidth={2} />, label: "Build the brain", desc: "Configure your agent's identity, tone & knowledge" },
+        { icon: <FlaskConical size={14} strokeWidth={2} />, label: "Stress test it", desc: "Run 10 real scenarios to see if it's ready" },
+        { icon: <CheckCircle size={14} strokeWidth={2} />, label: "Certify & deploy", desc: "Once satisfied, unlock the full workspace" },
+      ],
+    },
+    "one-agent": {
+      badge: "Your AI Team",
+      title: <>Your first employee<br /><span style={{ background: "linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>is live. 🎉</span></>,
+      desc: `${certifiedAgent?.agent_name || "Your agent"} is certified and working. But your team has one open spot — hire your second AI employee and double your capacity.`,
+      cta: "Manage my team",
+      steps: [
+        { icon: <CheckCircle size={14} strokeWidth={2} />, label: `${certifiedAgent?.agent_name || "Agent"} is live`, desc: "Certified and ready to handle leads" },
+        { icon: <Bot size={14} strokeWidth={2} />, label: "One spot left", desc: "Build your second agent and complete the team" },
+        { icon: <Zap size={14} strokeWidth={2} />, label: "Double your capacity", desc: "Two agents, twice the leads handled" },
+      ],
+    },
+    "both-agents": {
+      badge: "Your AI Team",
+      title: <>{totalLeads > 0 ? <>Your team has treated<br /><span style={{ background: "linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>{totalLeads} leads. 🔥</span></> : <>Your whole team<br /><span style={{ background: "linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>is working hard.</span></>}</>,
+      desc: totalLeads > 0
+        ? "Your AI employees are live and already handling leads. Check on them, run a quality test, or review their performance."
+        : "Your agents are certified and waiting for your first clients. Make sure they're in top shape — run a quality check anytime.",
+      cta: "Check on my team",
+      steps: [
+        { icon: <Activity size={14} strokeWidth={2} />, label: "All agents live", desc: "Your full team is certified and deployed" },
+        { icon: <FlaskConical size={14} strokeWidth={2} />, label: "Quality check anytime", desc: "Keep your agents sharp with regular tests" },
+        { icon: <Zap size={14} strokeWidth={2} />, label: totalLeads > 0 ? `${totalLeads} leads treated` : "Waiting for clients", desc: totalLeads > 0 ? "Your team is already working" : "Promote your business to start getting leads" },
+      ],
+    },
+    "loading": { badge: "", title: <></>, desc: "", cta: "", steps: [] },
+  }[state];
+
   return (
     <div style={{
       minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center",
@@ -260,7 +437,6 @@ function IntroScreen({ onContinue }: { onContinue: () => void }) {
         borderRadius: 32, border: "1px solid rgba(255,255,255,0.75)",
         boxShadow: "0 8px 40px rgba(79,70,229,0.08), inset 0 1px 0 rgba(255,255,255,0.9)",
       }}>
-        {/* Left */}
         <div style={{ flex: 1 }}>
           <div style={{
             display: "inline-flex", alignItems: "center", gap: 6, padding: "5px 14px",
@@ -268,26 +444,19 @@ function IntroScreen({ onContinue }: { onContinue: () => void }) {
             fontSize: 11, fontWeight: 700, color: "#4F46E5", letterSpacing: "0.6px",
             textTransform: "uppercase" as const, marginBottom: 20,
           }}>
-            <Bot size={10} strokeWidth={2.5} /> Build Your AI Employee
+            <Bot size={10} strokeWidth={2.5} /> {content.badge}
           </div>
 
           <div style={{ fontSize: 42, fontWeight: 800, color: "#0f1117", lineHeight: 1.1, letterSpacing: "-1.2px", marginBottom: 16 }}>
-            Meet your new<br />
-            <span style={{ background: "linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
-              AI employee.
-            </span>
+            {content.title}
           </div>
 
           <p style={{ fontSize: 15, color: "#6B7280", lineHeight: 1.75, marginBottom: 32, maxWidth: 380 }}>
-            You're about to build an AI agent that handles your leads 24/7 — qualifying them, answering questions, and booking calls. Like a real employee, but never sleeps.
+            {content.desc}
           </p>
 
           <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 36 }}>
-            {[
-              { icon: <Brain size={14} strokeWidth={2} />, label: "Build the brain", desc: "Configure your agent's identity, tone & knowledge" },
-              { icon: <FlaskConical size={14} strokeWidth={2} />, label: "Stress test it", desc: "Run 10 real scenarios to see if it's ready" },
-              { icon: <CheckCircle size={14} strokeWidth={2} />, label: "Certify & deploy", desc: "Once satisfied, unlock the full workspace" },
-            ].map((item, i) => (
+            {content.steps.map((item, i) => (
               <div key={i} style={{ display: "flex", alignItems: "center", gap: 12 }}>
                 <div style={{ width: 30, height: 30, borderRadius: 8, background: "rgba(79,70,229,0.08)", border: "1px solid rgba(79,70,229,0.15)", display: "flex", alignItems: "center", justifyContent: "center", color: "#4F46E5", flexShrink: 0 }}>
                   {item.icon}
@@ -301,30 +470,18 @@ function IntroScreen({ onContinue }: { onContinue: () => void }) {
           </div>
 
           <button className="ma-btn-primary" onClick={onContinue} style={{ fontSize: 15, padding: "14px 32px" }}>
-            Let's build my agent <ChevronRight size={15} strokeWidth={2.5} />
+            {content.cta} <ChevronRight size={15} strokeWidth={2.5} />
           </button>
         </div>
 
-        {/* Right illustration */}
-        <div style={{ width: 320, height: 320, flexShrink: 0, position: "relative" }}>
+        <div style={{ width: 320, height: 320, flexShrink: 0 }}>
           <div style={{ width: "100%", height: "100%", borderRadius: 24, background: "linear-gradient(135deg, #EEF2FF 0%, #F5F3FF 100%)", border: "1px solid rgba(79,70,229,0.12)", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
             <img
-              src="https://raw.githubusercontent.com/aiagentcreator2025-gif/saas/main/public/wholeteam2.png"
-              alt="AI Agent"
-             style={{ width: "100%", height: "100%", objectFit: "contain", objectPosition: "center center" }}
-              onError={(e) => {
-                const el = e.currentTarget as HTMLImageElement;
-                el.style.display = "none";
-                const fb = el.nextSibling as HTMLElement;
-                if (fb) fb.style.display = "flex";
-              }}
+              src={`${BASE}wholeteam2.png`}
+              alt="AI Team"
+              style={{ width: "100%", height: "100%", objectFit: "contain", objectPosition: "center center" }}
+              onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
             />
-            <div style={{ display: "none", flexDirection: "column", alignItems: "center", gap: 12 }}>
-              <div style={{ width: 80, height: 80, borderRadius: 24, background: "linear-gradient(135deg, #4F46E5, #7C3AED)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <Bot size={40} color="#fff" strokeWidth={1.5} />
-              </div>
-              <span style={{ fontSize: 13, color: "#9CA3AF", fontWeight: 500 }}>Your AI Agent</span>
-            </div>
           </div>
         </div>
       </div>
@@ -332,8 +489,53 @@ function IntroScreen({ onContinue }: { onContinue: () => void }) {
   );
 }
 
-// ─── Choose Type Screen ───────────────────────────────────────────────────────
-function ChooseTypeScreen({ onSelect, onBack }: { onSelect: (t: "booking" | "followup") => void; onBack: () => void }) {
+// ─── Choose Type Screen (adapts to state) ─────────────────────────────────────
+function ChooseTypeScreen({ agents, onSelect, onBack }: {
+  agents: AgentRow[];
+  onSelect: (t: "booking" | "followup") => void;
+  onBack: () => void;
+}) {
+  const bookingAgent = agents.find(a => a.agent_type === "booking");
+  const followupAgent = agents.find(a => a.agent_type === "followup");
+  const hasAny = agents.length > 0;
+
+  const heading = !hasAny
+    ? "What kind of agent do you need?"
+    : bookingAgent?.certified && !followupAgent?.certified
+    ? `${bookingAgent.agent_name || "Your booking agent"} is jealous 👀`
+    : followupAgent?.certified && !bookingAgent?.certified
+    ? `${followupAgent.agent_name || "Your follow-up agent"} is jealous 👀`
+    : "Your agents are live — check on them";
+
+  const subheading = !hasAny
+    ? "Pick the type that matches your business goal. You can always build the other one later."
+    : hasAny && agents.filter(a => a.certified).length < 2
+    ? "One agent is already working hard. Hire the second one and complete your team."
+    : "Both agents are certified and live. Select one to check its health or run a quality test.";
+
+  const cards = [
+    {
+      type: "booking" as const,
+      imgUrl: `${BASE}facebooking1.png`,
+      label: "Booking Agent",
+      tagline: "Qualifies leads & books calls",
+      desc: "Your agent greets every lead, qualifies them with your script, delivers your lead magnet, and books a call — all automatically.",
+      bullets: ["Welcome & qualify leads", "Send your lead magnet", "Book discovery calls", "24/7 on WhatsApp"],
+      color: "#4F46E5", bg: "#EEF2FF", border: "#C7D2FE",
+      agentRow: bookingAgent,
+    },
+    {
+      type: "followup" as const,
+      imgUrl: `${BASE}facefollowupagent.png`,
+      label: "Follow-Up Agent",
+      tagline: "Re-engages cold leads",
+      desc: "Your agent automatically follows up with leads who didn't respond — bringing them back into the conversation at the right moment.",
+      bullets: ["Scheduled follow-ups", "Re-engage cold leads", "AI continues the convo", "Never lose a lead again"],
+      color: "#7C3AED", bg: "#F5F3FF", border: "#DDD6FE",
+      agentRow: followupAgent,
+    },
+  ];
+
   return (
     <div style={{ minHeight: "100vh", background: "linear-gradient(135deg, #f0f4ff 0%, #F4F5FA 50%, #f5f0ff 100%)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 40 }}>
       <div className="ma-fade-up" style={{ maxWidth: 800, width: "100%" }}>
@@ -343,68 +545,176 @@ function ChooseTypeScreen({ onSelect, onBack }: { onSelect: (t: "booking" | "fol
 
         <div style={{ textAlign: "center", marginBottom: 48 }}>
           <div style={{ fontSize: 36, fontWeight: 800, color: "#0f1117", letterSpacing: "-0.8px", marginBottom: 12 }}>
-            What kind of agent do you need?
+            {heading}
           </div>
-          <p style={{ fontSize: 15, color: "#6B7280", maxWidth: 480, margin: "0 auto" }}>
-            Pick the type that matches your business goal. You can always build the other one later.
-          </p>
+          <p style={{ fontSize: 15, color: "#6B7280", maxWidth: 480, margin: "0 auto" }}>{subheading}</p>
         </div>
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
-          {[
-            {
-              type: "booking" as const,
-              icon: <img src="https://raw.githubusercontent.com/aiagentcreator2025-gif/saas/main/public/bookingflow.png" style={{ width: 40, height: 40, objectFit: "cover" }} />,
-              label: "Booking Agent",
-              tagline: "Qualifies leads & books calls",
-              desc: "Your agent greets every lead, qualifies them with your script, delivers your lead magnet, and books a call — all automatically.",
-              bullets: ["Welcome & qualify leads", "Send your lead magnet", "Book discovery calls", "24/7 on WhatsApp"],
-              color: "#4F46E5", bg: "#EEF2FF", border: "#C7D2FE",
-            },
-            {
-              type: "followup" as const,
-              icon: <img src="https://raw.githubusercontent.com/aiagentcreator2025-gif/saas/main/public/followupagent3.png" style={{ width: 40, height: 40, objectFit: "cover" }} />,
-              label: "Follow-Up Agent",
-              tagline: "Re-engages cold leads",
-              desc: "Your agent automatically follows up with leads who didn't respond — bringing them back into the conversation at the right moment.",
-              bullets: ["Scheduled follow-ups", "Re-engage cold leads", "AI continues the convo", "Never lose a lead again"],
-              color: "#7C3AED", bg: "#F5F3FF", border: "#DDD6FE",
-            },
-          ].map((card) => (
-            <div
-              key={card.type}
-              onClick={() => onSelect(card.type)}
-              style={{
-                background: "#fff", borderRadius: 20, border: `1.5px solid ${card.border}`,
-                padding: "32px 28px", cursor: "pointer", transition: "all 0.2s",
-                boxShadow: "0 2px 12px rgba(0,0,0,0.05)",
-              }}
-              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = "translateY(-4px)"; (e.currentTarget as HTMLElement).style.boxShadow = `0 16px 40px ${card.color}25`; }}
-              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = ""; (e.currentTarget as HTMLElement).style.boxShadow = "0 2px 12px rgba(0,0,0,0.05)"; }}
-            >
-              <div style={{ width: 80, height: 80, borderRadius: 20, overflow: "hidden", marginBottom: 20 }}>
-  {card.icon}
-</div>
-              <div style={{ fontSize: 20, fontWeight: 800, color: "#111827", marginBottom: 4 }}>{card.label}</div>
-              <div style={{ fontSize: 12, color: card.color, fontWeight: 600, marginBottom: 14 }}>{card.tagline}</div>
-              <p style={{ fontSize: 13, color: "#6B7280", lineHeight: 1.7, marginBottom: 20 }}>{card.desc}</p>
-              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                {card.bullets.map((b, i) => (
-                  <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12, color: "#374151", fontWeight: 500 }}>
-                    <div style={{ width: 16, height: 16, borderRadius: "50%", background: card.bg, border: `1px solid ${card.border}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                      <Check size={9} strokeWidth={2.5} color={card.color} />
-                    </div>
-                    {b}
+          {cards.map((card) => {
+            const isLive = card.agentRow?.certified;
+            const isBuilding = card.agentRow && !card.agentRow.certified;
+            return (
+              <div
+                key={card.type}
+                onClick={() => onSelect(card.type)}
+                style={{
+                  background: "#fff", borderRadius: 20, border: `1.5px solid ${isLive ? card.color : card.border}`,
+                  padding: "32px 28px", cursor: "pointer", transition: "all 0.2s",
+                  boxShadow: isLive ? `0 4px 24px ${card.color}20` : "0 2px 12px rgba(0,0,0,0.05)",
+                  position: "relative", overflow: "hidden",
+                }}
+                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = "translateY(-4px)"; (e.currentTarget as HTMLElement).style.boxShadow = `0 16px 40px ${card.color}25`; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = ""; (e.currentTarget as HTMLElement).style.boxShadow = isLive ? `0 4px 24px ${card.color}20` : "0 2px 12px rgba(0,0,0,0.05)"; }}
+              >
+                {/* Live badge */}
+                {isLive && (
+                  <div style={{ position: "absolute", top: 16, right: 16, display: "flex", alignItems: "center", gap: 5, fontSize: 10, fontWeight: 700, color: "#059669", background: "#DCFCE7", border: "1px solid #A7F3D0", padding: "4px 10px", borderRadius: 20 }}>
+                    <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#059669", display: "inline-block", animation: "livePulse 1.5s ease infinite" }} />
+                    LIVE
                   </div>
-                ))}
+                )}
+                {isBuilding && (
+                  <div style={{ position: "absolute", top: 16, right: 16, fontSize: 10, fontWeight: 700, color: "#D97706", background: "#FEF3C7", border: "1px solid #FDE68A", padding: "4px 10px", borderRadius: 20 }}>
+                    IN PROGRESS
+                  </div>
+                )}
+
+                <div style={{ width: 80, height: 80, borderRadius: 20, overflow: "hidden", marginBottom: 20 }}>
+                  <img src={card.imgUrl} alt={card.label} style={{ width: "100%", height: "100%", objectFit: "contain" }} />
+                </div>
+                <div style={{ fontSize: 20, fontWeight: 800, color: "#111827", marginBottom: 4 }}>{card.label}</div>
+                <div style={{ fontSize: 12, color: card.color, fontWeight: 600, marginBottom: 14 }}>
+                  {isLive ? `${card.agentRow?.agent_name || card.label} is live` : card.tagline}
+                </div>
+                <p style={{ fontSize: 13, color: "#6B7280", lineHeight: 1.7, marginBottom: 20 }}>{card.desc}</p>
+                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                  {card.bullets.map((b, i) => (
+                    <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12, color: "#374151", fontWeight: 500 }}>
+                      <div style={{ width: 16, height: 16, borderRadius: "50%", background: card.bg, border: `1px solid ${card.border}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                        <Check size={9} strokeWidth={2.5} color={card.color} />
+                      </div>
+                      {b}
+                    </div>
+                  ))}
+                </div>
+                <div style={{ marginTop: 24, display: "flex", alignItems: "center", gap: 6, fontSize: 13, fontWeight: 700, color: card.color }}>
+                  {isLive ? "View agent" : isBuilding ? "Continue building" : "Choose this agent"} <ChevronRight size={14} strokeWidth={2.5} />
+                </div>
               </div>
-              <div style={{ marginTop: 24, display: "flex", alignItems: "center", gap: 6, fontSize: 13, fontWeight: 700, color: card.color }}>
-                Choose this agent <ChevronRight size={14} strokeWidth={2.5} />
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
+    </div>
+  );
+}
+
+// ─── Agent Show Screen (for certified agents) ─────────────────────────────────
+function AgentShowScreen({ agent, analytics, userId, onBack, onSatisfied }: {
+  agent: AgentRow;
+  analytics: AnalyticsRow | null;
+  userId: string;
+  onBack: () => void;
+  onSatisfied: () => void;
+}) {
+  const [tab, setTab] = useState<"overview" | "bulk-test">("overview");
+  const color = agent.agent_type === "booking" ? "#4F46E5" : "#7C3AED";
+  const bg = agent.agent_type === "booking" ? "#EEF2FF" : "#F5F3FF";
+  const border = agent.agent_type === "booking" ? "#C7D2FE" : "#DDD6FE";
+  const imgUrl = agent.agent_type === "booking" ? `${BASE}facebooking1.png` : `${BASE}facefollowupagent.png`;
+
+  return (
+    <div style={{ minHeight: "100vh", background: "#F4F5FA", display: "flex", flexDirection: "column" }}>
+      {/* Header */}
+      <div style={{ background: "#fff", borderBottom: "1px solid #E5E7EB", padding: "20px 32px", display: "flex", alignItems: "center", gap: 16 }}>
+        <button className="ma-btn-secondary" onClick={onBack}>
+          <ArrowLeft size={13} strokeWidth={1.8} /> Back
+        </button>
+        <div style={{ width: 48, height: 48, borderRadius: 14, overflow: "hidden", border: `1px solid ${border}`, background: bg }}>
+          <img src={imgUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
+        </div>
+        <div>
+          <div style={{ fontSize: 18, fontWeight: 800, color: "#111827" }}>{agent.agent_name || (agent.agent_type === "booking" ? "Booking Agent" : "Follow-Up Agent")}</div>
+          <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: "#059669", fontWeight: 600 }}>
+            <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#059669", display: "inline-block", animation: "livePulse 1.5s ease infinite" }} />
+            Certified & Live
+          </div>
+        </div>
+        <div style={{ marginLeft: "auto", display: "flex", gap: 8 }}>
+          <button
+            onClick={() => setTab("overview")}
+            style={{ padding: "8px 16px", borderRadius: 10, border: tab === "overview" ? `1.5px solid ${color}` : "1.5px solid #E5E7EB", background: tab === "overview" ? bg : "#fff", color: tab === "overview" ? color : "#6B7280", fontSize: 13, fontWeight: 600, cursor: "pointer", transition: "all 0.15s" }}
+          >
+            Overview
+          </button>
+          <button
+            onClick={() => setTab("bulk-test")}
+            style={{ padding: "8px 16px", borderRadius: 10, border: tab === "bulk-test" ? `1.5px solid ${color}` : "1.5px solid #E5E7EB", background: tab === "bulk-test" ? bg : "#fff", color: tab === "bulk-test" ? color : "#6B7280", fontSize: 13, fontWeight: 600, cursor: "pointer", transition: "all 0.15s" }}
+          >
+            <FlaskConical size={13} strokeWidth={1.8} style={{ display: "inline", marginRight: 5 }} />
+            Quality Test
+          </button>
+        </div>
+      </div>
+
+      {/* Content */}
+      {tab === "overview" && (
+        <div style={{ flex: 1, padding: "32px", maxWidth: 900, margin: "0 auto", width: "100%" }}>
+          {/* Stats */}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16, marginBottom: 28 }}>
+            {[
+              { label: "Leads Treated", value: analytics?.leads_treated ?? 0, color: "#4F46E5" },
+              { label: "Leads Booked", value: analytics?.leads_booked ?? 0, color: "#059669" },
+              { label: "Pending", value: analytics?.leads_pending ?? 0, color: "#D97706" },
+              { label: "Health Score", value: analytics?.health_score ? `${analytics.health_score}/100` : "—", color: "#7C3AED" },
+            ].map((stat, i) => (
+              <div key={i} style={{ background: "#fff", borderRadius: 16, border: "1px solid #E5E7EB", padding: "20px", boxShadow: "0 1px 4px rgba(0,0,0,0.04)" }}>
+                <div style={{ fontSize: 28, fontWeight: 800, color: stat.color, marginBottom: 4 }}>{stat.value}</div>
+                <div style={{ fontSize: 11, fontWeight: 600, color: "#9CA3AF", textTransform: "uppercase" as const, letterSpacing: "0.6px" }}>{stat.label}</div>
+              </div>
+            ))}
+          </div>
+
+          {/* Status card */}
+          <div style={{ background: "#fff", borderRadius: 20, border: "1px solid #E5E7EB", padding: "28px 32px", boxShadow: "0 1px 4px rgba(0,0,0,0.04)" }}>
+            <div style={{ fontSize: 15, fontWeight: 800, color: "#111827", marginBottom: 20 }}>Agent Status</div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+              {[
+                { label: "Prompt", status: "Built", ok: true },
+                { label: "Certification", status: "Certified ✓", ok: true },
+                { label: "Workspace", status: "Active", ok: true },
+              ].map((row, i) => (
+                <div key={i} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 16px", background: "#F9FAFB", borderRadius: 10, border: "1px solid #F3F4F6" }}>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: "#374151" }}>{row.label}</span>
+                  <span style={{ fontSize: 12, fontWeight: 700, color: row.ok ? "#059669" : "#DC2626", background: row.ok ? "#DCFCE7" : "#FEF2F2", padding: "3px 10px", borderRadius: 20 }}>{row.status}</span>
+                </div>
+              ))}
+            </div>
+
+            <div style={{ marginTop: 20, paddingTop: 20, borderTop: "1px solid #F3F4F6" }}>
+              <button
+                onClick={() => setTab("bulk-test")}
+                className="ma-btn-primary"
+                style={{ fontSize: 13, padding: "10px 20px" }}
+              >
+                <FlaskConical size={13} strokeWidth={2} /> Run Quality Test
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {tab === "bulk-test" && (
+        <div style={{ flex: 1, overflow: "hidden" }}>
+          <BulkTesting
+            userId={userId}
+            onComplete={() => {}}
+            onSatisfied={onSatisfied}
+            onBack={() => setTab("overview")}
+          />
+        </div>
+      )}
     </div>
   );
 }
@@ -426,14 +736,11 @@ function PreviewScreen({ type, onStart, onBack }: { type: "booking" | "followup"
     { icon: <Star size={14} strokeWidth={2} />, title: "Recovers leads", desc: "Turns cold leads back into active conversations" },
   ];
 
-  const headerImg = isBooking
-    ? "https://raw.githubusercontent.com/aiagentcreator2025-gif/saas/main/public/bookingflow.png"
-    : "https://raw.githubusercontent.com/aiagentcreator2025-gif/saas/main/public/followupagent3.png";
+  const headerImg = isBooking ? `${BASE}facebooking1.png` : `${BASE}facefollowupagent.png`;
 
   return (
     <div style={{ minHeight: "100vh", background: "#F4F5FA", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 40 }}>
       <div className="ma-fade-up" style={{ maxWidth: 720, width: "100%", background: "#fff", borderRadius: 28, border: `1px solid ${border}`, overflow: "hidden", boxShadow: "0 4px 24px rgba(0,0,0,0.06)" }}>
-        {/* Header */}
         <div style={{ padding: "32px 36px", background: `linear-gradient(135deg, ${bg} 0%, #fff 100%)`, borderBottom: `1px solid ${border}` }}>
           <button className="ma-btn-secondary" onClick={onBack} style={{ marginBottom: 24 }}>
             <ArrowLeft size={13} strokeWidth={1.8} /> Back
@@ -453,7 +760,6 @@ function PreviewScreen({ type, onStart, onBack }: { type: "booking" | "followup"
           </div>
         </div>
 
-        {/* Content */}
         <div style={{ padding: "32px 36px" }}>
           <p style={{ fontSize: 14, color: "#6B7280", lineHeight: 1.8, marginBottom: 28 }}>
             {isBooking
@@ -505,7 +811,6 @@ function BuildScreen({ agentType, config, activeStep, setActiveStep, onChange, o
 
   return (
     <div style={{ display: "flex", height: "100vh", overflow: "hidden", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-      {/* Left — Flow nodes */}
       <div style={{ width: 300, background: "#fff", borderRight: "1px solid #E5E7EB", display: "flex", flexDirection: "column", padding: "24px 16px", overflowY: "auto" }}>
         <button className="ma-btn-secondary" onClick={onBack} style={{ marginBottom: 24, alignSelf: "flex-start" }}>
           <ArrowLeft size={13} strokeWidth={1.8} /> Back
@@ -515,7 +820,6 @@ function BuildScreen({ agentType, config, activeStep, setActiveStep, onChange, o
           {agentType === "booking" ? "Booking Agent" : "Follow-Up Agent"}
         </div>
 
-        {/* Steps */}
         {AGENT_STEPS.map((step, i) => (
           <div key={step.id}>
             <div
@@ -541,7 +845,6 @@ function BuildScreen({ agentType, config, activeStep, setActiveStep, onChange, o
           </div>
         ))}
 
-        {/* Publish */}
         <div style={{ marginTop: "auto", paddingTop: 24 }}>
           <button
             onClick={onPublish}
@@ -566,7 +869,6 @@ function BuildScreen({ agentType, config, activeStep, setActiveStep, onChange, o
         </div>
       </div>
 
-      {/* Right — Config panel */}
       <div style={{ flex: 1, overflowY: "auto", padding: "32px 40px", background: "#F9FAFB" }}>
         <div style={{ maxWidth: 560 }}>
           {activeStep === "identity" && <IdentityPanel config={config} onChange={onChange} color={color} />}
@@ -605,20 +907,11 @@ function StylePanel({ config, onChange, color }: { config: AgentConfig; onChange
       <PanelHeader title="Writing Style" desc="How does your agent communicate? Choose the tone that matches your brand and audience." color={color} />
       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
         {WRITING_STYLES.map(style => (
-          <div
-            key={style.id}
-            className={`ma-style-opt ${config.writing_style === style.id ? "selected" : ""}`}
-            onClick={() => onChange("writing_style", style.id)}
-          >
+          <div key={style.id} className={`ma-style-opt ${config.writing_style === style.id ? "selected" : ""}`} onClick={() => onChange("writing_style", style.id)}>
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              {config.writing_style === style.id && (
-                <div style={{ width: 18, height: 18, borderRadius: "50%", background: color, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                  <Check size={10} color="#fff" strokeWidth={3} />
-                </div>
-              )}
-              {config.writing_style !== style.id && (
-                <div style={{ width: 18, height: 18, borderRadius: "50%", border: "1.5px solid #D1D5DB", flexShrink: 0 }} />
-              )}
+              {config.writing_style === style.id
+                ? <div style={{ width: 18, height: 18, borderRadius: "50%", background: color, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><Check size={10} color="#fff" strokeWidth={3} /></div>
+                : <div style={{ width: 18, height: 18, borderRadius: "50%", border: "1.5px solid #D1D5DB", flexShrink: 0 }} />}
               <div>
                 <div style={{ fontSize: 13, fontWeight: 700, color: "#111827" }}>{style.label}</div>
                 <div style={{ fontSize: 11, color: "#9CA3AF" }}>{style.desc}</div>
@@ -719,16 +1012,8 @@ function TestIntroScreen({ onContinue, onBack }: { onContinue: () => void; onBac
 // ─── Success Overlay ──────────────────────────────────────────────────────────
 function SuccessOverlay() {
   return (
-    <div style={{
-      position: "fixed", inset: 0, zIndex: 9999,
-      background: "rgba(0,0,0,0.5)", backdropFilter: "blur(8px)",
-      display: "flex", alignItems: "center", justifyContent: "center",
-    }}>
-      <div style={{
-        background: "#fff", borderRadius: 24, padding: "48px 56px",
-        textAlign: "center", animation: "successPop 0.4s cubic-bezier(0.34,1.56,0.64,1) forwards",
-        boxShadow: "0 24px 64px rgba(0,0,0,0.15)", maxWidth: 420,
-      }}>
+    <div style={{ position: "fixed", inset: 0, zIndex: 9999, background: "rgba(0,0,0,0.5)", backdropFilter: "blur(8px)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <div style={{ background: "#fff", borderRadius: 24, padding: "48px 56px", textAlign: "center", animation: "successPop 0.4s cubic-bezier(0.34,1.56,0.64,1) forwards", boxShadow: "0 24px 64px rgba(0,0,0,0.15)", maxWidth: 420 }}>
         <div style={{ width: 72, height: 72, borderRadius: "50%", background: "linear-gradient(135deg, #059669, #10B981)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 20px" }}>
           <CheckCircle size={36} color="#fff" strokeWidth={2} />
         </div>
