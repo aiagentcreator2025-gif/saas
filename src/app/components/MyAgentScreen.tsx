@@ -622,7 +622,7 @@ function AgentShowScreen({ agent, analytics, userId, onBack, onSatisfied }: {
   const color = agent.agent_type === "booking" ? "#4F46E5" : "#7C3AED";
   const bg = agent.agent_type === "booking" ? "#EEF2FF" : "#F5F3FF";
   const border = agent.agent_type === "booking" ? "#C7D2FE" : "#DDD6FE";
-  const imgUrl = agent.agent_type === "booking" ? `${BASE}facebooking1.png` : `${BASE}facefollowupagent.png`;
+  const imgUrl = agent.agent_type === "booking" ? `${BASE}bookingflow.png` : `${BASE}followupagent3.png`;
 
   return (
     <div style={{ minHeight: "100vh", background: "#F4F5FA", display: "flex", flexDirection: "column" }}>
@@ -736,7 +736,7 @@ function PreviewScreen({ type, onStart, onBack }: { type: "booking" | "followup"
     { icon: <Star size={14} strokeWidth={2} />, title: "Recovers leads", desc: "Turns cold leads back into active conversations" },
   ];
 
-  const headerImg = isBooking ? `${BASE}facebooking1.png` : `${BASE}facefollowupagent.png`;
+  const headerImg = isBooking ? `${BASE}bookingflow.png` : `${BASE}followupagent3.png`;
 
   return (
     <div style={{ minHeight: "100vh", background: "#F4F5FA", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 40 }}>
