@@ -516,7 +516,7 @@ function ChooseTypeScreen({ agents, onSelect, onBack }: {
   const cards = [
     {
       type: "booking" as const,
-      imgUrl: `${BASE}facebooking1.png`,
+      imgUrl: `${BASE}bookingflow.png`,
       label: "Booking Agent",
       tagline: "Qualifies leads & books calls",
       desc: "Your agent greets every lead, qualifies them with your script, delivers your lead magnet, and books a call — all automatically.",
@@ -526,7 +526,7 @@ function ChooseTypeScreen({ agents, onSelect, onBack }: {
     },
     {
       type: "followup" as const,
-      imgUrl: `${BASE}facefollowupagent.png`,
+      imgUrl: `${BASE}followupagent3.png`,
       label: "Follow-Up Agent",
       tagline: "Re-engages cold leads",
       desc: "Your agent automatically follows up with leads who didn't respond — bringing them back into the conversation at the right moment.",
