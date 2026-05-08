@@ -294,7 +294,7 @@ export function MyAgentScreen({ userId, onAgentCertified }: Props) {
             )}
             {view === "test-intro" && <TestIntroScreen onContinue={() => setView("testing")} onBack={() => setView("build")} />}
             {view === "testing" && (
-              <BulkTesting userId={userId} onComplete={() => {}} onSatisfied={handleSatisfied} onBack={() => setView("test-intro")} />
+              <BulkTesting userId={userId} onComplete={() => {}} onSatisfied={onSatisfied} onBack={() => setView("test-intro")} />
             )}
           </>
         )}
@@ -329,7 +329,7 @@ export function MyAgentScreen({ userId, onAgentCertified }: Props) {
             )}
             {view === "test-intro" && <TestIntroScreen onContinue={() => setView("testing")} onBack={() => setView("build")} />}
             {view === "testing" && (
-              <BulkTesting userId={userId} onComplete={() => {}} onSatisfied={handleSatisfied} onBack={() => setView("test-intro")} />
+              <BulkTesting userId={userId} onComplete={() => {}} onSatisfied={onSatisfied} onBack={() => setView("test-intro")} />
             )}
             {view === "agent-show" && selectedAgent && (
               <AgentShowScreen
