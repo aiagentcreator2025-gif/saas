@@ -143,7 +143,6 @@ export function MyAgentScreen({ userId, onAgentCertified }: Props) {
     const rows = (agentRows || []) as AgentRow[];
     setAgents(rows);
 
-    // Load analytics for all agents
     if (rows.length > 0) {
       const agentIds = rows.map(a => a.id);
       const { data: analyticsRows } = await supabase
@@ -213,43 +212,58 @@ export function MyAgentScreen({ userId, onAgentCertified }: Props) {
     setTimeout(() => setSaved(false), 2000);
   };
 
- const onPublish = async () => {
-  setPublishing(true);
-  await onSave();
+  const onPublish = async () => {
+    setPublishing(true);
+    await onSave();
 
-  // Fetch onboarding data first
-  const { data: onboarding } = await supabase
-    .from("accounts_leadflow")
-    .select("*")
-    .eq("user_id", userId)
-    .maybeSingle();
+    const { data: onboarding } = await supabase
+      .from("accounts_leadflow")
+      .select("*")
+      .eq("user_id", userId)
+      .maybeSingle();
 
-  try {
-    await fetch("https://rosegoldprojectai3.app.n8n.cloud/webhook/ea72ec64-9444-495a-ae04-babcb9e90cdd", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        user_id: userId,
-        agent_type: agentType,
-        config,
-        onboarding: onboarding || {},  // ← this is the new part
-      }),
-    });
-  } catch (e) { console.error(e); }
+    try {
+      await fetch("https://rosegoldprojectai3.app.n8n.cloud/webhook/ea72ec64-9444-495a-ae04-babcb9e90cdd", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          user_id: userId,
+          agent_type: agentType,
+          config,
+          onboarding: onboarding || {},
+        }),
+      });
+    } catch (e) { console.error(e); }
 
-  await supabase.from("agents").upsert({
-    user_id: userId,
-    agent_type: agentType,
-    agent_config: config,
-    agent_name: config.agent_name,
-    status: "built",
-    updated_at: new Date().toISOString(),
-  }, { onConflict: "user_id,agent_type" });
+    await supabase.from("agents").upsert({
+      user_id: userId,
+      agent_type: agentType,
+      agent_config: config,
+      agent_name: config.agent_name,
+      status: "built",
+      updated_at: new Date().toISOString(),
+    }, { onConflict: "user_id,agent_type" });
 
-  setPublishing(false);
-  setPublished(true);
-  setTimeout(() => setView("test-intro"), 1200);
-};
+    setPublishing(false);
+    setPublished(true);
+    setTimeout(() => setView("test-intro"), 1200);
+  };
+
+  // ─── THIS IS THE FIX: handleSatisfied defined here in the main component ───
+  const handleSatisfied = useCallback(async () => {
+    await supabase.from("agents").upsert({
+      user_id: userId,
+      agent_type: agentType,
+      certified: true,
+      status: "certified",
+      updated_at: new Date().toISOString(),
+    }, { onConflict: "user_id,agent_type" });
+    setShowSuccess(true);
+    setTimeout(() => {
+      setShowSuccess(false);
+      onAgentCertified();
+    }, 2500);
+  }, [userId, agentType, onAgentCertified]);
 
   // ─── Loading ───────────────────────────────────────────────────────────────
   if (appState === "loading") {
@@ -294,7 +308,7 @@ export function MyAgentScreen({ userId, onAgentCertified }: Props) {
             )}
             {view === "test-intro" && <TestIntroScreen onContinue={() => setView("testing")} onBack={() => setView("build")} />}
             {view === "testing" && (
-              <BulkTesting userId={userId} onComplete={() => {}} onSatisfied={onSatisfied} onBack={() => setView("test-intro")} />
+              <BulkTesting userId={userId} onComplete={() => {}} onSatisfied={handleSatisfied} onBack={() => setView("test-intro")} />
             )}
           </>
         )}
@@ -329,7 +343,7 @@ export function MyAgentScreen({ userId, onAgentCertified }: Props) {
             )}
             {view === "test-intro" && <TestIntroScreen onContinue={() => setView("testing")} onBack={() => setView("build")} />}
             {view === "testing" && (
-              <BulkTesting userId={userId} onComplete={() => {}} onSatisfied={onSatisfied} onBack={() => setView("test-intro")} />
+              <BulkTesting userId={userId} onComplete={() => {}} onSatisfied={handleSatisfied} onBack={() => setView("test-intro")} />
             )}
             {view === "agent-show" && selectedAgent && (
               <AgentShowScreen
@@ -568,7 +582,6 @@ function ChooseTypeScreen({ agents, onSelect, onBack }: {
                 onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = "translateY(-4px)"; (e.currentTarget as HTMLElement).style.boxShadow = `0 16px 40px ${card.color}25`; }}
                 onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = ""; (e.currentTarget as HTMLElement).style.boxShadow = isLive ? `0 4px 24px ${card.color}20` : "0 2px 12px rgba(0,0,0,0.05)"; }}
               >
-                {/* Live badge */}
                 {isLive && (
                   <div style={{ position: "absolute", top: 16, right: 16, display: "flex", alignItems: "center", gap: 5, fontSize: 10, fontWeight: 700, color: "#059669", background: "#DCFCE7", border: "1px solid #A7F3D0", padding: "4px 10px", borderRadius: 20 }}>
                     <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#059669", display: "inline-block", animation: "livePulse 1.5s ease infinite" }} />
@@ -627,7 +640,6 @@ function AgentShowScreen({ agent, analytics, userId, onBack, onSatisfied }: {
 
   return (
     <div style={{ minHeight: "100vh", background: "#F4F5FA", display: "flex", flexDirection: "column" }}>
-      {/* Header */}
       <div style={{ background: "#fff", borderBottom: "1px solid #E5E7EB", padding: "20px 32px", display: "flex", alignItems: "center", gap: 16 }}>
         <button className="ma-btn-secondary" onClick={onBack}>
           <ArrowLeft size={13} strokeWidth={1.8} /> Back
@@ -659,10 +671,8 @@ function AgentShowScreen({ agent, analytics, userId, onBack, onSatisfied }: {
         </div>
       </div>
 
-      {/* Content */}
       {tab === "overview" && (
         <div style={{ flex: 1, padding: "32px", maxWidth: 900, margin: "0 auto", width: "100%" }}>
-          {/* Stats */}
           <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16, marginBottom: 28 }}>
             {[
               { label: "Leads Treated", value: analytics?.leads_treated ?? 0, color: "#4F46E5" },
@@ -677,7 +687,6 @@ function AgentShowScreen({ agent, analytics, userId, onBack, onSatisfied }: {
             ))}
           </div>
 
-          {/* Status card */}
           <div style={{ background: "#fff", borderRadius: 20, border: "1px solid #E5E7EB", padding: "28px 32px", boxShadow: "0 1px 4px rgba(0,0,0,0.04)" }}>
             <div style={{ fontSize: 15, fontWeight: 800, color: "#111827", marginBottom: 20 }}>Agent Status</div>
             <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
@@ -692,13 +701,8 @@ function AgentShowScreen({ agent, analytics, userId, onBack, onSatisfied }: {
                 </div>
               ))}
             </div>
-
             <div style={{ marginTop: 20, paddingTop: 20, borderTop: "1px solid #F3F4F6" }}>
-              <button
-                onClick={() => setTab("bulk-test")}
-                className="ma-btn-primary"
-                style={{ fontSize: 13, padding: "10px 20px" }}
-              >
+              <button onClick={() => setTab("bulk-test")} className="ma-btn-primary" style={{ fontSize: 13, padding: "10px 20px" }}>
                 <FlaskConical size={13} strokeWidth={2} /> Run Quality Test
               </button>
             </div>
