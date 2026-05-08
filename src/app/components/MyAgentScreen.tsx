@@ -213,42 +213,43 @@ export function MyAgentScreen({ userId, onAgentCertified }: Props) {
     setTimeout(() => setSaved(false), 2000);
   };
 
-  const onPublish = async () => {
-    setPublishing(true);
-    await onSave();
-    try {
-      await fetch("https://rosegoldprojectai3.app.n8n.cloud/webhook/ea72ec64-9444-495a-ae04-babcb9e90cdd", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ user_id: userId, agent_type: agentType, config }),
-      });
-    } catch (e) { console.error(e); }
-    await supabase.from("agents").upsert({
-      user_id: userId,
-      agent_type: agentType,
-      agent_config: config,
-      agent_name: config.agent_name,
-      status: "built",
-      updated_at: new Date().toISOString(),
-    }, { onConflict: "user_id,agent_type" });
-    setPublishing(false);
-    setPublished(true);
-    setTimeout(() => setView("test-intro"), 1200);
-  };
+ const onPublish = async () => {
+  setPublishing(true);
+  await onSave();
 
-  const handleSatisfied = async () => {
-    if (!agentType) return;
-    await supabase
-      .from("agents")
-      .update({ certified: true, status: "certified" })
-      .eq("user_id", userId)
-      .eq("agent_type", agentType);
-    setShowSuccess(true);
-    setTimeout(async () => {
-      await detectState();
-      onAgentCertified();
-    }, 2200);
-  };
+  // Fetch onboarding data first
+  const { data: onboarding } = await supabase
+    .from("accounts_leadflow")
+    .select("*")
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  try {
+    await fetch("https://rosegoldprojectai3.app.n8n.cloud/webhook/ea72ec64-9444-495a-ae04-babcb9e90cdd", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        user_id: userId,
+        agent_type: agentType,
+        config,
+        onboarding: onboarding || {},  // ← this is the new part
+      }),
+    });
+  } catch (e) { console.error(e); }
+
+  await supabase.from("agents").upsert({
+    user_id: userId,
+    agent_type: agentType,
+    agent_config: config,
+    agent_name: config.agent_name,
+    status: "built",
+    updated_at: new Date().toISOString(),
+  }, { onConflict: "user_id,agent_type" });
+
+  setPublishing(false);
+  setPublished(true);
+  setTimeout(() => setView("test-intro"), 1200);
+};
 
   // ─── Loading ───────────────────────────────────────────────────────────────
   if (appState === "loading") {
