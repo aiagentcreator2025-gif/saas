@@ -212,42 +212,62 @@ export function MyAgentScreen({ userId, onAgentCertified }: Props) {
     setTimeout(() => setSaved(false), 2000);
   };
 
-  const onPublish = async () => {
-    setPublishing(true);
-    await onSave();
+ const onPublish = async () => {
+  setPublishing(true);
+  await onSave();
 
-    const { data: onboarding } = await supabase
-      .from("accounts_leadflow")
-      .select("*")
-      .eq("user_id", userId)
-      .maybeSingle();
+  // Fetch both data sources
+  const { data: onboarding } = await supabase
+    .from("accounts_leadflow")
+    .select("*")
+    .eq("user_id", userId)
+    .maybeSingle();
 
-    try {
-      await fetch("https://rosegoldprojectai3.app.n8n.cloud/webhook/ea72ec64-9444-495a-ae04-babcb9e90cdd", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          user_id: userId,
-          agent_type: agentType,
-          config,
-          onboarding: onboarding || {},
-        }),
-      });
-    } catch (e) { console.error(e); }
+  const { data: automation } = await supabase
+    .from("account_leadflow_automations")
+    .select("*")
+    .eq("user_id", userId)
+    .maybeSingle();
 
+  // Set status to "building" (not "built" — prompt doesn't exist yet)
+  await supabase.from("agents").upsert({
+    user_id: userId,
+    agent_type: agentType,
+    agent_config: config,
+    agent_name: config.agent_name,
+    status: "building",
+    updated_at: new Date().toISOString(),
+  }, { onConflict: "user_id,agent_type" });
+
+  try {
+    await fetch("https://rosegoldprojectai3.app.n8n.cloud/webhook/ea72ec64-9444-495a-ae04-babcb9e90cdd", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        user_id: userId,
+        agent_type: agentType,
+        config,
+        onboarding: onboarding || {},
+        automation: automation || {},
+      }),
+    });
+  } catch (e) {
+    console.error(e);
+    // Update status to error so user knows it failed
     await supabase.from("agents").upsert({
       user_id: userId,
       agent_type: agentType,
-      agent_config: config,
-      agent_name: config.agent_name,
-      status: "built",
+      status: "error",
       updated_at: new Date().toISOString(),
     }, { onConflict: "user_id,agent_type" });
-
     setPublishing(false);
-    setPublished(true);
-    setTimeout(() => setView("test-intro"), 1200);
-  };
+    return;
+  }
+
+  setPublishing(false);
+  setPublished(true);
+  setTimeout(() => setView("test-intro"), 1200);
+};
 
   // ─── THIS IS THE FIX: handleSatisfied defined here in the main component ───
   const handleSatisfied = useCallback(async () => {
