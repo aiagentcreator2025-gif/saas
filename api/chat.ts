@@ -66,8 +66,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     // ── Step 4: Parse n8n response ──────────────────────────────────────
     const agentRaw = await n8nRes.json();
-const agentData: N8nResponse = Array.isArray(agentRaw) ? agentRaw[0] : agentRaw;
-const { message: agentMessage, is_handoff, agent_output } = agentData;
+const agentItem = Array.isArray(agentRaw) ? agentRaw[0] : agentRaw;
+
+// Handle both formats: {message: "..."} and {response: "..."}
+const agentMessage = agentItem.message || agentItem.response || '';
+const is_handoff   = agentItem.is_handoff ?? false;
+const agent_output = agentItem.agent_output ?? null;
 
     // Append both turns to conversation history
     const updatedHistory: Message[] = [
