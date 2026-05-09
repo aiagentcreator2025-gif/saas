@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { LayoutDashboard, Calendar, Users, Settings, LogOut, MessageSquare, Bot, Workflow, Lock } from "lucide-react";
+import { LayoutDashboard, Calendar, Users, Settings, LogOut,
+         MessageSquare, Bot, Workflow, Lock, Sparkles } from "lucide-react";
 import { Screen } from "../App";
 import { supabase } from "../supabaseClient";
 
@@ -115,6 +116,14 @@ export function Sidebar({ active, onNav, agentCertified }: Props) {
           <div style={{ fontSize: 9, letterSpacing: "1.5px", textTransform: "uppercase" as const, color: "rgba(100,80,180,0.5)", padding: "0 10px", marginBottom: 8, fontWeight: 500 }}>Main</div>
 
           <NavItem icon={<LayoutDashboard size={15} strokeWidth={1.6} />} label="Dashboard" active={active === "dashboard"} onClick={() => onNav("dashboard")} />
+
+          {"/* ADD THIS — Co-Founder AI */"}
+<NavItem
+  icon={<Sparkles size={15} strokeWidth={1.6} />}
+  label="Co-Founder AI"
+  active={active === "cofounder"}
+  onClick={() => onNav("cofounder")}
+/>
 
           {/* Agent section */}
           <div style={{ marginTop: 12, marginBottom: 8 }}>
