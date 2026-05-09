@@ -31,7 +31,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
     // ── Step 1: Load or create session ──────────────────────────────────
     const session = await getOrCreateSession(session_id, client_name, user_id);
-    const { current_agent_index, conversation_history, funnel_context } = session;
+    const { current_agent_index, messages, funnel_context } = session;
 
     // ── Step 2: Check if funnel is already complete ──────────────────────
     if (current_agent_index >= AGENTS.length) {
