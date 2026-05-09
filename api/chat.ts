@@ -85,7 +85,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const is_handoff   = agentItem.is_handoff ?? false;
     const agent_output = agentItem.agent_output ?? null;
 
-    // Append both turns to conversation history
+    // Append both turns to messages
     const updatedHistory: Message[] = [
       ...messages,
       { role: 'user',      content: message },
