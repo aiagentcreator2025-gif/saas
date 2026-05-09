@@ -927,65 +927,274 @@ function ScriptsPanel({ config, onChange, color }: { config: AgentConfig; onChan
     },
   ];
 
+  // Helper: render Script 1 full text
+  const renderScript1 = () => {
+    const service = config.script1_service || "[SERVICE]";
+    const endResult = config.script1_end_result || "[DESIRED END RESULT]";
+    const deliverable = config.script1_deliverable || "[DELIVERABLE]";
+    const outcome = config.script1_outcome || "[OUTCOME]";
+
+    return `Wa alaykoum salam 👋 Just to confirm — you came from TikTok because you want to start making money from home, right?
+
+(Lead replies)
+
+Perfect 😊 Before I send your guide, what's your name?
+
+(Lead replies)
+
+Nice to meet you, (NAME) 👍
+
+Quick question so I send you the right thing — Have you ever made money online before, or not yet?
+
+(Lead replies)
+
+And do you understand how it works fully, or are you just starting?
+
+(Lead replies)
+
+Great so this is the right thing for you!
+
+I'll send you your guide now. In 5 minutes, you'll understand how simple it is to get paid online.
+
+Then if you like it, we'll talk about what you should do next to make your first sale as fast as possible insha'Allah
+
+Sounds good to you?
+
+(Lead replies)
+
+Perfect so here's your guide: (LINK)
+
+Take 5 minutes to read it now 👍
+
+When you finish, send me "done" and I'll show you the next step
+
+Ah and don't skip page 14…👀`;
+  };
+
+  // Helper: render Script 2 full text
+  const renderScript2 = () => {
+    const price = config.script2_price || "$X";
+    const day = config.script2_training_day || "[DAY]";
+    const duration = config.script2_call_duration || "[DURATION]";
+    const conditions = config.script2_conditions 
+      ? config.script2_conditions.split(",").map((c, i) => `${i + 1} — ${c.trim()}`) 
+      : ["1 — [Condition 1]", "2 — [Condition 2]", "3 — [Condition 3]"];
+
+    return `(4 minutes after they start reading)
+
+Salam my friend 👋
+
+Sorry I didn't verify earlier — did the link for the guide work?
+
+(Lead replies)
+
+Perfect 👍
+
+And did you have time to go through it or not yet?
+
+[IF NOT COMPLETE]: No worries at all 👍 Go finish it first, it'll make everything much clearer for you. Message me after
+
+[IF COMPLETE]:
+
+Nice — I'm curious, how did you find it?
+
+Did it help you understand how making money online actually works?
+
+(Lead replies)
+
+I'm glad it helped 🙏
+
+Quick question — I didn't get to ask you earlier: What made you want to read it in the first place?
+
+Are you more just curious or actually looking to make money from home?
+
+(Lead replies)
+
+Ok I see 👍
+
+So you're actually serious about this
+
+And why does that matter to you? Why do you want to make money from home?
+
+Is it more like: extra income on the side or you want to eventually replace your income?
+
+(Lead replies)
+
+Got it 👍
+
+And if that actually works out for you… what would that change in your life?
+
+Take your time — I'm curious
+
+(Lead replies)
+
+That's powerful
+
+Now be honest with me… If nothing changes, and you stay exactly where you are right now… how would you feel in a few months knowing you could've done more?
+
+(Lead replies)
+
+Yeah… I understand
+
+And that's exactly the problem most people face
+
+They understand the basics… but they don't have a clear plan to follow
+
+Because the truth is — making money online isn't complicated but without knowing what to do step by step, people just stay stuck
+
+So let me ask you this: Do you feel like you could figure everything out alone… or would it be better to have some guidance and a clear plan to follow?
+
+(Lead replies)
+
+That makes sense 👍
+
+And honestly, I can see you're serious about this
+
+So here's what I can do for you:
+
+This ${day}, I'm doing a live training where I show step by step how to start from zero
+
+Nothing complicated, just simple and clear
+
+On the call, I'll show you 2 important things:
+
+1 — How to offer something people actually want to pay for, even if you have no experience
+
+2 — How to use TikTok to bring people to you every day, even if you're starting from scratch
+
+And at the end, I'll give you a simple 7-day action plan so you know exactly what to do to make your first $100 online
+
+No guessing, no confusion
+
+Does that sound like something you'd want to join?
+
+(Lead replies)
+
+Perfect 👍
+
+So normally, access to this is $18
+
+But since you actually took action and went through the guide, I can let you in for just ${price}
+
+So you save 50%
+
+But under 3 simple conditions:
+
+${conditions.join("\n")}
+
+Fair?
+
+And just so you feel comfortable — if after the call you're not 100% clear on what to do to make your first $100, I'll send you your money back
+
+So there's no risk for you 👍
+
+Does that sound good?
+
+(Lead replies)
+
+Perfect 👍
+
+I have 4 sessions this ${day}:
+
+6pm
+7pm
+8pm
+9pm
+
+Which one works best for you?
+
+(Lead replies)
+
+Perfect 👍
+
+Here's the link to save your spot 👇
+
+[PAYMENT LINK]
+
+Once you're in, send me a screenshot 👍`;
+  };
+
   return (
     <div className="ma-fade-up">
-      <PanelHeader title="Scripts" desc="Configure your Script 1 (lead qualification & magnet delivery) and Script 2 (paid offer close). These fields fill the placeholders in your agent's conversation." color={color} />
+      <PanelHeader title="Scripts" desc="Configure your Script 1 (lead qualification & magnet delivery) and Script 2 (paid offer close). See the full scripts below as you fill in your details." color={color} />
 
-      {/* Script 1 Banner */}
-      <div style={{ background: "#F0FDF4", border: "1px solid #A7F3D0", borderRadius: 12, padding: "12px 16px", marginBottom: 28, display: "flex", gap: 10, alignItems: "flex-start" }}>
-        <div style={{ fontSize: 16, marginTop: 1 }}>📝</div>
-        <div>
-          <div style={{ fontSize: 12, fontWeight: 700, color: "#059669", marginBottom: 2 }}>Script 1: Lead Qualification & Delivery</div>
-          <div style={{ fontSize: 11, color: "#065F46", lineHeight: 1.6 }}>
-            Your agent opens with: <em>"Wa alaykoum salam 👋 Just to confirm — you came from TikTok because you want to start making money from home, right?"</em> — fill these fields and the script becomes personalized.
-          </div>
-        </div>
-      </div>
-
-      {/* Script 1 Fields */}
-      <div style={{ display: "flex", flexDirection: "column", gap: 20, marginBottom: 40, paddingBottom: 24, borderBottom: "1px solid #E5E7EB" }}>
-        {script1Fields.map(({ key, label, placeholder, hint, tag }) => (
-          <div key={key}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
-              <label className="ma-label" style={{ margin: 0 }}>{label}</label>
-              <span className="ma-script-tag">{tag}</span>
+      {/* Script 1 Config & Preview */}
+      <div style={{ marginBottom: 40 }}>
+        {/* Script 1 Banner */}
+        <div style={{ background: "#F0FDF4", border: "1px solid #A7F3D0", borderRadius: 12, padding: "12px 16px", marginBottom: 24, display: "flex", gap: 10, alignItems: "flex-start" }}>
+          <div style={{ fontSize: 16, marginTop: 1 }}>📝</div>
+          <div>
+            <div style={{ fontSize: 12, fontWeight: 700, color: "#059669", marginBottom: 2 }}>Script 1: Lead Qualification & Delivery</div>
+            <div style={{ fontSize: 11, color: "#065F46", lineHeight: 1.6 }}>
+              Your agent opens with a greeting, qualifies the lead, delivers your guide, and sets up Script 2. Fill in these 5 fields:
             </div>
-            <input
-              className="ma-input"
-              value={config[key] as string}
-              onChange={e => onChange(key, e.target.value)}
-              placeholder={placeholder}
-            />
-            <div className="ma-hint">{hint}</div>
           </div>
-        ))}
-      </div>
+        </div>
 
-      {/* Script 2 Banner */}
-      <div style={{ background: "#EEF2FF", border: "1px solid #C7D2FE", borderRadius: 12, padding: "12px 16px", marginBottom: 28, display: "flex", gap: 10, alignItems: "flex-start" }}>
-        <div style={{ fontSize: 16, marginTop: 1 }}>💰</div>
-        <div>
-          <div style={{ fontSize: 12, fontWeight: 700, color: "#4F46E5", marginBottom: 2 }}>Script 2: Paid Offer Close</div>
-          <div style={{ fontSize: 11, color: "#312E81", lineHeight: 1.6 }}>
-            After they read the guide and engage, your agent presents the paid training: price, day, duration, and 3 conditions. This is where leads convert to customers.
-          </div>
+        {/* Script 1 Config Fields */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 20, marginBottom: 24, paddingBottom: 24, borderBottom: "1px solid #E5E7EB" }}>
+          {script1Fields.map(({ key, label, placeholder, hint, tag }) => (
+            <div key={key}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+                <label className="ma-label" style={{ margin: 0 }}>{label}</label>
+                <span className="ma-script-tag">{tag}</span>
+              </div>
+              <input
+                className="ma-input"
+                value={config[key] as string}
+                onChange={e => onChange(key, e.target.value)}
+                placeholder={placeholder}
+              />
+              <div className="ma-hint">{hint}</div>
+            </div>
+          ))}
+        </div>
+
+        {/* Script 1 Full Preview */}
+        <div style={{ background: "#F9FAFB", border: "1px solid #E5E7EB", borderRadius: 14, padding: "20px", marginBottom: 24 }}>
+          <div style={{ fontSize: 12, fontWeight: 700, color: "#6B7280", textTransform: "uppercase", letterSpacing: "0.6px", marginBottom: 12 }}>📋 Script 1 Preview</div>
+          <pre style={{ fontSize: 12, color: "#374151", lineHeight: 1.7, whiteSpace: "pre-wrap", wordWrap: "break-word", margin: 0, fontFamily: "'Plus Jakarta Sans', monospace" }}>
+            {renderScript1()}
+          </pre>
         </div>
       </div>
 
-      {/* Script 2 Fields */}
-      <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-        {script2Fields.map(({ key, label, placeholder, hint }) => (
-          <div key={key}>
-            <label className="ma-label">{label}</label>
-            <input
-              className="ma-input"
-              value={config[key] as string}
-              onChange={e => onChange(key, e.target.value)}
-              placeholder={placeholder}
-            />
-            <div className="ma-hint">{hint}</div>
+      {/* Script 2 Config & Preview */}
+      <div>
+        {/* Script 2 Banner */}
+        <div style={{ background: "#EEF2FF", border: "1px solid #C7D2FE", borderRadius: 12, padding: "12px 16px", marginBottom: 24, display: "flex", gap: 10, alignItems: "flex-start" }}>
+          <div style={{ fontSize: 16, marginTop: 1 }}>💰</div>
+          <div>
+            <div style={{ fontSize: 12, fontWeight: 700, color: "#4F46E5", marginBottom: 2 }}>Script 2: Paid Offer Close</div>
+            <div style={{ fontSize: 11, color: "#312E81", lineHeight: 1.6 }}>
+              After they read the guide and engage, your agent presents the paid training with price, timing, and 3 conditions. This is where leads become customers.
+            </div>
           </div>
-        ))}
+        </div>
+
+        {/* Script 2 Config Fields */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 20, marginBottom: 24, paddingBottom: 24, borderBottom: "1px solid #E5E7EB" }}>
+          {script2Fields.map(({ key, label, placeholder, hint }) => (
+            <div key={key}>
+              <label className="ma-label">{label}</label>
+              <input
+                className="ma-input"
+                value={config[key] as string}
+                onChange={e => onChange(key, e.target.value)}
+                placeholder={placeholder}
+              />
+              <div className="ma-hint">{hint}</div>
+            </div>
+          ))}
+        </div>
+
+        {/* Script 2 Full Preview */}
+        <div style={{ background: "#F9FAFB", border: "1px solid #E5E7EB", borderRadius: 14, padding: "20px" }}>
+          <div style={{ fontSize: 12, fontWeight: 700, color: "#6B7280", textTransform: "uppercase", letterSpacing: "0.6px", marginBottom: 12 }}>📋 Script 2 Preview</div>
+          <pre style={{ fontSize: 12, color: "#374151", lineHeight: 1.7, whiteSpace: "pre-wrap", wordWrap: "break-word", margin: 0, fontFamily: "'Plus Jakarta Sans', monospace" }}>
+            {renderScript2()}
+          </pre>
+        </div>
       </div>
     </div>
   );
