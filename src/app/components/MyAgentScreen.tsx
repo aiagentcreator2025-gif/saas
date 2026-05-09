@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import {
   Bot, ChevronRight, ArrowLeft, Sparkles, FlaskConical,
   MessageSquare, CheckCircle, Settings, Loader2, Check,
-  Zap, Shield, Star, Lock, Calendar, Brain, Activity
+  Zap, Shield, Star, Lock, Calendar, Brain, Activity, Link
 } from "lucide-react";
 import { supabase } from "../supabaseClient";
 import { BulkTesting } from "./BulkTesting";
@@ -21,12 +21,23 @@ type View =
   | "agent-show";
 
 interface AgentConfig {
+  // existing
   agent_name: string;
   writing_style: string;
   agent_personality: string;
   primary_service: string;
   target_audience: string;
   main_goal: string;
+  // NEW — Scripts
+  script1_service: string;
+  script1_end_result: string;
+  script1_category: string;
+  script1_deliverable: string;
+  script1_outcome: string;
+  // NEW — Links
+  lead_magnet_link: string;
+  script2_booking_link: string;
+  script2_call_duration: string;
 }
 
 interface AgentRow {
@@ -61,6 +72,15 @@ const EMPTY_CONFIG: AgentConfig = {
   primary_service: "",
   target_audience: "",
   main_goal: "",
+  // NEW
+  script1_service: "",
+  script1_end_result: "",
+  script1_category: "",
+  script1_deliverable: "",
+  script1_outcome: "",
+  lead_magnet_link: "",
+  script2_booking_link: "",
+  script2_call_duration: "",
 };
 
 const BASE = "https://raw.githubusercontent.com/aiagentcreator2025-gif/saas/main/public/";
@@ -79,6 +99,7 @@ const STYLES = `
   .ma-textarea { width: 100%; padding: 10px 14px; border: 1.5px solid #E5E7EB; border-radius: 10px; font-size: 13px; color: #111827; background: #fff; outline: none; font-family: 'Plus Jakarta Sans', sans-serif; resize: none; line-height: 1.7; transition: border-color 0.15s; }
   .ma-textarea:focus { border-color: #4F46E5; box-shadow: 0 0 0 3px rgba(79,70,229,0.08); }
   .ma-label { display: block; font-size: 11px; font-weight: 700; color: #374151; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 6px; }
+  .ma-hint { font-size: 11px; color: #9CA3AF; margin-top: 5px; }
   .ma-style-opt { padding: 12px 14px; border-radius: 10px; cursor: pointer; border: 1.5px solid #E5E7EB; background: #FAFAFA; margin-bottom: 8px; transition: all 0.15s; }
   .ma-style-opt:hover { border-color: #A5B4FC; background: #F5F3FF; }
   .ma-style-opt.selected { border-color: #4F46E5; background: #EEF2FF; }
@@ -88,6 +109,7 @@ const STYLES = `
   .ma-connector { display: flex; flex-direction: column; align-items: center; margin: 4px 0; }
   .ma-agent-card { border-radius: 20px; border: 1.5px solid #E5E7EB; background: #fff; padding: 24px; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 12px rgba(0,0,0,0.04); }
   .ma-agent-card:hover { transform: translateY(-3px); box-shadow: 0 12px 32px rgba(79,70,229,0.12); }
+  .ma-script-tag { display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; border-radius: 6px; background: #F0FDF4; border: 1px solid #A7F3D0; font-size: 10px; font-weight: 700; color: #059669; font-family: 'Plus Jakarta Sans', sans-serif; }
   @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
   @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
   @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
@@ -107,6 +129,8 @@ const AGENT_STEPS = [
   { id: "identity", label: "Agent Identity", sublabel: "Name & personality", color: "#4F46E5", bg: "#EEF2FF", border: "#C7D2FE", icon: <Bot size={15} strokeWidth={1.5} /> },
   { id: "style", label: "Writing Style", sublabel: "How your agent communicates", color: "#7C3AED", bg: "#F5F3FF", border: "#DDD6FE", icon: <MessageSquare size={15} strokeWidth={1.5} /> },
   { id: "knowledge", label: "Agent Knowledge", sublabel: "Service & audience context", color: "#2563EB", bg: "#EFF6FF", border: "#BFDBFE", icon: <Brain size={15} strokeWidth={1.5} /> },
+  { id: "scripts", label: "Scripts", sublabel: "How your offer sounds in conversation", color: "#059669", bg: "#ECFDF5", border: "#A7F3D0", icon: <MessageSquare size={15} strokeWidth={1.5} /> },
+  { id: "links", label: "Links & Booking", sublabel: "Where to send your leads", color: "#D97706", bg: "#FFFBEB", border: "#FDE68A", icon: <Calendar size={15} strokeWidth={1.5} /> },
 ];
 
 // ─── Props ────────────────────────────────────────────────────────────────────
@@ -197,8 +221,11 @@ export function MyAgentScreen({ userId, onAgentCertified }: Props) {
     setSaved(false);
   };
 
+  // ─── Save — writes agent_config to agents + script/link fields to account_leadflow_automations ───
   const onSave = async () => {
     setSaving(true);
+
+    // Save full config to agents table
     await supabase.from("agents").upsert({
       user_id: userId,
       agent_type: agentType,
@@ -207,69 +234,82 @@ export function MyAgentScreen({ userId, onAgentCertified }: Props) {
       status: "draft",
       updated_at: new Date().toISOString(),
     }, { onConflict: "user_id,agent_type" });
+
+    // Save script + link fields to account_leadflow_automations
+    await supabase.from("account_leadflow_automations").upsert({
+      user_id: userId,
+      script1_service: config.script1_service,
+      script1_end_result: config.script1_end_result,
+      script1_category: config.script1_category,
+      script1_deliverable: config.script1_deliverable,
+      script1_outcome: config.script1_outcome,
+      lead_magnet_link: config.lead_magnet_link,
+      script2_booking_link: config.script2_booking_link,
+      script2_call_duration: config.script2_call_duration,
+      updated_at: new Date().toISOString(),
+    }, { onConflict: "user_id" });
+
     setSaving(false);
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
   };
 
- const onPublish = async () => {
-  setPublishing(true);
-  await onSave();
+  // ─── Publish ───────────────────────────────────────────────────────────────
+  const onPublish = async () => {
+    setPublishing(true);
+    await onSave();
 
-  // Fetch both data sources
-  const { data: onboarding } = await supabase
-    .from("accounts_leadflow")
-    .select("*")
-    .eq("user_id", userId)
-    .maybeSingle();
+    const { data: onboarding } = await supabase
+      .from("accounts_leadflow")
+      .select("*")
+      .eq("user_id", userId)
+      .maybeSingle();
 
-  const { data: automation } = await supabase
-    .from("account_leadflow_automations")
-    .select("*")
-    .eq("user_id", userId)
-    .maybeSingle();
+    const { data: automation } = await supabase
+      .from("account_leadflow_automations")
+      .select("*")
+      .eq("user_id", userId)
+      .maybeSingle();
 
-  // Set status to "building" (not "built" — prompt doesn't exist yet)
-  await supabase.from("agents").upsert({
-    user_id: userId,
-    agent_type: agentType,
-    agent_config: config,
-    agent_name: config.agent_name,
-    status: "building",
-    updated_at: new Date().toISOString(),
-  }, { onConflict: "user_id,agent_type" });
-
-  try {
-    await fetch("https://rosegoldprojectai3.app.n8n.cloud/webhook/ea72ec64-9444-495a-ae04-babcb9e90cdd", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        user_id: userId,
-        agent_type: agentType,
-        config,
-        onboarding: onboarding || {},
-        automation: automation || {},
-      }),
-    });
-  } catch (e) {
-    console.error(e);
-    // Update status to error so user knows it failed
+    // Set to "building" — not "built" yet, the pipeline is still running
     await supabase.from("agents").upsert({
       user_id: userId,
       agent_type: agentType,
-      status: "error",
+      agent_config: config,
+      agent_name: config.agent_name,
+      status: "building",
       updated_at: new Date().toISOString(),
     }, { onConflict: "user_id,agent_type" });
+
+    try {
+      await fetch("https://rosegoldprojectai3.app.n8n.cloud/webhook/ea72ec64-9444-495a-ae04-babcb9e90cdd", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          user_id: userId,
+          agent_type: agentType,
+          config,
+          onboarding: onboarding || {},
+          automation: automation || {},
+        }),
+      });
+    } catch (e) {
+      console.error(e);
+      await supabase.from("agents").upsert({
+        user_id: userId,
+        agent_type: agentType,
+        status: "error",
+        updated_at: new Date().toISOString(),
+      }, { onConflict: "user_id,agent_type" });
+      setPublishing(false);
+      return;
+    }
+
     setPublishing(false);
-    return;
-  }
+    setPublished(true);
+    setTimeout(() => setView("test-intro"), 1200);
+  };
 
-  setPublishing(false);
-  setPublished(true);
-  setTimeout(() => setView("test-intro"), 1200);
-};
-
-  // ─── THIS IS THE FIX: handleSatisfied defined here in the main component ───
   const handleSatisfied = useCallback(async () => {
     await supabase.from("agents").upsert({
       user_id: userId,
@@ -410,7 +450,7 @@ export function MyAgentScreen({ userId, onAgentCertified }: Props) {
   );
 }
 
-// ─── Intro Screen (adapts to state) ──────────────────────────────────────────
+// ─── Intro Screen ─────────────────────────────────────────────────────────────
 function IntroScreen({ state, agents, totalLeads, onContinue }: {
   state: AppState; agents: AgentRow[]; totalLeads: number; onContinue: () => void;
 }) {
@@ -456,46 +496,20 @@ function IntroScreen({ state, agents, totalLeads, onContinue }: {
   }[state];
 
   return (
-    <div style={{
-      minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center",
-      background: "linear-gradient(135deg, #f0f4ff 0%, #e8eaf6 40%, #f5f0ff 100%)",
-      position: "relative", overflow: "hidden",
-    }}>
+    <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "linear-gradient(135deg, #f0f4ff 0%, #e8eaf6 40%, #f5f0ff 100%)", position: "relative", overflow: "hidden" }}>
       <div style={{ position: "absolute", top: -200, left: -200, width: 600, height: 600, borderRadius: "50%", background: "radial-gradient(circle, rgba(79,70,229,0.12) 0%, transparent 70%)", pointerEvents: "none" }} />
       <div style={{ position: "absolute", bottom: -150, right: -100, width: 500, height: 500, borderRadius: "50%", background: "radial-gradient(circle, rgba(124,58,237,0.10) 0%, transparent 70%)", pointerEvents: "none" }} />
-
-      <div className="ma-fade-up" style={{
-        position: "relative", zIndex: 10, display: "flex", alignItems: "center", gap: 64,
-        maxWidth: 1000, width: "90%", padding: "56px 60px",
-        background: "rgba(255,255,255,0.5)", backdropFilter: "blur(32px) saturate(180%)",
-        WebkitBackdropFilter: "blur(32px) saturate(180%)",
-        borderRadius: 32, border: "1px solid rgba(255,255,255,0.75)",
-        boxShadow: "0 8px 40px rgba(79,70,229,0.08), inset 0 1px 0 rgba(255,255,255,0.9)",
-      }}>
+      <div className="ma-fade-up" style={{ position: "relative", zIndex: 10, display: "flex", alignItems: "center", gap: 64, maxWidth: 1000, width: "90%", padding: "56px 60px", background: "rgba(255,255,255,0.5)", backdropFilter: "blur(32px) saturate(180%)", WebkitBackdropFilter: "blur(32px) saturate(180%)", borderRadius: 32, border: "1px solid rgba(255,255,255,0.75)", boxShadow: "0 8px 40px rgba(79,70,229,0.08), inset 0 1px 0 rgba(255,255,255,0.9)" }}>
         <div style={{ flex: 1 }}>
-          <div style={{
-            display: "inline-flex", alignItems: "center", gap: 6, padding: "5px 14px",
-            borderRadius: 100, background: "rgba(79,70,229,0.08)", border: "1px solid rgba(79,70,229,0.15)",
-            fontSize: 11, fontWeight: 700, color: "#4F46E5", letterSpacing: "0.6px",
-            textTransform: "uppercase" as const, marginBottom: 20,
-          }}>
+          <div style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "5px 14px", borderRadius: 100, background: "rgba(79,70,229,0.08)", border: "1px solid rgba(79,70,229,0.15)", fontSize: 11, fontWeight: 700, color: "#4F46E5", letterSpacing: "0.6px", textTransform: "uppercase" as const, marginBottom: 20 }}>
             <Bot size={10} strokeWidth={2.5} /> {content.badge}
           </div>
-
-          <div style={{ fontSize: 42, fontWeight: 800, color: "#0f1117", lineHeight: 1.1, letterSpacing: "-1.2px", marginBottom: 16 }}>
-            {content.title}
-          </div>
-
-          <p style={{ fontSize: 15, color: "#6B7280", lineHeight: 1.75, marginBottom: 32, maxWidth: 380 }}>
-            {content.desc}
-          </p>
-
+          <div style={{ fontSize: 42, fontWeight: 800, color: "#0f1117", lineHeight: 1.1, letterSpacing: "-1.2px", marginBottom: 16 }}>{content.title}</div>
+          <p style={{ fontSize: 15, color: "#6B7280", lineHeight: 1.75, marginBottom: 32, maxWidth: 380 }}>{content.desc}</p>
           <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 36 }}>
             {content.steps.map((item, i) => (
               <div key={i} style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                <div style={{ width: 30, height: 30, borderRadius: 8, background: "rgba(79,70,229,0.08)", border: "1px solid rgba(79,70,229,0.15)", display: "flex", alignItems: "center", justifyContent: "center", color: "#4F46E5", flexShrink: 0 }}>
-                  {item.icon}
-                </div>
+                <div style={{ width: 30, height: 30, borderRadius: 8, background: "rgba(79,70,229,0.08)", border: "1px solid rgba(79,70,229,0.15)", display: "flex", alignItems: "center", justifyContent: "center", color: "#4F46E5", flexShrink: 0 }}>{item.icon}</div>
                 <div>
                   <span style={{ fontSize: 13, fontWeight: 700, color: "#111827" }}>{item.label}</span>
                   <span style={{ fontSize: 12, color: "#9CA3AF", marginLeft: 8 }}>{item.desc}</span>
@@ -503,20 +517,11 @@ function IntroScreen({ state, agents, totalLeads, onContinue }: {
               </div>
             ))}
           </div>
-
-          <button className="ma-btn-primary" onClick={onContinue} style={{ fontSize: 15, padding: "14px 32px" }}>
-            {content.cta} <ChevronRight size={15} strokeWidth={2.5} />
-          </button>
+          <button className="ma-btn-primary" onClick={onContinue} style={{ fontSize: 15, padding: "14px 32px" }}>{content.cta} <ChevronRight size={15} strokeWidth={2.5} /></button>
         </div>
-
         <div style={{ width: 320, height: 320, flexShrink: 0 }}>
           <div style={{ width: "100%", height: "100%", borderRadius: 24, background: "linear-gradient(135deg, #EEF2FF 0%, #F5F3FF 100%)", border: "1px solid rgba(79,70,229,0.12)", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
-            <img
-              src={`${BASE}wholeteam2.png`}
-              alt="AI Team"
-              style={{ width: "100%", height: "100%", objectFit: "contain", objectPosition: "center center" }}
-              onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
-            />
+            <img src={`${BASE}wholeteam2.png`} alt="AI Team" style={{ width: "100%", height: "100%", objectFit: "contain", objectPosition: "center center" }} onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />
           </div>
         </div>
       </div>
@@ -524,117 +529,57 @@ function IntroScreen({ state, agents, totalLeads, onContinue }: {
   );
 }
 
-// ─── Choose Type Screen (adapts to state) ─────────────────────────────────────
-function ChooseTypeScreen({ agents, onSelect, onBack }: {
-  agents: AgentRow[];
-  onSelect: (t: "booking" | "followup") => void;
-  onBack: () => void;
-}) {
+// ─── Choose Type Screen ───────────────────────────────────────────────────────
+function ChooseTypeScreen({ agents, onSelect, onBack }: { agents: AgentRow[]; onSelect: (t: "booking" | "followup") => void; onBack: () => void }) {
   const bookingAgent = agents.find(a => a.agent_type === "booking");
   const followupAgent = agents.find(a => a.agent_type === "followup");
   const hasAny = agents.length > 0;
 
-  const heading = !hasAny
-    ? "What kind of agent do you need?"
-    : bookingAgent?.certified && !followupAgent?.certified
-    ? `${bookingAgent.agent_name || "Your booking agent"} is jealous 👀`
-    : followupAgent?.certified && !bookingAgent?.certified
-    ? `${followupAgent.agent_name || "Your follow-up agent"} is jealous 👀`
+  const heading = !hasAny ? "What kind of agent do you need?"
+    : bookingAgent?.certified && !followupAgent?.certified ? `${bookingAgent.agent_name || "Your booking agent"} is jealous 👀`
+    : followupAgent?.certified && !bookingAgent?.certified ? `${followupAgent.agent_name || "Your follow-up agent"} is jealous 👀`
     : "Your agents are live — check on them";
 
-  const subheading = !hasAny
-    ? "Pick the type that matches your business goal. You can always build the other one later."
-    : hasAny && agents.filter(a => a.certified).length < 2
-    ? "One agent is already working hard. Hire the second one and complete your team."
+  const subheading = !hasAny ? "Pick the type that matches your business goal. You can always build the other one later."
+    : hasAny && agents.filter(a => a.certified).length < 2 ? "One agent is already working hard. Hire the second one and complete your team."
     : "Both agents are certified and live. Select one to check its health or run a quality test.";
 
   const cards = [
-    {
-      type: "booking" as const,
-      imgUrl: `${BASE}bookingflow.png`,
-      label: "Booking Agent",
-      tagline: "Qualifies leads & books calls",
-      desc: "Your agent greets every lead, qualifies them with your script, delivers your lead magnet, and books a call — all automatically.",
-      bullets: ["Welcome & qualify leads", "Send your lead magnet", "Book discovery calls", "24/7 on WhatsApp"],
-      color: "#4F46E5", bg: "#EEF2FF", border: "#C7D2FE",
-      agentRow: bookingAgent,
-    },
-    {
-      type: "followup" as const,
-      imgUrl: `${BASE}followupagent3.png`,
-      label: "Follow-Up Agent",
-      tagline: "Re-engages cold leads",
-      desc: "Your agent automatically follows up with leads who didn't respond — bringing them back into the conversation at the right moment.",
-      bullets: ["Scheduled follow-ups", "Re-engage cold leads", "AI continues the convo", "Never lose a lead again"],
-      color: "#7C3AED", bg: "#F5F3FF", border: "#DDD6FE",
-      agentRow: followupAgent,
-    },
+    { type: "booking" as const, imgUrl: `${BASE}bookingflow.png`, label: "Booking Agent", tagline: "Qualifies leads & books calls", desc: "Your agent greets every lead, qualifies them with your script, delivers your lead magnet, and books a call — all automatically.", bullets: ["Welcome & qualify leads", "Send your lead magnet", "Book discovery calls", "24/7 on WhatsApp"], color: "#4F46E5", bg: "#EEF2FF", border: "#C7D2FE", agentRow: bookingAgent },
+    { type: "followup" as const, imgUrl: `${BASE}followupagent3.png`, label: "Follow-Up Agent", tagline: "Re-engages cold leads", desc: "Your agent automatically follows up with leads who didn't respond — bringing them back into the conversation at the right moment.", bullets: ["Scheduled follow-ups", "Re-engage cold leads", "AI continues the convo", "Never lose a lead again"], color: "#7C3AED", bg: "#F5F3FF", border: "#DDD6FE", agentRow: followupAgent },
   ];
 
   return (
     <div style={{ minHeight: "100vh", background: "linear-gradient(135deg, #f0f4ff 0%, #F4F5FA 50%, #f5f0ff 100%)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 40 }}>
       <div className="ma-fade-up" style={{ maxWidth: 800, width: "100%" }}>
-        <button className="ma-btn-secondary" onClick={onBack} style={{ marginBottom: 32 }}>
-          <ArrowLeft size={13} strokeWidth={1.8} /> Back
-        </button>
-
+        <button className="ma-btn-secondary" onClick={onBack} style={{ marginBottom: 32 }}><ArrowLeft size={13} strokeWidth={1.8} /> Back</button>
         <div style={{ textAlign: "center", marginBottom: 48 }}>
-          <div style={{ fontSize: 36, fontWeight: 800, color: "#0f1117", letterSpacing: "-0.8px", marginBottom: 12 }}>
-            {heading}
-          </div>
+          <div style={{ fontSize: 36, fontWeight: 800, color: "#0f1117", letterSpacing: "-0.8px", marginBottom: 12 }}>{heading}</div>
           <p style={{ fontSize: 15, color: "#6B7280", maxWidth: 480, margin: "0 auto" }}>{subheading}</p>
         </div>
-
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
           {cards.map((card) => {
             const isLive = card.agentRow?.certified;
             const isBuilding = card.agentRow && !card.agentRow.certified;
             return (
-              <div
-                key={card.type}
-                onClick={() => onSelect(card.type)}
-                style={{
-                  background: "#fff", borderRadius: 20, border: `1.5px solid ${isLive ? card.color : card.border}`,
-                  padding: "32px 28px", cursor: "pointer", transition: "all 0.2s",
-                  boxShadow: isLive ? `0 4px 24px ${card.color}20` : "0 2px 12px rgba(0,0,0,0.05)",
-                  position: "relative", overflow: "hidden",
-                }}
+              <div key={card.type} onClick={() => onSelect(card.type)} style={{ background: "#fff", borderRadius: 20, border: `1.5px solid ${isLive ? card.color : card.border}`, padding: "32px 28px", cursor: "pointer", transition: "all 0.2s", boxShadow: isLive ? `0 4px 24px ${card.color}20` : "0 2px 12px rgba(0,0,0,0.05)", position: "relative", overflow: "hidden" }}
                 onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = "translateY(-4px)"; (e.currentTarget as HTMLElement).style.boxShadow = `0 16px 40px ${card.color}25`; }}
-                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = ""; (e.currentTarget as HTMLElement).style.boxShadow = isLive ? `0 4px 24px ${card.color}20` : "0 2px 12px rgba(0,0,0,0.05)"; }}
-              >
-                {isLive && (
-                  <div style={{ position: "absolute", top: 16, right: 16, display: "flex", alignItems: "center", gap: 5, fontSize: 10, fontWeight: 700, color: "#059669", background: "#DCFCE7", border: "1px solid #A7F3D0", padding: "4px 10px", borderRadius: 20 }}>
-                    <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#059669", display: "inline-block", animation: "livePulse 1.5s ease infinite" }} />
-                    LIVE
-                  </div>
-                )}
-                {isBuilding && (
-                  <div style={{ position: "absolute", top: 16, right: 16, fontSize: 10, fontWeight: 700, color: "#D97706", background: "#FEF3C7", border: "1px solid #FDE68A", padding: "4px 10px", borderRadius: 20 }}>
-                    IN PROGRESS
-                  </div>
-                )}
-
-                <div style={{ width: 80, height: 80, borderRadius: 20, overflow: "hidden", marginBottom: 20 }}>
-                  <img src={card.imgUrl} alt={card.label} style={{ width: "100%", height: "100%", objectFit: "contain" }} />
-                </div>
+                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = ""; (e.currentTarget as HTMLElement).style.boxShadow = isLive ? `0 4px 24px ${card.color}20` : "0 2px 12px rgba(0,0,0,0.05)"; }}>
+                {isLive && <div style={{ position: "absolute", top: 16, right: 16, display: "flex", alignItems: "center", gap: 5, fontSize: 10, fontWeight: 700, color: "#059669", background: "#DCFCE7", border: "1px solid #A7F3D0", padding: "4px 10px", borderRadius: 20 }}><span style={{ width: 6, height: 6, borderRadius: "50%", background: "#059669", display: "inline-block", animation: "livePulse 1.5s ease infinite" }} />LIVE</div>}
+                {isBuilding && <div style={{ position: "absolute", top: 16, right: 16, fontSize: 10, fontWeight: 700, color: "#D97706", background: "#FEF3C7", border: "1px solid #FDE68A", padding: "4px 10px", borderRadius: 20 }}>IN PROGRESS</div>}
+                <div style={{ width: 80, height: 80, borderRadius: 20, overflow: "hidden", marginBottom: 20 }}><img src={card.imgUrl} alt={card.label} style={{ width: "100%", height: "100%", objectFit: "contain" }} /></div>
                 <div style={{ fontSize: 20, fontWeight: 800, color: "#111827", marginBottom: 4 }}>{card.label}</div>
-                <div style={{ fontSize: 12, color: card.color, fontWeight: 600, marginBottom: 14 }}>
-                  {isLive ? `${card.agentRow?.agent_name || card.label} is live` : card.tagline}
-                </div>
+                <div style={{ fontSize: 12, color: card.color, fontWeight: 600, marginBottom: 14 }}>{isLive ? `${card.agentRow?.agent_name || card.label} is live` : card.tagline}</div>
                 <p style={{ fontSize: 13, color: "#6B7280", lineHeight: 1.7, marginBottom: 20 }}>{card.desc}</p>
                 <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                   {card.bullets.map((b, i) => (
                     <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12, color: "#374151", fontWeight: 500 }}>
-                      <div style={{ width: 16, height: 16, borderRadius: "50%", background: card.bg, border: `1px solid ${card.border}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                        <Check size={9} strokeWidth={2.5} color={card.color} />
-                      </div>
+                      <div style={{ width: 16, height: 16, borderRadius: "50%", background: card.bg, border: `1px solid ${card.border}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><Check size={9} strokeWidth={2.5} color={card.color} /></div>
                       {b}
                     </div>
                   ))}
                 </div>
-                <div style={{ marginTop: 24, display: "flex", alignItems: "center", gap: 6, fontSize: 13, fontWeight: 700, color: card.color }}>
-                  {isLive ? "View agent" : isBuilding ? "Continue building" : "Choose this agent"} <ChevronRight size={14} strokeWidth={2.5} />
-                </div>
+                <div style={{ marginTop: 24, display: "flex", alignItems: "center", gap: 6, fontSize: 13, fontWeight: 700, color: card.color }}>{isLive ? "View agent" : isBuilding ? "Continue building" : "Choose this agent"} <ChevronRight size={14} strokeWidth={2.5} /></div>
               </div>
             );
           })}
@@ -644,14 +589,8 @@ function ChooseTypeScreen({ agents, onSelect, onBack }: {
   );
 }
 
-// ─── Agent Show Screen (for certified agents) ─────────────────────────────────
-function AgentShowScreen({ agent, analytics, userId, onBack, onSatisfied }: {
-  agent: AgentRow;
-  analytics: AnalyticsRow | null;
-  userId: string;
-  onBack: () => void;
-  onSatisfied: () => void;
-}) {
+// ─── Agent Show Screen ────────────────────────────────────────────────────────
+function AgentShowScreen({ agent, analytics, userId, onBack, onSatisfied }: { agent: AgentRow; analytics: AnalyticsRow | null; userId: string; onBack: () => void; onSatisfied: () => void }) {
   const [tab, setTab] = useState<"overview" | "bulk-test">("overview");
   const color = agent.agent_type === "booking" ? "#4F46E5" : "#7C3AED";
   const bg = agent.agent_type === "booking" ? "#EEF2FF" : "#F5F3FF";
@@ -661,60 +600,31 @@ function AgentShowScreen({ agent, analytics, userId, onBack, onSatisfied }: {
   return (
     <div style={{ minHeight: "100vh", background: "#F4F5FA", display: "flex", flexDirection: "column" }}>
       <div style={{ background: "#fff", borderBottom: "1px solid #E5E7EB", padding: "20px 32px", display: "flex", alignItems: "center", gap: 16 }}>
-        <button className="ma-btn-secondary" onClick={onBack}>
-          <ArrowLeft size={13} strokeWidth={1.8} /> Back
-        </button>
-        <div style={{ width: 48, height: 48, borderRadius: 14, overflow: "hidden", border: `1px solid ${border}`, background: bg }}>
-          <img src={imgUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
-        </div>
+        <button className="ma-btn-secondary" onClick={onBack}><ArrowLeft size={13} strokeWidth={1.8} /> Back</button>
+        <div style={{ width: 48, height: 48, borderRadius: 14, overflow: "hidden", border: `1px solid ${border}`, background: bg }}><img src={imgUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "contain" }} /></div>
         <div>
           <div style={{ fontSize: 18, fontWeight: 800, color: "#111827" }}>{agent.agent_name || (agent.agent_type === "booking" ? "Booking Agent" : "Follow-Up Agent")}</div>
-          <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: "#059669", fontWeight: 600 }}>
-            <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#059669", display: "inline-block", animation: "livePulse 1.5s ease infinite" }} />
-            Certified & Live
-          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: "#059669", fontWeight: 600 }}><span style={{ width: 6, height: 6, borderRadius: "50%", background: "#059669", display: "inline-block", animation: "livePulse 1.5s ease infinite" }} />Certified & Live</div>
         </div>
         <div style={{ marginLeft: "auto", display: "flex", gap: 8 }}>
-          <button
-            onClick={() => setTab("overview")}
-            style={{ padding: "8px 16px", borderRadius: 10, border: tab === "overview" ? `1.5px solid ${color}` : "1.5px solid #E5E7EB", background: tab === "overview" ? bg : "#fff", color: tab === "overview" ? color : "#6B7280", fontSize: 13, fontWeight: 600, cursor: "pointer", transition: "all 0.15s" }}
-          >
-            Overview
-          </button>
-          <button
-            onClick={() => setTab("bulk-test")}
-            style={{ padding: "8px 16px", borderRadius: 10, border: tab === "bulk-test" ? `1.5px solid ${color}` : "1.5px solid #E5E7EB", background: tab === "bulk-test" ? bg : "#fff", color: tab === "bulk-test" ? color : "#6B7280", fontSize: 13, fontWeight: 600, cursor: "pointer", transition: "all 0.15s" }}
-          >
-            <FlaskConical size={13} strokeWidth={1.8} style={{ display: "inline", marginRight: 5 }} />
-            Quality Test
-          </button>
+          <button onClick={() => setTab("overview")} style={{ padding: "8px 16px", borderRadius: 10, border: tab === "overview" ? `1.5px solid ${color}` : "1.5px solid #E5E7EB", background: tab === "overview" ? bg : "#fff", color: tab === "overview" ? color : "#6B7280", fontSize: 13, fontWeight: 600, cursor: "pointer", transition: "all 0.15s" }}>Overview</button>
+          <button onClick={() => setTab("bulk-test")} style={{ padding: "8px 16px", borderRadius: 10, border: tab === "bulk-test" ? `1.5px solid ${color}` : "1.5px solid #E5E7EB", background: tab === "bulk-test" ? bg : "#fff", color: tab === "bulk-test" ? color : "#6B7280", fontSize: 13, fontWeight: 600, cursor: "pointer", transition: "all 0.15s" }}><FlaskConical size={13} strokeWidth={1.8} style={{ display: "inline", marginRight: 5 }} />Quality Test</button>
         </div>
       </div>
-
       {tab === "overview" && (
         <div style={{ flex: 1, padding: "32px", maxWidth: 900, margin: "0 auto", width: "100%" }}>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16, marginBottom: 28 }}>
-            {[
-              { label: "Leads Treated", value: analytics?.leads_treated ?? 0, color: "#4F46E5" },
-              { label: "Leads Booked", value: analytics?.leads_booked ?? 0, color: "#059669" },
-              { label: "Pending", value: analytics?.leads_pending ?? 0, color: "#D97706" },
-              { label: "Health Score", value: analytics?.health_score ? `${analytics.health_score}/100` : "—", color: "#7C3AED" },
-            ].map((stat, i) => (
+            {[{ label: "Leads Treated", value: analytics?.leads_treated ?? 0, color: "#4F46E5" }, { label: "Leads Booked", value: analytics?.leads_booked ?? 0, color: "#059669" }, { label: "Pending", value: analytics?.leads_pending ?? 0, color: "#D97706" }, { label: "Health Score", value: analytics?.health_score ? `${analytics.health_score}/100` : "—", color: "#7C3AED" }].map((stat, i) => (
               <div key={i} style={{ background: "#fff", borderRadius: 16, border: "1px solid #E5E7EB", padding: "20px", boxShadow: "0 1px 4px rgba(0,0,0,0.04)" }}>
                 <div style={{ fontSize: 28, fontWeight: 800, color: stat.color, marginBottom: 4 }}>{stat.value}</div>
                 <div style={{ fontSize: 11, fontWeight: 600, color: "#9CA3AF", textTransform: "uppercase" as const, letterSpacing: "0.6px" }}>{stat.label}</div>
               </div>
             ))}
           </div>
-
           <div style={{ background: "#fff", borderRadius: 20, border: "1px solid #E5E7EB", padding: "28px 32px", boxShadow: "0 1px 4px rgba(0,0,0,0.04)" }}>
             <div style={{ fontSize: 15, fontWeight: 800, color: "#111827", marginBottom: 20 }}>Agent Status</div>
             <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-              {[
-                { label: "Prompt", status: "Built", ok: true },
-                { label: "Certification", status: "Certified ✓", ok: true },
-                { label: "Workspace", status: "Active", ok: true },
-              ].map((row, i) => (
+              {[{ label: "Prompt", status: "Built", ok: true }, { label: "Certification", status: "Certified ✓", ok: true }, { label: "Workspace", status: "Active", ok: true }].map((row, i) => (
                 <div key={i} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 16px", background: "#F9FAFB", borderRadius: 10, border: "1px solid #F3F4F6" }}>
                   <span style={{ fontSize: 13, fontWeight: 600, color: "#374151" }}>{row.label}</span>
                   <span style={{ fontSize: 12, fontWeight: 700, color: row.ok ? "#059669" : "#DC2626", background: row.ok ? "#DCFCE7" : "#FEF2F2", padding: "3px 10px", borderRadius: 20 }}>{row.status}</span>
@@ -722,22 +632,14 @@ function AgentShowScreen({ agent, analytics, userId, onBack, onSatisfied }: {
               ))}
             </div>
             <div style={{ marginTop: 20, paddingTop: 20, borderTop: "1px solid #F3F4F6" }}>
-              <button onClick={() => setTab("bulk-test")} className="ma-btn-primary" style={{ fontSize: 13, padding: "10px 20px" }}>
-                <FlaskConical size={13} strokeWidth={2} /> Run Quality Test
-              </button>
+              <button onClick={() => setTab("bulk-test")} className="ma-btn-primary" style={{ fontSize: 13, padding: "10px 20px" }}><FlaskConical size={13} strokeWidth={2} /> Run Quality Test</button>
             </div>
           </div>
         </div>
       )}
-
       {tab === "bulk-test" && (
         <div style={{ flex: 1, overflow: "hidden" }}>
-          <BulkTesting
-            userId={userId}
-            onComplete={() => {}}
-            onSatisfied={onSatisfied}
-            onBack={() => setTab("overview")}
-          />
+          <BulkTesting userId={userId} onComplete={() => {}} onSatisfied={onSatisfied} onBack={() => setTab("overview")} />
         </div>
       )}
     </div>
@@ -750,7 +652,6 @@ function PreviewScreen({ type, onStart, onBack }: { type: "booking" | "followup"
   const color = isBooking ? "#4F46E5" : "#7C3AED";
   const bg = isBooking ? "#EEF2FF" : "#F5F3FF";
   const border = isBooking ? "#C7D2FE" : "#DDD6FE";
-
   const features = isBooking ? [
     { icon: <Zap size={14} strokeWidth={2} />, title: "Instant response", desc: "Replies to every lead within seconds, day or night" },
     { icon: <Shield size={14} strokeWidth={2} />, title: "Stays on script", desc: "Never goes off-topic, always follows your qualification flow" },
@@ -760,65 +661,44 @@ function PreviewScreen({ type, onStart, onBack }: { type: "booking" | "followup"
     { icon: <Shield size={14} strokeWidth={2} />, title: "Never annoying", desc: "Natural, human follow-up that doesn't feel like spam" },
     { icon: <Star size={14} strokeWidth={2} />, title: "Recovers leads", desc: "Turns cold leads back into active conversations" },
   ];
-
   const headerImg = isBooking ? `${BASE}bookingflow.png` : `${BASE}followupagent3.png`;
 
   return (
     <div style={{ minHeight: "100vh", background: "#F4F5FA", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 40 }}>
       <div className="ma-fade-up" style={{ maxWidth: 720, width: "100%", background: "#fff", borderRadius: 28, border: `1px solid ${border}`, overflow: "hidden", boxShadow: "0 4px 24px rgba(0,0,0,0.06)" }}>
         <div style={{ padding: "32px 36px", background: `linear-gradient(135deg, ${bg} 0%, #fff 100%)`, borderBottom: `1px solid ${border}` }}>
-          <button className="ma-btn-secondary" onClick={onBack} style={{ marginBottom: 24 }}>
-            <ArrowLeft size={13} strokeWidth={1.8} /> Back
-          </button>
+          <button className="ma-btn-secondary" onClick={onBack} style={{ marginBottom: 24 }}><ArrowLeft size={13} strokeWidth={1.8} /> Back</button>
           <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-            <div style={{ width: 80, height: 80, borderRadius: 20, overflow: "hidden", flexShrink: 0, background: bg, border: `1px solid ${border}` }}>
-              <img src={headerImg} alt="" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
-            </div>
+            <div style={{ width: 80, height: 80, borderRadius: 20, overflow: "hidden", flexShrink: 0, background: bg, border: `1px solid ${border}` }}><img src={headerImg} alt="" style={{ width: "100%", height: "100%", objectFit: "contain" }} /></div>
             <div>
-              <div style={{ fontSize: 24, fontWeight: 800, color: "#111827", letterSpacing: "-0.4px" }}>
-                {isBooking ? "Booking Agent" : "Follow-Up Agent"}
-              </div>
-              <div style={{ fontSize: 13, color, fontWeight: 600, marginTop: 2 }}>
-                {isBooking ? "Your 24/7 lead qualification & booking machine" : "Never lose a lead to silence again"}
-              </div>
+              <div style={{ fontSize: 24, fontWeight: 800, color: "#111827", letterSpacing: "-0.4px" }}>{isBooking ? "Booking Agent" : "Follow-Up Agent"}</div>
+              <div style={{ fontSize: 13, color, fontWeight: 600, marginTop: 2 }}>{isBooking ? "Your 24/7 lead qualification & booking machine" : "Never lose a lead to silence again"}</div>
             </div>
           </div>
         </div>
-
         <div style={{ padding: "32px 36px" }}>
-          <p style={{ fontSize: 14, color: "#6B7280", lineHeight: 1.8, marginBottom: 28 }}>
-            {isBooking
-              ? "This agent will handle every new WhatsApp lead from start to finish. It introduces itself, qualifies the lead using your script, sends your lead magnet, follows up, and guides them to book a discovery call — without you lifting a finger."
-              : "This agent automatically reaches out to leads who went quiet. It sends perfectly timed, human-sounding follow-up messages and, when they reply, jumps back into the conversation to guide them toward booking a call."}
-          </p>
-
+          <p style={{ fontSize: 14, color: "#6B7280", lineHeight: 1.8, marginBottom: 28 }}>{isBooking ? "This agent will handle every new WhatsApp lead from start to finish. It introduces itself, qualifies the lead using your script, sends your lead magnet, follows up, and guides them to book a discovery call — without you lifting a finger." : "This agent automatically reaches out to leads who went quiet. It sends perfectly timed, human-sounding follow-up messages and, when they reply, jumps back into the conversation to guide them toward booking a call."}</p>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 14, marginBottom: 32 }}>
             {features.map((f, i) => (
               <div key={i} style={{ padding: "16px", background: bg, borderRadius: 12, border: `1px solid ${border}` }}>
-                <div style={{ width: 28, height: 28, borderRadius: 8, background: "#fff", display: "flex", alignItems: "center", justifyContent: "center", color, marginBottom: 10 }}>
-                  {f.icon}
-                </div>
+                <div style={{ width: 28, height: 28, borderRadius: 8, background: "#fff", display: "flex", alignItems: "center", justifyContent: "center", color, marginBottom: 10 }}>{f.icon}</div>
                 <div style={{ fontSize: 12, fontWeight: 700, color: "#111827", marginBottom: 4 }}>{f.title}</div>
                 <div style={{ fontSize: 11, color: "#6B7280", lineHeight: 1.6 }}>{f.desc}</div>
               </div>
             ))}
           </div>
-
           <div style={{ padding: "16px 20px", background: "#F9FAFB", borderRadius: 12, border: "1px solid #E5E7EB", marginBottom: 28 }}>
             <div style={{ fontSize: 11, fontWeight: 700, color: "#9CA3AF", textTransform: "uppercase" as const, letterSpacing: "0.8px", marginBottom: 12 }}>What you'll configure</div>
-            <div style={{ display: "flex", gap: 12 }}>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
               {AGENT_STEPS.map((step) => (
-                <div key={step.id} style={{ flex: 1, display: "flex", alignItems: "center", gap: 8, padding: "10px 12px", borderRadius: 10, background: step.bg, border: `1px solid ${step.border}` }}>
+                <div key={step.id} style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 12px", borderRadius: 10, background: step.bg, border: `1px solid ${step.border}` }}>
                   <div style={{ color: step.color, display: "flex" }}>{step.icon}</div>
                   <div style={{ fontSize: 11, fontWeight: 600, color: "#111827" }}>{step.label}</div>
                 </div>
               ))}
             </div>
           </div>
-
-          <button className="ma-btn-primary" onClick={onStart} style={{ width: "100%", justifyContent: "center", fontSize: 15, padding: "14px" }}>
-            Configure my agent <ChevronRight size={15} strokeWidth={2.5} />
-          </button>
+          <button className="ma-btn-primary" onClick={onStart} style={{ width: "100%", justifyContent: "center", fontSize: 15, padding: "14px" }}>Configure my agent <ChevronRight size={15} strokeWidth={2.5} /></button>
         </div>
       </div>
     </div>
@@ -836,25 +716,16 @@ function BuildScreen({ agentType, config, activeStep, setActiveStep, onChange, o
 
   return (
     <div style={{ display: "flex", height: "100vh", overflow: "hidden", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+      {/* Sidebar */}
       <div style={{ width: 300, background: "#fff", borderRight: "1px solid #E5E7EB", display: "flex", flexDirection: "column", padding: "24px 16px", overflowY: "auto" }}>
-        <button className="ma-btn-secondary" onClick={onBack} style={{ marginBottom: 24, alignSelf: "flex-start" }}>
-          <ArrowLeft size={13} strokeWidth={1.8} /> Back
-        </button>
+        <button className="ma-btn-secondary" onClick={onBack} style={{ marginBottom: 24, alignSelf: "flex-start" }}><ArrowLeft size={13} strokeWidth={1.8} /> Back</button>
         <div style={{ fontSize: 16, fontWeight: 800, color: "#111827", marginBottom: 4 }}>Agent Configuration</div>
-        <div style={{ fontSize: 12, color: "#9CA3AF", fontStyle: "italic", marginBottom: 24 }}>
-          {agentType === "booking" ? "Booking Agent" : "Follow-Up Agent"}
-        </div>
+        <div style={{ fontSize: 12, color: "#9CA3AF", fontStyle: "italic", marginBottom: 24 }}>{agentType === "booking" ? "Booking Agent" : "Follow-Up Agent"}</div>
 
         {AGENT_STEPS.map((step, i) => (
           <div key={step.id}>
-            <div
-              className={`ma-node ${activeStep === step.id ? "active" : ""}`}
-              onClick={() => setActiveStep(step.id)}
-              style={{ borderColor: activeStep === step.id ? step.color : step.border, background: activeStep === step.id ? step.bg : "#fff" }}
-            >
-              <div style={{ width: 34, height: 34, borderRadius: 10, background: step.bg, border: `1px solid ${step.border}`, display: "flex", alignItems: "center", justifyContent: "center", color: step.color, flexShrink: 0 }}>
-                {step.icon}
-              </div>
+            <div className={`ma-node ${activeStep === step.id ? "active" : ""}`} onClick={() => setActiveStep(step.id)} style={{ borderColor: activeStep === step.id ? step.color : step.border, background: activeStep === step.id ? step.bg : "#fff" }}>
+              <div style={{ width: 34, height: 34, borderRadius: 10, background: step.bg, border: `1px solid ${step.border}`, display: "flex", alignItems: "center", justifyContent: "center", color: step.color, flexShrink: 0 }}>{step.icon}</div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontSize: 13, fontWeight: 600, color: "#111827" }}>{step.label}</div>
                 <div style={{ fontSize: 10, color: "#9CA3AF", fontStyle: "italic" }}>{step.sublabel}</div>
@@ -871,22 +742,8 @@ function BuildScreen({ agentType, config, activeStep, setActiveStep, onChange, o
         ))}
 
         <div style={{ marginTop: "auto", paddingTop: 24 }}>
-          <button
-            onClick={onPublish}
-            disabled={publishing || published}
-            style={{
-              width: "100%", padding: "12px", borderRadius: 12, border: "none",
-              background: published ? "#059669" : `linear-gradient(135deg, ${color} 0%, #7C3AED 100%)`,
-              color: "#fff", fontSize: 13, fontWeight: 700, cursor: publishing || published ? "not-allowed" : "pointer",
-              fontFamily: "'Plus Jakarta Sans', sans-serif", display: "flex", alignItems: "center",
-              justifyContent: "center", gap: 7, transition: "all 0.2s",
-              boxShadow: published ? "0 4px 12px rgba(5,150,105,0.3)" : `0 4px 16px ${color}40`,
-              opacity: publishing ? 0.8 : 1,
-            }}
-          >
-            {publishing ? <><Loader2 size={14} style={{ animation: "spin 1s linear infinite" }} /> Generating...</>
-              : published ? <><CheckCircle size={14} /> Agent Ready!</>
-              : <><Sparkles size={14} /> Build my agent</>}
+          <button onClick={onPublish} disabled={publishing || published} style={{ width: "100%", padding: "12px", borderRadius: 12, border: "none", background: published ? "#059669" : `linear-gradient(135deg, ${color} 0%, #7C3AED 100%)`, color: "#fff", fontSize: 13, fontWeight: 700, cursor: publishing || published ? "not-allowed" : "pointer", fontFamily: "'Plus Jakarta Sans', sans-serif", display: "flex", alignItems: "center", justifyContent: "center", gap: 7, transition: "all 0.2s", boxShadow: published ? "0 4px 12px rgba(5,150,105,0.3)" : `0 4px 16px ${color}40`, opacity: publishing ? 0.8 : 1 }}>
+            {publishing ? <><Loader2 size={14} style={{ animation: "spin 1s linear infinite" }} /> Generating...</> : published ? <><CheckCircle size={14} /> Agent Ready!</> : <><Sparkles size={14} /> Build my agent</>}
           </button>
           <button onClick={onSave} disabled={saving} style={{ width: "100%", marginTop: 8, padding: "9px", borderRadius: 10, border: "1.5px solid #E5E7EB", background: saved ? "#ECFDF5" : "#fff", color: saved ? "#059669" : "#6B7280", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "'Plus Jakarta Sans', sans-serif", transition: "all 0.15s" }}>
             {saving ? "Saving..." : saved ? "✓ Saved" : "Save draft"}
@@ -894,13 +751,27 @@ function BuildScreen({ agentType, config, activeStep, setActiveStep, onChange, o
         </div>
       </div>
 
+      {/* Main panel */}
       <div style={{ flex: 1, overflowY: "auto", padding: "32px 40px", background: "#F9FAFB" }}>
         <div style={{ maxWidth: 560 }}>
-          {activeStep === "identity" && <IdentityPanel config={config} onChange={onChange} color={color} />}
-          {activeStep === "style" && <StylePanel config={config} onChange={onChange} color={color} />}
+          {activeStep === "identity"  && <IdentityPanel  config={config} onChange={onChange} color={color} />}
+          {activeStep === "style"     && <StylePanel     config={config} onChange={onChange} color={color} />}
           {activeStep === "knowledge" && <KnowledgePanel config={config} onChange={onChange} color={color} />}
+          {activeStep === "scripts"   && <ScriptsPanel   config={config} onChange={onChange} color={color} />}
+          {activeStep === "links"     && <LinksPanel     config={config} onChange={onChange} color={color} />}
         </div>
       </div>
+    </div>
+  );
+}
+
+// ─── Panel Header ─────────────────────────────────────────────────────────────
+function PanelHeader({ title, desc, color }: { title: string; desc: string; color: string }) {
+  return (
+    <div style={{ marginBottom: 28 }}>
+      <div style={{ fontSize: 22, fontWeight: 800, color: "#111827", letterSpacing: "-0.4px", marginBottom: 8 }}>{title}</div>
+      <p style={{ fontSize: 13, color: "#6B7280", lineHeight: 1.7, margin: 0 }}>{desc}</p>
+      <div style={{ height: 2, background: `linear-gradient(90deg, ${color} 0%, transparent 100%)`, borderRadius: 2, marginTop: 16, width: 48 }} />
     </div>
   );
 }
@@ -914,12 +785,12 @@ function IdentityPanel({ config, onChange, color }: { config: AgentConfig; onCha
         <div>
           <label className="ma-label">Agent Name</label>
           <input className="ma-input" value={config.agent_name} onChange={e => onChange("agent_name", e.target.value)} placeholder="e.g. Sara, Adam, Alex..." />
-          <div style={{ fontSize: 11, color: "#9CA3AF", marginTop: 5 }}>This name will appear in WhatsApp conversations with your leads.</div>
+          <div className="ma-hint">This name will appear in WhatsApp conversations with your leads.</div>
         </div>
         <div>
           <label className="ma-label">Personality Description</label>
           <textarea className="ma-textarea" rows={4} value={config.agent_personality} onChange={e => onChange("agent_personality", e.target.value)} placeholder="e.g. Warm and professional. Always addresses leads by name. Never pushy, asks questions before pitching..." />
-          <div style={{ fontSize: 11, color: "#9CA3AF", marginTop: 5 }}>Describe how your agent behaves. Be specific — the more detail, the better it performs.</div>
+          <div className="ma-hint">Describe how your agent behaves. Be specific — the more detail, the better it performs.</div>
         </div>
       </div>
     </div>
@@ -971,12 +842,150 @@ function KnowledgePanel({ config, onChange, color }: { config: AgentConfig; onCh
   );
 }
 
-function PanelHeader({ title, desc, color }: { title: string; desc: string; color: string }) {
+// ─── NEW: Scripts Panel ───────────────────────────────────────────────────────
+function ScriptsPanel({ config, onChange, color }: { config: AgentConfig; onChange: (f: keyof AgentConfig, v: string) => void; color: string }) {
+  const fields: { key: keyof AgentConfig; label: string; placeholder: string; hint: string; tag: string }[] = [
+    {
+      key: "script1_service",
+      label: "Your Service (short)",
+      placeholder: "e.g. business coaching",
+      hint: "A short version of what you offer — 2 to 4 words max.",
+      tag: "[SERVICE]",
+    },
+    {
+      key: "script1_end_result",
+      label: "The Result They Want",
+      placeholder: "e.g. make money from home",
+      hint: "What outcome does your lead actually want? Keep it conversational.",
+      tag: "[DESIRED END RESULT]",
+    },
+    {
+      key: "script1_category",
+      label: "Your Category",
+      placeholder: "e.g. business coaching",
+      hint: "The broader category your offer falls into.",
+      tag: "[CATEGORY]",
+    },
+    {
+      key: "script1_deliverable",
+      label: "Lead Magnet Name",
+      placeholder: "e.g. Business for employees",
+      hint: "The exact name of your free guide, checklist, or resource.",
+      tag: "[DELIVERABLE]",
+    },
+    {
+      key: "script1_outcome",
+      label: "What They'll Learn",
+      placeholder: "e.g. how to get started today",
+      hint: "What will they understand after reading your lead magnet?",
+      tag: "[OUTCOME]",
+    },
+  ];
+
   return (
-    <div style={{ marginBottom: 28 }}>
-      <div style={{ fontSize: 22, fontWeight: 800, color: "#111827", letterSpacing: "-0.4px", marginBottom: 8 }}>{title}</div>
-      <p style={{ fontSize: 13, color: "#6B7280", lineHeight: 1.7, margin: 0 }}>{desc}</p>
-      <div style={{ height: 2, background: `linear-gradient(90deg, ${color} 0%, transparent 100%)`, borderRadius: 2, marginTop: 16, width: 48 }} />
+    <div className="ma-fade-up">
+      <PanelHeader title="Scripts" desc="These fields fill the placeholders in your agent's conversation script. The more specific, the more natural your agent sounds." color={color} />
+
+      {/* Context banner */}
+      <div style={{ background: "#F0FDF4", border: "1px solid #A7F3D0", borderRadius: 12, padding: "12px 16px", marginBottom: 24, display: "flex", gap: 10, alignItems: "flex-start" }}>
+        <div style={{ fontSize: 16, marginTop: 1 }}>💬</div>
+        <div>
+          <div style={{ fontSize: 12, fontWeight: 700, color: "#059669", marginBottom: 2 }}>How this works</div>
+          <div style={{ fontSize: 11, color: "#065F46", lineHeight: 1.6 }}>
+            Your agent opens with: <em>"Hey! Just to confirm — you reached out because you're interested in <strong>[SERVICE]</strong> to maybe get help with <strong>[DESIRED END RESULT]</strong>, right?"</em> — fill these fields and that line becomes real.
+          </div>
+        </div>
+      </div>
+
+      <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+        {fields.map(({ key, label, placeholder, hint, tag }) => (
+          <div key={key}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+              <label className="ma-label" style={{ margin: 0 }}>{label}</label>
+              <span className="ma-script-tag">{tag}</span>
+            </div>
+            <input
+              className="ma-input"
+              value={config[key] as string}
+              onChange={e => onChange(key, e.target.value)}
+              placeholder={placeholder}
+            />
+            <div className="ma-hint">{hint}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── NEW: Links Panel ─────────────────────────────────────────────────────────
+function LinksPanel({ config, onChange, color }: { config: AgentConfig; onChange: (f: keyof AgentConfig, v: string) => void; color: string }) {
+  return (
+    <div className="ma-fade-up">
+      <PanelHeader title="Links & Booking" desc="These are the links your agent will send during conversations. Get them right — they're the last step before a lead becomes a booking." color={color} />
+
+      {/* Context banner */}
+      <div style={{ background: "#FFFBEB", border: "1px solid #FDE68A", borderRadius: 12, padding: "12px 16px", marginBottom: 24, display: "flex", gap: 10, alignItems: "flex-start" }}>
+        <div style={{ fontSize: 16, marginTop: 1 }}>🔗</div>
+        <div>
+          <div style={{ fontSize: 12, fontWeight: 700, color: "#D97706", marginBottom: 2 }}>These links go directly to leads</div>
+          <div style={{ fontSize: 11, color: "#92400E", lineHeight: 1.6 }}>
+            Your agent sends the lead magnet link first, then — after they read it — sends the booking link. Double-check both URLs before building.
+          </div>
+        </div>
+      </div>
+
+      <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+
+        {/* Lead magnet link */}
+        <div>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+            <label className="ma-label" style={{ margin: 0 }}>Lead Magnet URL</label>
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "3px 8px", borderRadius: 6, background: "#ECFDF5", border: "1px solid #A7F3D0", fontSize: 10, fontWeight: 700, color: "#059669" }}>Sent first</span>
+          </div>
+          <input
+            className="ma-input"
+            value={config.lead_magnet_link}
+            onChange={e => onChange("lead_magnet_link", e.target.value)}
+            placeholder="https://yourdomain.com/free-guide"
+          />
+          <div className="ma-hint">The link to your free guide, checklist, or resource. Your agent sends this during script 1.</div>
+        </div>
+
+        {/* Divider */}
+        <div style={{ borderTop: "1px dashed #E5E7EB" }} />
+
+        {/* Booking link */}
+        <div>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+            <label className="ma-label" style={{ margin: 0 }}>Booking Page URL</label>
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "3px 8px", borderRadius: 6, background: "#EEF2FF", border: "1px solid #C7D2FE", fontSize: 10, fontWeight: 700, color: "#4F46E5" }}>Sent to close</span>
+          </div>
+          <input
+            className="ma-input"
+            value={config.script2_booking_link}
+            onChange={e => onChange("script2_booking_link", e.target.value)}
+            placeholder="https://cal.com/you/discovery"
+          />
+          <div className="ma-hint">Your Calendly, Cal.com, or any booking page. Sent at the end of script 2 when the lead is ready.</div>
+        </div>
+
+        {/* Call duration */}
+        <div>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+            <label className="ma-label" style={{ margin: 0 }}>Call Length</label>
+            <span className="ma-script-tag">[X]</span>
+          </div>
+          <input
+            className="ma-input"
+            value={config.script2_call_duration}
+            onChange={e => onChange("script2_call_duration", e.target.value)}
+            placeholder="e.g. 30 minutes"
+          />
+          <div className="ma-hint">How long is your discovery call? Used in: "Let's get on a short <strong>[X]</strong> call — completely free."</div>
+        </div>
+
+      </div>
     </div>
   );
 }
@@ -985,31 +994,16 @@ function PanelHeader({ title, desc, color }: { title: string; desc: string; colo
 function TestIntroScreen({ onContinue, onBack }: { onContinue: () => void; onBack: () => void }) {
   return (
     <div style={{ minHeight: "100vh", background: "linear-gradient(135deg, #f0f4ff 0%, #F4F5FA 50%, #f5f0ff 100%)", display: "flex", alignItems: "center", justifyContent: "center", padding: 40 }}>
-      <div className="ma-fade-up" style={{
-        maxWidth: 800, width: "100%", background: "rgba(255,255,255,0.55)",
-        backdropFilter: "blur(32px)", WebkitBackdropFilter: "blur(32px)",
-        borderRadius: 28, border: "1px solid rgba(255,255,255,0.75)",
-        padding: "52px 56px", boxShadow: "0 8px 40px rgba(79,70,229,0.08)",
-      }}>
-        <button className="ma-btn-secondary" onClick={onBack} style={{ marginBottom: 32 }}>
-          <ArrowLeft size={13} strokeWidth={1.8} /> Back to configuration
-        </button>
-
+      <div className="ma-fade-up" style={{ maxWidth: 800, width: "100%", background: "rgba(255,255,255,0.55)", backdropFilter: "blur(32px)", WebkitBackdropFilter: "blur(32px)", borderRadius: 28, border: "1px solid rgba(255,255,255,0.75)", padding: "52px 56px", boxShadow: "0 8px 40px rgba(79,70,229,0.08)" }}>
+        <button className="ma-btn-secondary" onClick={onBack} style={{ marginBottom: 32 }}><ArrowLeft size={13} strokeWidth={1.8} /> Back to configuration</button>
         <div style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "5px 14px", borderRadius: 100, background: "rgba(79,70,229,0.08)", border: "1px solid rgba(79,70,229,0.15)", fontSize: 11, fontWeight: 700, color: "#4F46E5", letterSpacing: "0.6px", textTransform: "uppercase" as const, marginBottom: 20 }}>
           <FlaskConical size={10} strokeWidth={2.5} /> Quality Check
         </div>
-
         <div style={{ fontSize: 38, fontWeight: 800, color: "#0f1117", lineHeight: 1.1, letterSpacing: "-1px", marginBottom: 16 }}>
           Will your agent embarrass<br />
-          <span style={{ background: "linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
-            you in front of clients?
-          </span>
+          <span style={{ background: "linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>you in front of clients?</span>
         </div>
-
-        <p style={{ fontSize: 15, color: "#6B7280", lineHeight: 1.75, marginBottom: 36, maxWidth: 500 }}>
-          Before your agent talks to real leads, we simulate 10 real conversations — testing how it handles tough questions, edge cases, and off-topic leads. You'll see every single exchange live.
-        </p>
-
+        <p style={{ fontSize: 15, color: "#6B7280", lineHeight: 1.75, marginBottom: 36, maxWidth: 500 }}>Before your agent talks to real leads, we simulate 10 real conversations — testing how it handles tough questions, edge cases, and off-topic leads. You'll see every single exchange live.</p>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 40 }}>
           {[
             { icon: <FlaskConical size={16} strokeWidth={1.8} />, label: "Quality Test", title: "Simulate 10 real scenarios", desc: "We automatically test your agent against real lead situations and score every response. You watch it live." },
@@ -1025,10 +1019,7 @@ function TestIntroScreen({ onContinue, onBack }: { onContinue: () => void; onBac
             </div>
           ))}
         </div>
-
-        <button className="ma-btn-primary" onClick={onContinue} style={{ fontSize: 15, padding: "14px 36px" }}>
-          I understand — test my agent <ChevronRight size={15} strokeWidth={2.5} />
-        </button>
+        <button className="ma-btn-primary" onClick={onContinue} style={{ fontSize: 15, padding: "14px 36px" }}>I understand — test my agent <ChevronRight size={15} strokeWidth={2.5} /></button>
       </div>
     </div>
   );
@@ -1043,9 +1034,7 @@ function SuccessOverlay() {
           <CheckCircle size={36} color="#fff" strokeWidth={2} />
         </div>
         <div style={{ fontSize: 26, fontWeight: 800, color: "#111827", marginBottom: 8 }}>Agent Certified! 🎉</div>
-        <p style={{ fontSize: 14, color: "#6B7280", lineHeight: 1.7 }}>
-          Your agent passed the quality test. My Workflows is now unlocked — let's set up his workspace.
-        </p>
+        <p style={{ fontSize: 14, color: "#6B7280", lineHeight: 1.7 }}>Your agent passed the quality test. My Workflows is now unlocked — let's set up his workspace.</p>
         <div style={{ marginTop: 20, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, fontSize: 12, color: "#9CA3AF" }}>
           <Loader2 size={12} style={{ animation: "spin 1s linear infinite" }} /> Redirecting to My Workflows...
         </div>
