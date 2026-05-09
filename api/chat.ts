@@ -31,7 +31,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
     // ── Step 1: Load or create session ──────────────────────────────────
     const session = await getOrCreateSession(session_id, client_name, user_id);
-    const { current_agent_index, message, funnel_context } = session;
+    const { current_agent_index, full_convo, funnel_context } = session;
 
     // ── Step 2: Check if funnel is already complete ──────────────────────
     if (current_agent_index >= AGENTS.length) {
@@ -63,8 +63,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const n8nPayload: N8nPayload = {
       session_id,
       client_name: session.client_name,
-      question,
       message,
+      full_convo,
       funnel_context,
       user_id:         user_id || null,
       onboarding_data: onboarding_data,
@@ -87,7 +87,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     // Append both turns to message
     const updatedHistory: Message[] = [
-      ...message,
+      ...full_convo,
       { role: 'user',      content: message },
       { role: 'assistant', content: agentMessage },
     ];
@@ -106,7 +106,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       .from('sessions')
       .update({
         current_agent_index: newIndex,
-        message: updatedHistory,
+        full_convo: updatedHistory,
         funnel_context:       updatedFunnel,
         user_id:              user_id || null,
         updated_at:           new Date().toISOString(),
@@ -154,7 +154,7 @@ async function getOrCreateSession(session_id: string, client_name?: string, user
       session_id,
       client_name:          client_name || 'Client',
       current_agent_index:  0,
-      message: [],
+      full_convo: [],
       funnel_context:       {},
       user_id:              user_id || null,
     })
