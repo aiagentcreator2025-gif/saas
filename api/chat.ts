@@ -64,7 +64,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       session_id,
       client_name: session.client_name,
       message,
-      messages,
+      message,
       funnel_context,
       user_id:         user_id || null,
       onboarding_data: onboarding_data,
