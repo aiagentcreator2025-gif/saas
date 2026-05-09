@@ -9,9 +9,10 @@ import { OnboardingScreen } from "./components/OnboardingScreen";
 import { NotificationPopup } from "./components/NotificationPopup";
 import { MyAgentScreen } from "./components/MyAgentScreen";
 import { MyWorkflowsScreen } from "./components/MyWorkflowsScreen";
+import { CoFounderScreen } from "./components/CoFounderScreen";
 import { supabase } from "./supabaseClient";
 
-export type Screen = "dashboard" | "my-agent" | "my-workflows" | "calendar" | "settings" | "leadlist" | "conversations";
+export type Screen = "dashboard" | "cofounder" | "my-agent" | "my-workflows" | "calendar" | "settings" | "leadlist" | "conversations";
 
 export default function App() {
   const [screen, setScreen] = useState<Screen>("dashboard");
@@ -103,6 +104,7 @@ export default function App() {
       <Sidebar active={screen} onNav={setScreen} agentCertified={agentCertified} />
       <div style={{ flex: 1, overflowY: "auto" }}>
         {screen === "dashboard"     && <DashboardScreen />}
+        {screen === "cofounder"     && <CoFounderScreen />}
         {screen === "my-agent"      && <MyAgentScreen userId={userId} onAgentCertified={handleAgentCertified} />}
         {screen === "my-workflows"  && <MyWorkflowsScreen userId={userId} agentCertified={agentCertified} />}
         {screen === "calendar"      && <CalendarScreen />}
