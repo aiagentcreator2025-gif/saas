@@ -227,6 +227,193 @@ export function MyAgentScreen({ userId, onAgentCertified }: Props) {
     setSaved(false);
   };
 
+  // Helper: Render full Script 1 text
+  const renderFullScript1 = (cfg: AgentConfig) => {
+    const service = cfg.script1_service || "[SERVICE]";
+    const endResult = cfg.script1_end_result || "[DESIRED END RESULT]";
+    const deliverable = cfg.script1_deliverable || "[DELIVERABLE]";
+    const outcome = cfg.script1_outcome || "[OUTCOME]";
+
+    return `Wa alaykoum salam 👋 Just to confirm — you came from TikTok because you want to start making money from home, right?
+
+(Lead replies)
+
+Perfect 😊 Before I send your guide, what's your name?
+
+(Lead replies)
+
+Nice to meet you, (NAME) 👍
+
+Quick question so I send you the right thing — Have you ever made money online before, or not yet?
+
+(Lead replies)
+
+And do you understand how it works fully, or are you just starting?
+
+(Lead replies)
+
+Great so this is the right thing for you!
+
+I'll send you your guide now. In 5 minutes, you'll understand how simple it is to get paid online.
+
+Then if you like it, we'll talk about what you should do next to make your first sale as fast as possible insha'Allah
+
+Sounds good to you?
+
+(Lead replies)
+
+Perfect so here's your guide: (LINK)
+
+Take 5 minutes to read it now 👍
+
+When you finish, send me "done" and I'll show you the next step
+
+Ah and don't skip page 14…👀`;
+  };
+
+  // Helper: Render full Script 2 text
+  const renderFullScript2 = (cfg: AgentConfig) => {
+    const price = cfg.script2_price || "$X";
+    const day = cfg.script2_training_day || "[DAY]";
+    const duration = cfg.script2_call_duration || "[DURATION]";
+    const conditions = cfg.script2_conditions 
+      ? cfg.script2_conditions.split(",").map((c, i) => `${i + 1} — ${c.trim()}`) 
+      : ["1 — [Condition 1]", "2 — [Condition 2]", "3 — [Condition 3]"];
+
+    return `(4 minutes after they start reading)
+
+Salam my friend 👋
+
+Sorry I didn't verify earlier — did the link for the guide work?
+
+(Lead replies)
+
+Perfect 👍
+
+And did you have time to go through it or not yet?
+
+[IF NOT COMPLETE]: No worries at all 👍 Go finish it first, it'll make everything much clearer for you. Message me after
+
+[IF COMPLETE]:
+
+Nice — I'm curious, how did you find it?
+
+Did it help you understand how making money online actually works?
+
+(Lead replies)
+
+I'm glad it helped 🙏
+
+Quick question — I didn't get to ask you earlier: What made you want to read it in the first place?
+
+Are you more just curious or actually looking to make money from home?
+
+(Lead replies)
+
+Ok I see 👍
+
+So you're actually serious about this
+
+And why does that matter to you? Why do you want to make money from home?
+
+Is it more like: extra income on the side or you want to eventually replace your income?
+
+(Lead replies)
+
+Got it 👍
+
+And if that actually works out for you… what would that change in your life?
+
+Take your time — I'm curious
+
+(Lead replies)
+
+That's powerful
+
+Now be honest with me… If nothing changes, and you stay exactly where you are right now… how would you feel in a few months knowing you could've done more?
+
+(Lead replies)
+
+Yeah… I understand
+
+And that's exactly the problem most people face
+
+They understand the basics… but they don't have a clear plan to follow
+
+Because the truth is — making money online isn't complicated but without knowing what to do step by step, people just stay stuck
+
+So let me ask you this: Do you feel like you could figure everything out alone… or would it be better to have some guidance and a clear plan to follow?
+
+(Lead replies)
+
+That makes sense 👍
+
+And honestly, I can see you're serious about this
+
+So here's what I can do for you:
+
+This ${day}, I'm doing a live training where I show step by step how to start from zero
+
+Nothing complicated, just simple and clear
+
+On the call, I'll show you 2 important things:
+
+1 — How to offer something people actually want to pay for, even if you have no experience
+
+2 — How to use TikTok to bring people to you every day, even if you're starting from scratch
+
+And at the end, I'll give you a simple 7-day action plan so you know exactly what to do to make your first $100 online
+
+No guessing, no confusion
+
+Does that sound like something you'd want to join?
+
+(Lead replies)
+
+Perfect 👍
+
+So normally, access to this is $18
+
+But since you actually took action and went through the guide, I can let you in for just ${price}
+
+So you save 50%
+
+But under 3 simple conditions:
+
+${conditions.join("\n")}
+
+Fair?
+
+And just so you feel comfortable — if after the call you're not 100% clear on what to do to make your first $100, I'll send you your money back
+
+So there's no risk for you 👍
+
+Does that sound good?
+
+(Lead replies)
+
+Perfect 👍
+
+I have 4 sessions this ${day}:
+
+6pm
+7pm
+8pm
+9pm
+
+Which one works best for you?
+
+(Lead replies)
+
+Perfect 👍
+
+Here's the link to save your spot 👇
+
+[PAYMENT LINK]
+
+Once you're in, send me a screenshot 👍`;
+  };
+
   // ─── Save ───────────────────────────────────────────────────────────────────
   const onSave = async () => {
     setSaving(true);
@@ -268,8 +455,37 @@ export function MyAgentScreen({ userId, onAgentCertified }: Props) {
   // ─── Publish ───────────────────────────────────────────────────────────────
   const onPublish = async () => {
     setPublishing(true);
-    await onSave();
 
+    // STEP 1: Save all config to agents table
+    await supabase.from("agents").upsert({
+      user_id: userId,
+      agent_type: agentType,
+      agent_config: config,
+      agent_name: config.agent_name,
+      status: "building",
+      updated_at: new Date().toISOString(),
+    }, { onConflict: "user_id,agent_type" });
+
+    // STEP 2: Save scripts & links to account_leadflow_automations (only for booking agent)
+    if (agentType === "booking") {
+      await supabase.from("account_leadflow_automations").upsert({
+        user_id: userId,
+        script1_service: config.script1_service,
+        script1_end_result: config.script1_end_result,
+        script1_category: config.script1_category,
+        script1_deliverable: config.script1_deliverable,
+        script1_outcome: config.script1_outcome,
+        script2_price: config.script2_price,
+        script2_training_day: config.script2_training_day,
+        script2_call_duration: config.script2_call_duration,
+        script2_conditions: config.script2_conditions,
+        lead_magnet_link: config.lead_magnet_link,
+        script2_booking_link: config.script2_booking_link,
+        updated_at: new Date().toISOString(),
+      }, { onConflict: "user_id" });
+    }
+
+    // STEP 3: Fetch fresh data from both tables
     const { data: onboarding } = await supabase
       .from("accounts_leadflow")
       .select("*")
@@ -282,15 +498,11 @@ export function MyAgentScreen({ userId, onAgentCertified }: Props) {
       .eq("user_id", userId)
       .maybeSingle();
 
-    await supabase.from("agents").upsert({
-      user_id: userId,
-      agent_type: agentType,
-      agent_config: config,
-      agent_name: config.agent_name,
-      status: "building",
-      updated_at: new Date().toISOString(),
-    }, { onConflict: "user_id,agent_type" });
+    // STEP 4: Render full scripts
+    const fullScript1 = renderFullScript1(config);
+    const fullScript2 = renderFullScript2(config);
 
+    // STEP 5: Send everything to webhook
     try {
       await fetch("https://rosegoldprojectai3.app.n8n.cloud/webhook/ea72ec64-9444-495a-ae04-babcb9e90cdd", {
         method: "POST",
@@ -298,13 +510,15 @@ export function MyAgentScreen({ userId, onAgentCertified }: Props) {
         body: JSON.stringify({
           user_id: userId,
           agent_type: agentType,
-          config,
+          config, // Full agent config with all script fields
+          fullScript1, // Full rendered Script 1 text
+          fullScript2, // Full rendered Script 2 text
           onboarding: onboarding || {},
-          automation: automation || {},
+          automation: automation || {}, // This now has all the script field data
         }),
       });
     } catch (e) {
-      console.error(e);
+      console.error("Webhook error:", e);
       await supabase.from("agents").upsert({
         user_id: userId,
         agent_type: agentType,
