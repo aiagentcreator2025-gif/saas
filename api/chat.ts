@@ -64,7 +64,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       session_id,
       client_name: session.client_name,
       message,
-      conversation_history,
+      messages,
       funnel_context,
       user_id:         user_id || null,
       onboarding_data: onboarding_data,
@@ -87,7 +87,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     // Append both turns to conversation history
     const updatedHistory: Message[] = [
-      ...conversation_history,
+      ...messages,
       { role: 'user',      content: message },
       { role: 'assistant', content: agentMessage },
     ];
@@ -106,7 +106,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       .from('sessions')
       .update({
         current_agent_index: newIndex,
-        conversation_history: updatedHistory,
+        messages: updatedHistory,
         funnel_context:       updatedFunnel,
         user_id:              user_id || null,
         updated_at:           new Date().toISOString(),
@@ -154,7 +154,7 @@ async function getOrCreateSession(session_id: string, client_name?: string, user
       session_id,
       client_name:          client_name || 'Client',
       current_agent_index:  0,
-      conversation_history: [],
+      messages: [],
       funnel_context:       {},
       user_id:              user_id || null,
     })
