@@ -117,7 +117,6 @@ export function Sidebar({ active, onNav, agentCertified }: Props) {
 
           <NavItem icon={<LayoutDashboard size={15} strokeWidth={1.6} />} label="Dashboard" active={active === "dashboard"} onClick={() => onNav("dashboard")} />
 
-          {"/* ADD THIS — Co-Founder AI */"}
 <NavItem
   icon={<Sparkles size={15} strokeWidth={1.6} />}
   label="Co-Founder AI"
