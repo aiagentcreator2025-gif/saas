@@ -60,12 +60,21 @@ export function CoFounderScreen() {
   }, []);
 
   useEffect(() => {
+  if (onboardingData) {
+    setMessages([{
+      role: "assistant",
+      content: `Hey ${onboardingData.business_name}! 👋 I'm Alex, your Ads Strategist.\n\nI can see you're offering "${onboardingData.main_offer}" to ${onboardingData.ideal_client} — solid foundation to build on.\n\nHere's how we'll work together: I'm the first of 5 co-founders on your LeadFlow team. We'll build your complete funnel step by step:\n\n1️⃣ Alex (me) → Ad strategy & hooks\n2️⃣ Maya → Landing page copy\n3️⃣ Jordan → Welcome script\n4️⃣ Sam → Lead magnet\n5️⃣ Casey → Booking sequence\n\nEach specialist hands off to the next once their piece is done. By the end you'll have a full converting funnel ready to launch.\n\nLet's start with your ads. Based on your offer, who specifically are we targeting and what's the #1 problem they're trying to solve?`,
+      agentName: "alex",
+    }]);
+  } else {
+    // Fallback while onboarding data loads
     setMessages([{
       role: "assistant",
       content: "Hey! I'm Alex, your Ads Strategist 👋\n\nI'm part of your LeadFlow co-founder team. Together we'll build your complete marketing funnel step by step — ads, landing page, welcome script, lead magnet, and booking sequence.\n\nLet's start simple: what's your business and what are you selling?",
       agentName: "alex",
     }]);
-  }, []);
+  }
+}, [onboardingData]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
