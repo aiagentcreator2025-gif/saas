@@ -28,16 +28,19 @@ interface AgentConfig {
   primary_service: string;
   target_audience: string;
   main_goal: string;
-  // NEW — Scripts
+  // NEW — Scripts (Booking Agent only)
   script1_service: string;
   script1_end_result: string;
   script1_category: string;
   script1_deliverable: string;
   script1_outcome: string;
+  script2_price: string;
+  script2_training_day: string;
+  script2_call_duration: string;
+  script2_conditions: string;
   // NEW — Links
   lead_magnet_link: string;
   script2_booking_link: string;
-  script2_call_duration: string;
 }
 
 interface AgentRow {
@@ -78,9 +81,12 @@ const EMPTY_CONFIG: AgentConfig = {
   script1_category: "",
   script1_deliverable: "",
   script1_outcome: "",
+  script2_price: "",
+  script2_training_day: "",
+  script2_call_duration: "",
+  script2_conditions: "",
   lead_magnet_link: "",
   script2_booking_link: "",
-  script2_call_duration: "",
 };
 
 const BASE = "https://raw.githubusercontent.com/aiagentcreator2025-gif/saas/main/public/";
@@ -124,12 +130,12 @@ const STYLES = `
   ::-webkit-scrollbar-thumb { background: #D1D5DB; border-radius: 4px; }
 `;
 
-// ─── Agent Steps ──────────────────────────────────────────────────────────────
+// ─── Agent Steps (Booking Agent only gets Scripts & Links) ────────────────────
 const AGENT_STEPS = [
   { id: "identity", label: "Agent Identity", sublabel: "Name & personality", color: "#4F46E5", bg: "#EEF2FF", border: "#C7D2FE", icon: <Bot size={15} strokeWidth={1.5} /> },
   { id: "style", label: "Writing Style", sublabel: "How your agent communicates", color: "#7C3AED", bg: "#F5F3FF", border: "#DDD6FE", icon: <MessageSquare size={15} strokeWidth={1.5} /> },
   { id: "knowledge", label: "Agent Knowledge", sublabel: "Service & audience context", color: "#2563EB", bg: "#EFF6FF", border: "#BFDBFE", icon: <Brain size={15} strokeWidth={1.5} /> },
-  { id: "scripts", label: "Scripts", sublabel: "How your offer sounds in conversation", color: "#059669", bg: "#ECFDF5", border: "#A7F3D0", icon: <MessageSquare size={15} strokeWidth={1.5} /> },
+  { id: "scripts", label: "Scripts", sublabel: "Script 1 & 2 configuration", color: "#059669", bg: "#ECFDF5", border: "#A7F3D0", icon: <MessageSquare size={15} strokeWidth={1.5} /> },
   { id: "links", label: "Links & Booking", sublabel: "Where to send your leads", color: "#D97706", bg: "#FFFBEB", border: "#FDE68A", icon: <Calendar size={15} strokeWidth={1.5} /> },
 ];
 
@@ -221,7 +227,7 @@ export function MyAgentScreen({ userId, onAgentCertified }: Props) {
     setSaved(false);
   };
 
-  // ─── Save — writes agent_config to agents + script/link fields to account_leadflow_automations ───
+  // ─── Save ───────────────────────────────────────────────────────────────────
   const onSave = async () => {
     setSaving(true);
 
@@ -235,19 +241,24 @@ export function MyAgentScreen({ userId, onAgentCertified }: Props) {
       updated_at: new Date().toISOString(),
     }, { onConflict: "user_id,agent_type" });
 
-    // Save script + link fields to account_leadflow_automations
-    await supabase.from("account_leadflow_automations").upsert({
-      user_id: userId,
-      script1_service: config.script1_service,
-      script1_end_result: config.script1_end_result,
-      script1_category: config.script1_category,
-      script1_deliverable: config.script1_deliverable,
-      script1_outcome: config.script1_outcome,
-      lead_magnet_link: config.lead_magnet_link,
-      script2_booking_link: config.script2_booking_link,
-      script2_call_duration: config.script2_call_duration,
-      updated_at: new Date().toISOString(),
-    }, { onConflict: "user_id" });
+    // Save script + link fields to account_leadflow_automations (only for booking agent)
+    if (agentType === "booking") {
+      await supabase.from("account_leadflow_automations").upsert({
+        user_id: userId,
+        script1_service: config.script1_service,
+        script1_end_result: config.script1_end_result,
+        script1_category: config.script1_category,
+        script1_deliverable: config.script1_deliverable,
+        script1_outcome: config.script1_outcome,
+        script2_price: config.script2_price,
+        script2_training_day: config.script2_training_day,
+        script2_call_duration: config.script2_call_duration,
+        script2_conditions: config.script2_conditions,
+        lead_magnet_link: config.lead_magnet_link,
+        script2_booking_link: config.script2_booking_link,
+        updated_at: new Date().toISOString(),
+      }, { onConflict: "user_id" });
+    }
 
     setSaving(false);
     setSaved(true);
@@ -271,7 +282,6 @@ export function MyAgentScreen({ userId, onAgentCertified }: Props) {
       .eq("user_id", userId)
       .maybeSingle();
 
-    // Set to "building" — not "built" yet, the pipeline is still running
     await supabase.from("agents").upsert({
       user_id: userId,
       agent_type: agentType,
@@ -663,6 +673,9 @@ function PreviewScreen({ type, onStart, onBack }: { type: "booking" | "followup"
   ];
   const headerImg = isBooking ? `${BASE}bookingflow.png` : `${BASE}followupagent3.png`;
 
+  // Only show Scripts & Links steps for Booking Agent
+  const stepsToShow = isBooking ? AGENT_STEPS : AGENT_STEPS.filter(s => s.id !== "scripts" && s.id !== "links");
+
   return (
     <div style={{ minHeight: "100vh", background: "#F4F5FA", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 40 }}>
       <div className="ma-fade-up" style={{ maxWidth: 720, width: "100%", background: "#fff", borderRadius: 28, border: `1px solid ${border}`, overflow: "hidden", boxShadow: "0 4px 24px rgba(0,0,0,0.06)" }}>
@@ -690,7 +703,7 @@ function PreviewScreen({ type, onStart, onBack }: { type: "booking" | "followup"
           <div style={{ padding: "16px 20px", background: "#F9FAFB", borderRadius: 12, border: "1px solid #E5E7EB", marginBottom: 28 }}>
             <div style={{ fontSize: 11, fontWeight: 700, color: "#9CA3AF", textTransform: "uppercase" as const, letterSpacing: "0.8px", marginBottom: 12 }}>What you'll configure</div>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-              {AGENT_STEPS.map((step) => (
+              {stepsToShow.map((step) => (
                 <div key={step.id} style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 12px", borderRadius: 10, background: step.bg, border: `1px solid ${step.border}` }}>
                   <div style={{ color: step.color, display: "flex" }}>{step.icon}</div>
                   <div style={{ fontSize: 11, fontWeight: 600, color: "#111827" }}>{step.label}</div>
@@ -705,7 +718,7 @@ function PreviewScreen({ type, onStart, onBack }: { type: "booking" | "followup"
   );
 }
 
-// ─── Build Screen ─────────────────────────────────────────────────────────────
+// ─── Build Screen (with conditional steps) ──────────────────────────────────────
 function BuildScreen({ agentType, config, activeStep, setActiveStep, onChange, onSave, onPublish, saving, saved, publishing, published, onBack }: {
   agentType: "booking" | "followup"; config: AgentConfig; activeStep: string;
   setActiveStep: (s: string) => void; onChange: (f: keyof AgentConfig, v: string) => void;
@@ -713,6 +726,11 @@ function BuildScreen({ agentType, config, activeStep, setActiveStep, onChange, o
   publishing: boolean; published: boolean; onBack: () => void;
 }) {
   const color = agentType === "booking" ? "#4F46E5" : "#7C3AED";
+  
+  // For followup agents, exclude Scripts & Links steps
+  const stepsToShow = agentType === "booking" 
+    ? AGENT_STEPS 
+    : AGENT_STEPS.filter(s => s.id !== "scripts" && s.id !== "links");
 
   return (
     <div style={{ display: "flex", height: "100vh", overflow: "hidden", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
@@ -722,7 +740,7 @@ function BuildScreen({ agentType, config, activeStep, setActiveStep, onChange, o
         <div style={{ fontSize: 16, fontWeight: 800, color: "#111827", marginBottom: 4 }}>Agent Configuration</div>
         <div style={{ fontSize: 12, color: "#9CA3AF", fontStyle: "italic", marginBottom: 24 }}>{agentType === "booking" ? "Booking Agent" : "Follow-Up Agent"}</div>
 
-        {AGENT_STEPS.map((step, i) => (
+        {stepsToShow.map((step, i) => (
           <div key={step.id}>
             <div className={`ma-node ${activeStep === step.id ? "active" : ""}`} onClick={() => setActiveStep(step.id)} style={{ borderColor: activeStep === step.id ? step.color : step.border, background: activeStep === step.id ? step.bg : "#fff" }}>
               <div style={{ width: 34, height: 34, borderRadius: 10, background: step.bg, border: `1px solid ${step.border}`, display: "flex", alignItems: "center", justifyContent: "center", color: step.color, flexShrink: 0 }}>{step.icon}</div>
@@ -732,7 +750,7 @@ function BuildScreen({ agentType, config, activeStep, setActiveStep, onChange, o
               </div>
               {activeStep === step.id && <Settings size={13} color={step.color} strokeWidth={1.5} />}
             </div>
-            {i < AGENT_STEPS.length - 1 && (
+            {i < stepsToShow.length - 1 && (
               <div className="ma-connector">
                 <div style={{ width: 1.5, height: 16, background: "#E5E7EB" }} />
                 <div style={{ width: 0, height: 0, borderLeft: "5px solid transparent", borderRight: "5px solid transparent", borderTop: "6px solid #E5E7EB" }} />
@@ -757,8 +775,8 @@ function BuildScreen({ agentType, config, activeStep, setActiveStep, onChange, o
           {activeStep === "identity"  && <IdentityPanel  config={config} onChange={onChange} color={color} />}
           {activeStep === "style"     && <StylePanel     config={config} onChange={onChange} color={color} />}
           {activeStep === "knowledge" && <KnowledgePanel config={config} onChange={onChange} color={color} />}
-          {activeStep === "scripts"   && <ScriptsPanel   config={config} onChange={onChange} color={color} />}
-          {activeStep === "links"     && <LinksPanel     config={config} onChange={onChange} color={color} />}
+          {activeStep === "scripts"   && agentType === "booking" && <ScriptsPanel   config={config} onChange={onChange} color={color} />}
+          {activeStep === "links"     && agentType === "booking" && <LinksPanel     config={config} onChange={onChange} color={color} />}
         </div>
       </div>
     </div>
@@ -842,9 +860,9 @@ function KnowledgePanel({ config, onChange, color }: { config: AgentConfig; onCh
   );
 }
 
-// ─── NEW: Scripts Panel ───────────────────────────────────────────────────────
+// ─── NEW: Scripts Panel (Booking Agent only) ──────────────────────────────────
 function ScriptsPanel({ config, onChange, color }: { config: AgentConfig; onChange: (f: keyof AgentConfig, v: string) => void; color: string }) {
-  const fields: { key: keyof AgentConfig; label: string; placeholder: string; hint: string; tag: string }[] = [
+  const script1Fields: { key: keyof AgentConfig; label: string; placeholder: string; hint: string; tag: string }[] = [
     {
       key: "script1_service",
       label: "Your Service (short)",
@@ -882,23 +900,51 @@ function ScriptsPanel({ config, onChange, color }: { config: AgentConfig; onChan
     },
   ];
 
+  const script2Fields: { key: keyof AgentConfig; label: string; placeholder: string; hint: string }[] = [
+    {
+      key: "script2_price",
+      label: "Training Price",
+      placeholder: "e.g. $15",
+      hint: "The price you'll offer in script 2 (e.g., normal price, or discounted price for early action)",
+    },
+    {
+      key: "script2_training_day",
+      label: "Training Day/Date",
+      placeholder: "e.g. This Saturday",
+      hint: "When is the training happening? (e.g. 'This Saturday', 'Next Tuesday')",
+    },
+    {
+      key: "script2_call_duration",
+      label: "Call Duration",
+      placeholder: "e.g. 30 minutes",
+      hint: "How long is your discovery/call? Used in: 'Let's get on a short [X] call'",
+    },
+    {
+      key: "script2_conditions",
+      label: "3 Conditions (comma-separated)",
+      placeholder: "e.g. You actually apply, you give feedback, you leave a review",
+      hint: "The 3 conditions for the discounted price. Separate each with a comma.",
+    },
+  ];
+
   return (
     <div className="ma-fade-up">
-      <PanelHeader title="Scripts" desc="These fields fill the placeholders in your agent's conversation script. The more specific, the more natural your agent sounds." color={color} />
+      <PanelHeader title="Scripts" desc="Configure your Script 1 (lead qualification & magnet delivery) and Script 2 (paid offer close). These fields fill the placeholders in your agent's conversation." color={color} />
 
-      {/* Context banner */}
-      <div style={{ background: "#F0FDF4", border: "1px solid #A7F3D0", borderRadius: 12, padding: "12px 16px", marginBottom: 24, display: "flex", gap: 10, alignItems: "flex-start" }}>
-        <div style={{ fontSize: 16, marginTop: 1 }}>💬</div>
+      {/* Script 1 Banner */}
+      <div style={{ background: "#F0FDF4", border: "1px solid #A7F3D0", borderRadius: 12, padding: "12px 16px", marginBottom: 28, display: "flex", gap: 10, alignItems: "flex-start" }}>
+        <div style={{ fontSize: 16, marginTop: 1 }}>📝</div>
         <div>
-          <div style={{ fontSize: 12, fontWeight: 700, color: "#059669", marginBottom: 2 }}>How this works</div>
+          <div style={{ fontSize: 12, fontWeight: 700, color: "#059669", marginBottom: 2 }}>Script 1: Lead Qualification & Delivery</div>
           <div style={{ fontSize: 11, color: "#065F46", lineHeight: 1.6 }}>
-            Your agent opens with: <em>"Hey! Just to confirm — you reached out because you're interested in <strong>[SERVICE]</strong> to maybe get help with <strong>[DESIRED END RESULT]</strong>, right?"</em> — fill these fields and that line becomes real.
+            Your agent opens with: <em>"Wa alaykoum salam 👋 Just to confirm — you came from TikTok because you want to start making money from home, right?"</em> — fill these fields and the script becomes personalized.
           </div>
         </div>
       </div>
 
-      <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-        {fields.map(({ key, label, placeholder, hint, tag }) => (
+      {/* Script 1 Fields */}
+      <div style={{ display: "flex", flexDirection: "column", gap: 20, marginBottom: 40, paddingBottom: 24, borderBottom: "1px solid #E5E7EB" }}>
+        {script1Fields.map(({ key, label, placeholder, hint, tag }) => (
           <div key={key}>
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
               <label className="ma-label" style={{ margin: 0 }}>{label}</label>
@@ -914,11 +960,38 @@ function ScriptsPanel({ config, onChange, color }: { config: AgentConfig; onChan
           </div>
         ))}
       </div>
+
+      {/* Script 2 Banner */}
+      <div style={{ background: "#EEF2FF", border: "1px solid #C7D2FE", borderRadius: 12, padding: "12px 16px", marginBottom: 28, display: "flex", gap: 10, alignItems: "flex-start" }}>
+        <div style={{ fontSize: 16, marginTop: 1 }}>💰</div>
+        <div>
+          <div style={{ fontSize: 12, fontWeight: 700, color: "#4F46E5", marginBottom: 2 }}>Script 2: Paid Offer Close</div>
+          <div style={{ fontSize: 11, color: "#312E81", lineHeight: 1.6 }}>
+            After they read the guide and engage, your agent presents the paid training: price, day, duration, and 3 conditions. This is where leads convert to customers.
+          </div>
+        </div>
+      </div>
+
+      {/* Script 2 Fields */}
+      <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+        {script2Fields.map(({ key, label, placeholder, hint }) => (
+          <div key={key}>
+            <label className="ma-label">{label}</label>
+            <input
+              className="ma-input"
+              value={config[key] as string}
+              onChange={e => onChange(key, e.target.value)}
+              placeholder={placeholder}
+            />
+            <div className="ma-hint">{hint}</div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
 
-// ─── NEW: Links Panel ─────────────────────────────────────────────────────────
+// ─── NEW: Links Panel (Booking Agent only) ───────────────────────────────────
 function LinksPanel({ config, onChange, color }: { config: AgentConfig; onChange: (f: keyof AgentConfig, v: string) => void; color: string }) {
   return (
     <div className="ma-fade-up">
@@ -930,7 +1003,7 @@ function LinksPanel({ config, onChange, color }: { config: AgentConfig; onChange
         <div>
           <div style={{ fontSize: 12, fontWeight: 700, color: "#D97706", marginBottom: 2 }}>These links go directly to leads</div>
           <div style={{ fontSize: 11, color: "#92400E", lineHeight: 1.6 }}>
-            Your agent sends the lead magnet link first, then — after they read it — sends the booking link. Double-check both URLs before building.
+            Your agent sends the lead magnet link first (Script 1), then — after they read it — sends the booking link for the paid training (Script 2). Double-check both URLs before building.
           </div>
         </div>
       </div>
@@ -941,7 +1014,7 @@ function LinksPanel({ config, onChange, color }: { config: AgentConfig; onChange
         <div>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
             <label className="ma-label" style={{ margin: 0 }}>Lead Magnet URL</label>
-            <span style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "3px 8px", borderRadius: 6, background: "#ECFDF5", border: "1px solid #A7F3D0", fontSize: 10, fontWeight: 700, color: "#059669" }}>Sent first</span>
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "3px 8px", borderRadius: 6, background: "#ECFDF5", border: "1px solid #A7F3D0", fontSize: 10, fontWeight: 700, color: "#059669" }}>Script 1</span>
           </div>
           <input
             className="ma-input"
@@ -949,7 +1022,7 @@ function LinksPanel({ config, onChange, color }: { config: AgentConfig; onChange
             onChange={e => onChange("lead_magnet_link", e.target.value)}
             placeholder="https://yourdomain.com/free-guide"
           />
-          <div className="ma-hint">The link to your free guide, checklist, or resource. Your agent sends this during script 1.</div>
+          <div className="ma-hint">The link to your free guide, checklist, or resource. Sent after lead qualification in Script 1.</div>
         </div>
 
         {/* Divider */}
@@ -958,31 +1031,16 @@ function LinksPanel({ config, onChange, color }: { config: AgentConfig; onChange
         {/* Booking link */}
         <div>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
-            <label className="ma-label" style={{ margin: 0 }}>Booking Page URL</label>
-            <span style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "3px 8px", borderRadius: 6, background: "#EEF2FF", border: "1px solid #C7D2FE", fontSize: 10, fontWeight: 700, color: "#4F46E5" }}>Sent to close</span>
+            <label className="ma-label" style={{ margin: 0 }}>Training/Booking Page URL</label>
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "3px 8px", borderRadius: 6, background: "#EEF2FF", border: "1px solid #C7D2FE", fontSize: 10, fontWeight: 700, color: "#4F46E5" }}>Script 2</span>
           </div>
           <input
             className="ma-input"
             value={config.script2_booking_link}
             onChange={e => onChange("script2_booking_link", e.target.value)}
-            placeholder="https://cal.com/you/discovery"
+            placeholder="https://payment.example.com/training"
           />
-          <div className="ma-hint">Your Calendly, Cal.com, or any booking page. Sent at the end of script 2 when the lead is ready.</div>
-        </div>
-
-        {/* Call duration */}
-        <div>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
-            <label className="ma-label" style={{ margin: 0 }}>Call Length</label>
-            <span className="ma-script-tag">[X]</span>
-          </div>
-          <input
-            className="ma-input"
-            value={config.script2_call_duration}
-            onChange={e => onChange("script2_call_duration", e.target.value)}
-            placeholder="e.g. 30 minutes"
-          />
-          <div className="ma-hint">How long is your discovery call? Used in: "Let's get on a short <strong>[X]</strong> call — completely free."</div>
+          <div className="ma-hint">Your payment/booking page for the paid training. Sent at the end of Script 2 when the lead is ready to buy.</div>
         </div>
 
       </div>
