@@ -456,7 +456,11 @@ Once you're in, send me a screenshot 👍`;
   const onPublish = async () => {
     setPublishing(true);
 
-    // STEP 1: Save all config to agents table
+    // STEP 1: Render full scripts first
+    const fullScript1 = renderFullScript1(config);
+    const fullScript2 = renderFullScript2(config);
+
+    // STEP 2: Save all config to agents table
     await supabase.from("agents").upsert({
       user_id: userId,
       agent_type: agentType,
@@ -466,7 +470,7 @@ Once you're in, send me a screenshot 👍`;
       updated_at: new Date().toISOString(),
     }, { onConflict: "user_id,agent_type" });
 
-    // STEP 2: Save scripts & links to account_leadflow_automations (only for booking agent)
+    // STEP 3: Save scripts & links + full rendered scripts to account_leadflow_automations (only for booking agent)
     if (agentType === "booking") {
       await supabase.from("account_leadflow_automations").upsert({
         user_id: userId,
@@ -481,11 +485,13 @@ Once you're in, send me a screenshot 👍`;
         script2_conditions: config.script2_conditions,
         lead_magnet_link: config.lead_magnet_link,
         script2_booking_link: config.script2_booking_link,
+        full_script1: fullScript1,
+        full_script2: fullScript2,
         updated_at: new Date().toISOString(),
       }, { onConflict: "user_id" });
     }
 
-    // STEP 3: Fetch fresh data from both tables
+    // STEP 4: Fetch fresh data from both tables
     const { data: onboarding } = await supabase
       .from("accounts_leadflow")
       .select("*")
@@ -497,10 +503,6 @@ Once you're in, send me a screenshot 👍`;
       .select("*")
       .eq("user_id", userId)
       .maybeSingle();
-
-    // STEP 4: Render full scripts
-    const fullScript1 = renderFullScript1(config);
-    const fullScript2 = renderFullScript2(config);
 
     // STEP 5: Send everything to webhook
     try {
@@ -514,7 +516,7 @@ Once you're in, send me a screenshot 👍`;
           fullScript1, // Full rendered Script 1 text
           fullScript2, // Full rendered Script 2 text
           onboarding: onboarding || {},
-          automation: automation || {}, // This now has all the script field data
+          automation: automation || {}, // Now includes full_script1 & full_script2
         }),
       });
     } catch (e) {
