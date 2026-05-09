@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { Send, CheckCircle2, Loader2 } from "lucide-react";
+import { supabase } from "../supabaseClient";
 
 const AGENT_META: Record<string, { label: string; role: string; initial: string; color: string; bg: string }> = {
   alex:   { label: "Alex",     role: "Ads Strategist",          initial: "A", color: "#c2400a", bg: "rgba(251,146,60,0.12)"  },
@@ -26,6 +27,8 @@ export function CoFounderScreen() {
   const [currentAgent, setCurrentAgent] = useState("alex");
   const [currentStep, setCurrentStep] = useState(0);
   const [funnelComplete, setFunnelComplete] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
+  const [onboardingData, setOnboardingData] = useState<any>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -37,6 +40,24 @@ export function CoFounderScreen() {
     localStorage.setItem(k, id);
     return id;
   });
+
+  // Load user + onboarding data on mount
+  useEffect(() => {
+    const load = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) return;
+      setUserId(session.user.id);
+
+      const { data } = await supabase
+        .from("accounts_leadflow")
+        .select("*")
+        .eq("user_id", session.user.id)
+        .maybeSingle();
+
+      if (data) setOnboardingData(data);
+    };
+    load();
+  }, []);
 
   useEffect(() => {
     setMessages([{
@@ -60,7 +81,12 @@ export function CoFounderScreen() {
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ session_id: sessionId, message: text }),
+        body: JSON.stringify({
+          session_id: sessionId,
+          message: text,
+          user_id: userId,
+          onboarding_data: onboardingData,
+        }),
       });
       const data = await res.json();
       if (!res.ok || data.error) {
