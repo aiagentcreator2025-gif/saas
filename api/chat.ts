@@ -3,8 +3,8 @@ import { createClient } from '@supabase/supabase-js';
 
 // ─── Supabase client (server-side: use service role key) ───────────────────
 const supabase = createClient(
-  process.env.SUPABASE_URL!,            // same value as VITE_SUPABASE_URL — no VITE_ prefix here
-  process.env.SUPABASE_SERVICE_ROLE_KEY! // NOT the anon key — get from Supabase → Settings → API
+  process.env.SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
 // ─── Agent config ─────────────────────────────────────────────────────────
@@ -22,7 +22,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { session_id, message, client_name } = req.body as ChatRequest;
+  const { session_id, message, client_name, user_id } = req.body as ChatRequest;
 
   if (!session_id || !message) {
     return res.status(400).json({ error: 'session_id and message are required' });
@@ -30,7 +30,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   try {
     // ── Step 1: Load or create session ──────────────────────────────────
-    const session = await getOrCreateSession(session_id, client_name);
+    const session = await getOrCreateSession(session_id, client_name, user_id);
     const { current_agent_index, conversation_history, funnel_context } = session;
 
     // ── Step 2: Check if funnel is already complete ──────────────────────
@@ -48,6 +48,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     const activeAgent = AGENTS[current_agent_index];
 
+    // ── Step 2.5: Fetch onboarding data from Supabase ───────────────────
+    let onboarding_data = null;
+    if (user_id) {
+      const { data: ob } = await supabase
+        .from('accounts_leadflow')
+        .select('*')
+        .eq('user_id', user_id)
+        .maybeSingle();
+      onboarding_data = ob;
+    }
+
     // ── Step 3: Forward to n8n webhook ──────────────────────────────────
     const n8nPayload: N8nPayload = {
       session_id,
@@ -55,6 +66,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       message,
       conversation_history,
       funnel_context,
+      user_id:         user_id || null,
+      onboarding_data: onboarding_data,
     };
 
     const n8nRes = await callN8n(activeAgent.webhook, n8nPayload);
@@ -66,12 +79,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     // ── Step 4: Parse n8n response ──────────────────────────────────────
     const agentRaw = await n8nRes.json();
-const agentItem = Array.isArray(agentRaw) ? agentRaw[0] : agentRaw;
+    const agentItem = Array.isArray(agentRaw) ? agentRaw[0] : agentRaw;
 
-// Handle both formats: {message: "..."} and {response: "..."}
-const agentMessage = agentItem.message || agentItem.response || '';
-const is_handoff   = agentItem.is_handoff ?? false;
-const agent_output = agentItem.agent_output ?? null;
+    const agentMessage = agentItem.message || agentItem.response || '';
+    const is_handoff   = agentItem.is_handoff ?? false;
+    const agent_output = agentItem.agent_output ?? null;
 
     // Append both turns to conversation history
     const updatedHistory: Message[] = [
@@ -85,9 +97,7 @@ const agent_output = agentItem.agent_output ?? null;
     let newIndex = current_agent_index;
 
     if (is_handoff && agent_output) {
-      // Save this agent's structured output under its context key
       updatedFunnel[activeAgent.contextKey] = agent_output;
-      // Advance to next agent
       newIndex = current_agent_index + 1;
     }
 
@@ -98,13 +108,13 @@ const agent_output = agentItem.agent_output ?? null;
         current_agent_index: newIndex,
         conversation_history: updatedHistory,
         funnel_context:       updatedFunnel,
+        user_id:              user_id || null,
         updated_at:           new Date().toISOString(),
       })
       .eq('session_id', session_id);
 
     if (dbError) {
       console.error('[api/chat] Supabase update error:', dbError);
-      // Non-fatal: still return the agent message to avoid blocking the user
     }
 
     const nextAgent = AGENTS[newIndex] ?? null;
@@ -129,7 +139,7 @@ const agent_output = agentItem.agent_output ?? null;
 
 // ─── Helpers ──────────────────────────────────────────────────────────────
 
-async function getOrCreateSession(session_id: string, client_name?: string) {
+async function getOrCreateSession(session_id: string, client_name?: string, user_id?: string) {
   const { data } = await supabase
     .from('sessions')
     .select('*')
@@ -138,7 +148,6 @@ async function getOrCreateSession(session_id: string, client_name?: string) {
 
   if (data) return data;
 
-  // First message — create a fresh session
   const { data: newSession, error } = await supabase
     .from('sessions')
     .insert({
@@ -147,6 +156,7 @@ async function getOrCreateSession(session_id: string, client_name?: string) {
       current_agent_index:  0,
       conversation_history: [],
       funnel_context:       {},
+      user_id:              user_id || null,
     })
     .select()
     .single();
@@ -160,17 +170,17 @@ async function callN8n(webhookUrl: string, payload: N8nPayload) {
     method:  'POST',
     headers: { 'Content-Type': 'application/json' },
     body:    JSON.stringify(payload),
-    signal:  AbortSignal.timeout(55_000), // 55s timeout (Vercel limit is 60s)
+    signal:  AbortSignal.timeout(55_000),
   });
 }
 
 function buildResponse(opts: BuildResponseOpts) {
   return {
-    message:        opts.message,
-    agent_name:     opts.agentName,
-    agent_label:    opts.agentLabel,
-    is_handoff:     opts.isHandoff,
-    next_agent:     opts.nextAgent,
+    message:         opts.message,
+    agent_name:      opts.agentName,
+    agent_label:     opts.agentLabel,
+    is_handoff:      opts.isHandoff,
+    next_agent:      opts.nextAgent,
     funnel_complete: opts.funnelComplete,
     ...(opts.funnelContext && { funnel_context: opts.funnelContext }),
   };
