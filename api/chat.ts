@@ -60,15 +60,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     // ── Step 3: Forward to n8n webhook ──────────────────────────────────
-    const n8nPayload: N8nPayload = {
-      session_id,
-      client_name: session.client_name,
-      message,
-      full_convo,
-      funnel_context,
-      user_id:         user_id || null,
-      onboarding_data: onboarding_data,
-    };
+    const n8nPayload = {
+  session_id,
+  client_name: session.client_name,
+  message,
+  conversation_history,
+  funnel_context,
+  user_id: user_id || null,
+  onboarding_data,
+  conversation_summary: session.conversation_summary || null, // ← add this
+};
 
     const n8nRes = await callN8n(activeAgent.webhook, n8nPayload);
 
